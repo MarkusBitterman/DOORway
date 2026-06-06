@@ -1,18 +1,18 @@
 --[[
-    DOORwayDE finale.lua — exposes theme metadata as doorwayde:* keywords
+    DOORway finale.lua — exposes theme metadata as doorway:* keywords
     for fast hyprctl querying. Must be loaded LAST in the chain.
     Originally finale.conf (hyprlang).
 --]]
 
 local vars = require("variables")
 
--- doorwayde:* custom keywords. hl.keyword may emit unknown-keyword warnings;
+-- doorway:* custom keywords. hl.keyword may emit unknown-keyword warnings;
 -- this is the lua equivalent of hyprlang's `# noerror true` block.
 local function setkw(k, v)
-    pcall(function() hl.keyword("doorwayde:" .. k, tostring(v)) end)
+    pcall(function() hl.keyword("doorway:" .. k, tostring(v)) end)
 end
 
-setkw("theme",              os.getenv("DOORWAYDE_THEME") or "")
+setkw("theme",              os.getenv("DOORWAY_THEME") or "")
 setkw("gtk-theme",          vars.GTK_THEME)
 setkw("icon-theme",         vars.ICON_THEME)
 setkw("color-scheme",       vars.COLOR_SCHEME)

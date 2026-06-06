@@ -6,7 +6,7 @@
       "args": [
         "mcp-server-git",
         "--repository",
-        "/home/bittermang/Developments/DOORwayDE"
+        "/home/bittermang/Developments/DOORway"
       ],
       "env": {}
     }

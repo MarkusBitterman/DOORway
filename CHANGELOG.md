@@ -1,42 +1,42 @@
 # Changelog
 
 <!--
-All notable changes to DOORwayDE will be documented in this file.
-DOORwayDE is forked from HyDE (https://github.com/HyDE-Project/HyDE).
+All notable changes to DOORway will be documented in this file.
+DOORway is forked from HyDE (https://github.com/HyDE-Project/HyDE).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to _Modified_ [CalVer](https://calver.org/). See [Versioning](https://github.com/HyDE-Project/HyDE/blob/master/RELEASE_POLICY.md#versioning-yymq) For more info
  -->
 
-## v26.5.22 | Fix startup daemons (doorwayde-shell app path)
+## v26.5.22 | Fix startup daemons (doorway-shell app path)
 
 ### Fixed
-- **doorwayde-shell**: `app` subcommand now finds `app2unit.sh` — was building PATH from
-  `$LIB_DIR/hyde/` (does not exist post-rebrand) instead of `$LIB_DIR/doorwayde/`. All
+- **doorway-shell**: `app` subcommand now finds `app2unit.sh` — was building PATH from
+  `$LIB_DIR/hyde/` (does not exist post-rebrand) instead of `$LIB_DIR/doorway/`. All
   exec-once startup daemons (waybar, dunst, wallpaper, hypridle, etc.) were silently failing
   to launch, leaving every Hyprland session with an empty desktop.
-- **doorwayde-shell**: `globalcontrol.sh` source path corrected (`hyde/` → `doorwayde/`)
-- **doorwayde-shell**: Runtime dir corrected (`$XDG_RUNTIME_DIR/hyde` → `doorwayde`)
+- **doorway-shell**: `globalcontrol.sh` source path corrected (`hyde/` → `doorway/`)
+- **doorway-shell**: Runtime dir corrected (`$XDG_RUNTIME_DIR/hyde` → `doorway`)
 
 ### Changed
-- **flake.nix**: `home.sessionPath` now includes `~/.local/lib/doorwayde` so lib scripts are
+- **flake.nix**: `home.sessionPath` now includes `~/.local/lib/doorway` so lib scripts are
   in PATH session-wide, complementing env.lua's Hyprland-child-only PATH injection
 - **flake.nix (devShell)**: `shellHook` expanded with nested-Wayland testing notes, log
   locations, and Hyprland env var exports; `nix develop` now gives a testing-ready shell
 
 ### Note
-`doorwayde-shell` retains `hyde` references in non-critical paths (python env, lua env,
+`doorway-shell` retains `hyde` references in non-critical paths (python env, lua env,
 version file, theme reload) — these features remain broken but are not needed for basic
 desktop startup. A full internal rebranding pass is deferred.
 
 ---
 
-## v26.5.20 | DOORwayDE Rebrand
+## v26.5.20 | DOORway Rebrand
 
 ### Changed
-- **Full Rebrand**: Renamed project from HALLwayDE to DOORwayDE
-  - Renamed all directories: `hallwayde` → `doorwayde`
-  - Renamed all binaries: `hallwayde-shell` → `doorwayde-shell`, `hallwaydectl` → `doorwaydectl`, `hallwayde-ipc` → `doorwayde-ipc`
-  - Updated environment variables: `$HALLWAYDE_*` → `$DOORWAYDE_*`
+- **Full Rebrand**: Renamed project from HALLwayDE to DOORway
+  - Renamed all directories: `hallwayde` → `doorway`
+  - Renamed all binaries: `hallwayde-shell` → `doorway-shell`, `hallwaydectl` → `doorwayctl`, `hallwayde-ipc` → `doorway-ipc`
+  - Updated environment variables: `$HALLWAYDE_*` → `$DOORWAY_*`
   - Updated all internal path references across 316 files
   - Updated systemd services, waybar modules, shell completions, rofi themes
   - Preserved upstream HyDE URLs for attribution
@@ -47,18 +47,18 @@ desktop startup. A full internal rebranding pass is deferred.
 - **TODO.md**: Migration workbook for tracking Hyprland lua configuration conversion
 
 ### Removed
-- **TEAM_ROLES.md**: HyDE team structure (not applicable for DOORwayDE)
+- **TEAM_ROLES.md**: HyDE team structure (not applicable for DOORway)
 - **CONTRIBUTORS.md**: HyDE contributors list (CREDITS.md provides attribution)
 - **Hyprdots-to-HyDE.md**: HyDE origin story and translations
 
 ### Documentation
-- **HyDE-to-DOORwayDE.md**: New document explaining DOORwayDE's origins and the Arch→NixOS migration story
+- **HyDE-to-DOORway.md**: New document explaining DOORway's origins and the Arch→NixOS migration story
 - **RELEASE_POLICY.md**: Updated for rolling releases with Nix flakes
 - **CONTRIBUTING.md**: Simplified for solo project workflow
 - **CREDITS.md**: Clarified fork relationship with upstream HyDE
 
 ### Note
-This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLway OS (the parent operating system project), reducing naming confusion.
+This rebrand distinguishes DOORway (the desktop environment module) from HALLway OS (the parent operating system project), reducing naming confusion.
 
 ---
 
@@ -66,13 +66,13 @@ This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLw
 
 ### Changed
 - Pyprland: Upgraded to v3.3.1
-- Hypr: removed 'hypr.altab.py' as it is too slow and and use 'hypr.altab.lua' instead. Test using 'doorwayde-shell altab' to see if it works!
+- Hypr: removed 'hypr.altab.py' as it is too slow and and use 'hypr.altab.lua' instead. Test using 'doorway-shell altab' to see if it works!
 
 ### Added
 - Core: Use 'rsync' for file copy operations. Only recommended if users already have 'rsync' installed.
-- Package Manager: Added --no-confirm flag to 'doorwayde-shell pm.py' commands.
-- Lua: Added 'doorwayde-shell luainit' to initialize the Lua runtime. It is slow and should be optional for now.
-- Python: 'doorwayde-shell pyinit' will now sync like pip to preserve user packages.
+- Package Manager: Added --no-confirm flag to 'doorway-shell pm.py' commands.
+- Lua: Added 'doorway-shell luainit' to initialize the Lua runtime. It is slow and should be optional for now.
+- Python: 'doorway-shell pyinit' will now sync like pip to preserve user packages.
 
 ## v26.4.3 | 3rd week of April 2026 Release!
 
@@ -85,19 +85,19 @@ This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLw
 - Updated app2unit. https://github.com/Vladimir-csp/app2unit/blob/87dd9cd14e020b199256854c84f31b62680d1b21/app2unit
 - Changed Shader main manu into 'Eye Care' and sub menus will have Temperature, Gamma and the Shaders Selector.
 - Waybar: waybar now uses systemd run instead of app2unit to handle env properly.
-- Updated the doorwayde-config binary
+- Updated the doorway-config binary
 - Python-env: Deprecate pip and use uv instead.
 - Hypr: Removed '~/.config/hypr/hyde.conf' as it is not being used or a long time now. Please use the 'config.toml' instead
 - hyprlock: Added options under [hyprlock]: hide_cursor,ignore_empty_input,immediate_render,text_trim,fractional_scaling,screencopy_mode,fail_timeout. See https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/
 - Core: Removed hyq binary .Please install it using your own package-manager. 'yay -Sy hyprquery'
 
 ### Added
-- Window: added 'doorwayde-shell window.mute' to toggle window audio. This is a python implementation for 'wl-togglesink'
+- Window: added 'doorway-shell window.mute' to toggle window audio. This is a python implementation for 'wl-togglesink'
 - Windowrules: add opacity rule and floating rules for Blender to disable transparency, float render window, and set render window size to 50% of monitor
 - l10n: Added a bash POC for localization. Python already has built in support for localization. This is just a POC for bash scripts. It is not yet fully implemented and is not yet available for all scripts. So we can share language packs. Please open a discussion if you are interested in helping with localization. (keeping this here just to see who really cared lol.)
 - hyprsunset: Added identity param to be used temp
 - Waybar: Added Eyecare menu
-- Session: *Experimental* feature which might be helpful as session restore in wayland is being worked on. 'doorwayde-shell session --help' to learn more!
+- Session: *Experimental* feature which might be helpful as session restore in wayland is being worked on. 'doorway-shell session --help' to learn more!
 - Hyprland: *Experimental* Added an Alt-tab like feature that behaves like a browser. It is slow so I might port it to go.
 - Wallpaper: [waydeeper](https://github.com/EdenQwQ/waydeeper) can be used as wallpaper backend. To use it, waydeeper should be installed manually.
 - Lua: ****Experimental** Lua support. Please open a discussion if you are interested in helping with Lua support. Uses hererocks to install lua.
@@ -139,8 +139,8 @@ This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLw
 - Wallpaper: Added wallpaper '--multi-select' for multiple --outputs. Useful for per monitor or lockscreen/display manager background.
 - Wallpaper: Selector option to modify column count
 - Theme: Selector option to modify thumbnail types and column count
-- CLI: Added 'doorwayde-shell open' for apps with mimetypes
-- Core: Clean up 'doorwayde-shell wallpaper' script
+- CLI: Added 'doorway-shell open' for apps with mimetypes
+- Core: Clean up 'doorway-shell wallpaper' script
 - Restore: Added option to trash the config to avoid conflicts
 - Waybar: Added pavucontrol-qt in the module
 - Rofi: Added search functionality to the game launcher menu.
@@ -149,11 +149,11 @@ This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLw
 - Game launcher: lutris inspector py script now uses the lutris DB to get meta dat making it faster than using lutris CLI
 - Game launcher: steam inspector py script is translated from fn_steam shell script.
 - Game launcher: catalog backend will merge both lutris and steam with hints for duplicates
-- Game launcher: "doorwayde-shell game launcher" now has --style and --backend args
+- Game launcher: "doorway-shell game launcher" now has --style and --backend args
 - Python: added pyproject.toml for ruff formatter
 - Shell: Added ".editorconfig" for shell scripts.
-- Cliphist: Added OCR backend. Invoking "doorwayde-shell cliphist -scan-image" or 'Alt+V' on clipboard will extract the text of the latest image that exist in cliphist.
-- Screenshot: Added QR code reading feature using 'zbar' package. No default hotkey is provided. Call it via 'doorwayde-shell screenshot sq'
+- Cliphist: Added OCR backend. Invoking "doorway-shell cliphist -scan-image" or 'Alt+V' on clipboard will extract the text of the latest image that exist in cliphist.
+- Screenshot: Added QR code reading feature using 'zbar' package. No default hotkey is provided. Call it via 'doorway-shell screenshot sq'
 - Weather Applet: Added automatic locale detection for temperature units (°C/°F), time formats (12h/24h), and wind speed (km/h/mph).
 - Weather Applet: Implemented multi-language support based on system locale and added 'WEATHER_LANG' for manual overrides.
 - Weather Applet: Added support for a user-defined configuration file at '~/.config/weather.env'.
@@ -164,7 +164,7 @@ This rebrand distinguishes DOORwayDE (the desktop environment module) from HALLw
 - QT: Move qtXct/colors.conf into qtXct/colors/wallbash.conf. This is how qtXct Settings parses color schemes the proper way.
 - Core: Moved core "color" switch inside directory in lib path. Prepare to make '~/.local/lib/hyde' external only scripts and corresponding directories will be sourced or executed internally.
 - Wallbash: Remove wallbash.qt as it is a simple cp command now in the qtct.dcol template
-- UWSM: Start processes launched with app2unit.sh,rofi,'doorwayde-shell app' as services
+- UWSM: Start processes launched with app2unit.sh,rofi,'doorway-shell app' as services
 
 ### Migration
 
@@ -237,7 +237,7 @@ Please empty your '~/.config/fish/config.fish' and use it to modify fish configu
     [screenshot.ocr]
     tesseract_languages = ["eng"]
     '''
-    To use text recognition bind 'doorwayde-shell screenshot sc' to any hotkey.
+    To use text recognition bind 'doorway-shell screenshot sc' to any hotkey.
 - Hyprlock: Added hyprlock preview
 - File chooser dialogs in Hyprland now open centered and floating instead of off-screen
 
@@ -248,7 +248,7 @@ Please empty your '~/.config/fish/config.fish' and use it to modify fish configu
 
 ## v25.9.1
 
-This release delivers a new gesture syntax for hyprland v0.51.0. This is a breaking change for users of the previous gesture syntax. Please update DOORwayDE before opening an issue.
+This release delivers a new gesture syntax for hyprland v0.51.0. This is a breaking change for users of the previous gesture syntax. Please update DOORway before opening an issue.
 
 For contributors, if you need to make the workspace animation vertical, example the 'vertical.conf' animation, please **explicitly** add the following line to file.
 
@@ -261,8 +261,8 @@ gesture = 3, vertical, workspace
 ### Changed
 
 - Waybar: Make temperature background transparent
-- doorwayde-shell: silent pyinit command
-- Binds: Use 'doorwayde-shell logout' for cleaner session logout
+- doorway-shell: silent pyinit command
+- Binds: Use 'doorway-shell logout' for cleaner session logout
 - Gestures: Chase hyprland v0.51.0 gesture syntax
 
 ### Added
@@ -290,7 +290,7 @@ gesture = 3, vertical, workspace
 
 ### Added
 
-- doorwayde-shell: Add 'logout' command to handle with/out uwsm
+- doorway-shell: Add 'logout' command to handle with/out uwsm
 - waybar: Add lighter temperature module (Needs manual setup)
 - Add credits page
 - waybar: Try to force initialization on restore (redundancy) might fix [#1160](https://github.com/HyDE-Project/HyDE/issues/1160)
@@ -316,9 +316,9 @@ In SDDM, please choose 'Hyprland (UWSM Managed)' as your session. Or else you wi
 
 ### Added
 
-- Core: Added 'app2unit.sh' as core script. This is a wrapper for the 'app' e.g. 'doorwayde-shell app mediaplayer.py' this runs the script as systemd scope. Using app2unit.sh as 'uwsm app' is slower.
+- Core: Added 'app2unit.sh' as core script. This is a wrapper for the 'app' e.g. 'doorway-shell app mediaplayer.py' this runs the script as systemd scope. Using app2unit.sh as 'uwsm app' is slower.
 - Core: Added 'xdg-terminal-exec' as core script. Added this in here because the upstream xdg-terminal-exec is not yet available officially.
-- Development: Added 'Scripts/doorwaydevm' for development. See its README.md for more info.
+- Development: Added 'Scripts/doorwayvm' for development. See its README.md for more info.
 - Package: UWSM as dependency for HyDE.
 - Core: app2unit.sh and xdg-terminal-exec as as static dependencies. These tools are not widely available and are not part of the core dependencies.
 - The ~/.config/xdg-terminals.list file is now used to determine which terminal to use.
@@ -334,17 +334,17 @@ In SDDM, please choose 'Hyprland (UWSM Managed)' as your session. Or else you wi
 
 ## v25.7.3
 
-We use a dedicated Python environment to keep HyDE clean and dependency-free. Just run your scripts with 'doorwayde-shell'— this handles the environment for you.
+We use a dedicated Python environment to keep HyDE clean and dependency-free. Just run your scripts with 'doorway-shell'— this handles the environment for you.
 
 Examples:
- 'doorwayde-shell mediaplayer.py'
- 'doorwayde-shell waybar'
+ 'doorway-shell mediaplayer.py'
+ 'doorway-shell waybar'
 
 ### Added
 
 - CHANGELOG.md to track notable changes.
 - Features and fixes for mediaplayer. #865
-- DOORwayDE's python environment rebuild on installation
+- DOORway's python environment rebuild on installation
 - PyGObject for the python environment
 - Mediaplayer: Add support for generic MPRIS metadata
 - Mediaplayer: RIght click menu for mediaplayer
@@ -352,7 +352,7 @@ Examples:
 - Waybar: Added a POC implementation of drawers in group modules
 - Waybar: Made mpris comparable to custom/mediaplayer. Should be noted mpris is not very customizable.
 - Waybar: Added generic gamemode module which detects if games are running in feral mode
-- Waybar: 'doorwayde-shell waybar --select' now will ask for **layout and style** options.
+- Waybar: 'doorway-shell waybar --select' now will ask for **layout and style** options.
 - Core:Solid theming fallback
 
 ### Removed
@@ -361,10 +361,10 @@ Examples:
 
 ### Changed
 
-- Launch Scripts using 'doorwayde-shell' instead of '$scrPath/'
+- Launch Scripts using 'doorway-shell' instead of '$scrPath/'
 - Hyprland: Remove dconf setting in Hyprland config and add a separate dconf stack on color setup. This removes some hiccups on hyprctl reload.
 - Updated 'hyq' hyprquery v0.6.3r2
-- Updated 'doorwaydectl'
+- Updated 'doorwayctl'
 
 ### Fixed
 

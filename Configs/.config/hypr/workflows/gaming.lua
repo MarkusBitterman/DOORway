@@ -6,7 +6,7 @@
     Emphasis on performance — disables compositor expensive features.
     Removes shadows, blur, rounding, gaps, and animations.
 
-    Select with: doorwayde-shell workflows --select
+    Select with: doorway-shell workflows --select
 --]]
 
 hl.config({

@@ -5,7 +5,7 @@
     Workflow: Snappy
     Snappy, tight desktop — no rounding, no gaps, no animations.
 
-    Select with: doorwayde-shell workflows --select
+    Select with: doorway-shell workflows --select
 --]]
 
 hl.config({

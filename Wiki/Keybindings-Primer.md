@@ -1,6 +1,6 @@
 # Keybindings Primer
 
-This article is a curated, by-use-case tour of DOORwayDE's keyboard shortcuts. The goal is *learning* — the binds most users press most often, grouped so you can build muscle memory. If you want an exhaustive auto-generated index of every single binding (including the obscure ones), watch for the planned `Keybindings-Reference.md`; for now, the source of truth is `Configs/.config/hypr/keybindings.lua`.
+This article is a curated, by-use-case tour of DOORway's keyboard shortcuts. The goal is *learning* — the binds most users press most often, grouped so you can build muscle memory. If you want an exhaustive auto-generated index of every single binding (including the obscure ones), watch for the planned `Keybindings-Reference.md`; for now, the source of truth is `Configs/.config/hypr/keybindings.lua`.
 
 For everything *visible* you'd want to interact with (panels, menus, the waybar, dunst, theme switching), see [Interface-Tour.md](Interface-Tour.md). The two articles complement each other.
 
@@ -8,7 +8,7 @@ For everything *visible* you'd want to interact with (panels, menus, the waybar,
 
 ## Reading the notation
 
-DOORwayDE uses the standard modifier vocabulary:
+DOORway uses the standard modifier vocabulary:
 
 | Token | What it means |
 |---|---|
@@ -89,7 +89,7 @@ These let you drag and resize windows with the mouse while holding a modifier �
 
 ## Workspaces
 
-DOORwayDE supports 10 numbered workspaces plus one special "scratchpad."
+DOORway supports 10 numbered workspaces plus one special "scratchpad."
 
 ### Navigation
 
@@ -135,7 +135,7 @@ These open specific apps directly, bypassing the launcher menu:
 | `SUPER + E` | File manager (Dolphin) | Honors `$EXPLORER` |
 | `SUPER + C` | Text editor (VS Code) | Honors `$EDITOR`; falls back to `code` |
 | `SUPER + B` | Web browser (Firefox) | Honors `$BROWSER` |
-| `CTRL + SHIFT + Escape` | System monitor | Doorwayde's wrapper picks an installed monitor (Mission Center, htop, etc.) |
+| `CTRL + SHIFT + Escape` | System monitor | Doorway's wrapper picks an installed monitor (Mission Center, htop, etc.) |
 
 ### Rofi menus
 
@@ -157,7 +157,7 @@ Each of these opens a rofi-driven menu. **Pressing the same keybind a second tim
 
 ## Screenshots and color picker
 
-DOORwayDE uses `grim` + `slurp` for capture and `satty` for annotation. The screenshot pipeline is in `screenshot.sh`.
+DOORway uses `grim` + `slurp` for capture and `satty` for annotation. The screenshot pipeline is in `screenshot.sh`.
 
 | Key | Action |
 |---|---|
@@ -226,7 +226,7 @@ The whole appearance customization surface is keyboard-driven through rofi menus
 
 ### Game mode
 
-DOORwayDE has a "game mode" that disables animations and certain compositor effects for lower-latency play:
+DOORway has a "game mode" that disables animations and certain compositor effects for lower-latency play:
 
 | Key | Action |
 |---|---|
@@ -281,7 +281,7 @@ Every binding above lives in `Configs/.config/hypr/keybindings.lua`. The keybind
 
 Bindings not listed here (because they're rarely-pressed or are duplicate hardware keys):
 
-- The numeric `XF86Audio*` and `XF86MonBrightness*` versions are listed under media/brightness, but DOORwayDE also binds `F10`/`F11`/`F12` to the same actions for laptops whose function-key row is the audio control.
+- The numeric `XF86Audio*` and `XF86MonBrightness*` versions are listed under media/brightness, but DOORway also binds `F10`/`F11`/`F12` to the same actions for laptops whose function-key row is the audio control.
 - `mouse:272` and `mouse:273` are the raw button codes for left/right mouse, bound alongside `SUPER + Z` / `SUPER + X` for keyboard-only redundancy.
 
 The complete authoritative list is always `keybindings.lua` itself — under 250 lines, all grouped and commented.
@@ -292,4 +292,4 @@ The complete authoritative list is always `keybindings.lua` itself — under 250
 
 - **You want to see the bindings in their visual UI context** → [Interface-Tour.md](Interface-Tour.md)
 - **A binding doesn't seem to work** → [Troubleshooting-Hyprland.md](Troubleshooting-Hyprland.md) (binds with nil dispatchers or unknown keysyms surface in `Hyprland --verify-config` output)
-- **You want to add a new binding** → edit `Configs/.config/hypr/keybindings.lua` in the repo, then rebuild. See [Using-DOORwayDE-with-Nix.md § Editing DOORwayDE](Using-DOORwayDE-with-Nix.md#editing-doorwayde) for why you can't edit the deployed copy directly.
+- **You want to add a new binding** → edit `Configs/.config/hypr/keybindings.lua` in the repo, then rebuild. See [Using-DOORway-with-Nix.md § Editing DOORway](Using-DOORway-with-Nix.md#editing-doorway) for why you can't edit the deployed copy directly.

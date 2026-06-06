@@ -1,5 +1,5 @@
 --[[
-    DOORwayDE startup.lua — exec-once autostart chain.
+    DOORway startup.lua — exec-once autostart chain.
 
     Hyprland 0.55+ lua API: exec-once is not a `hl.config` key. The schema
     in /nix/store/.../hyprland-0.55.2/share/hypr/stubs/hl.meta.lua accepts

@@ -1,7 +1,7 @@
 --[[
     Animation preset: Disable
     Credit: https://github.com/prasanthrangan/hyprdots
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

@@ -1,6 +1,6 @@
 --[[
     Animation preset: Vertical
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 
     Note: the original .conf also defined gestures (gesture = 3, vertical,
     workspace) due to https://github.com/hyprwm/Hyprland/pull/11490.

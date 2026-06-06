@@ -1,7 +1,7 @@
 --[[
     Animation preset: Me-1
     Credit: https://github.com/mahaveergurjar
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

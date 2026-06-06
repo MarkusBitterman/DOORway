@@ -15,12 +15,12 @@ if [[ $- == *i* ]]; then
 fi
 
 #   Overrides 
-# DOORWAYDE_ZSH_NO_PLUGINS=1 # Set to 1 to disable loading of oh-my-zsh plugins, useful if you want to use your zsh plugins system 
-# unset DOORWAYDE_ZSH_PROMPT # Uncomment to unset/disable loading of prompts from DOORwayDE and let you load your own prompts
-# DOORWAYDE_ZSH_COMPINIT_CHECK=1 # Set 24 (hours) per compinit security check // lessens startup time
-# DOORWAYDE_ZSH_OMZ_DEFER=1 # Set to 1 to defer loading of oh-my-zsh plugins ONLY if prompt is already loaded
+# DOORWAY_ZSH_NO_PLUGINS=1 # Set to 1 to disable loading of oh-my-zsh plugins, useful if you want to use your zsh plugins system 
+# unset DOORWAY_ZSH_PROMPT # Uncomment to unset/disable loading of prompts from DOORway and let you load your own prompts
+# DOORWAY_ZSH_COMPINIT_CHECK=1 # Set 24 (hours) per compinit security check // lessens startup time
+# DOORWAY_ZSH_OMZ_DEFER=1 # Set to 1 to defer loading of oh-my-zsh plugins ONLY if prompt is already loaded
 
-if [[ ${DOORWAYDE_ZSH_NO_PLUGINS} != "1" ]]; then
+if [[ ${DOORWAY_ZSH_NO_PLUGINS} != "1" ]]; then
     #  OMZ Plugins 
     # manually add your oh-my-zsh plugins here
     plugins=(

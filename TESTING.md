@@ -1,14 +1,14 @@
-# DOORwayDE Testing Guide
+# DOORway Testing Guide
 
-DOORwayDE is NixOS-only. The upstream HyDE install-script workflow does not apply.
+DOORway is NixOS-only. The upstream HyDE install-script workflow does not apply.
 
 ## Quick Sanity Checks
 
-After any change to `doorwayde-shell` or `flake.nix`:
+After any change to `doorway-shell` or `flake.nix`:
 
 ```bash
 # 1. Verify app2unit.sh is findable (the most common startup failure):
-doorwayde-shell app -u test.scope -t scope -- echo "ok"
+doorway-shell app -u test.scope -t scope -- echo "ok"
 
 # 2. Lint shell scripts:
 shellcheck Scripts/*.sh
@@ -31,7 +31,7 @@ Use an XFCE Wayland session as the outer compositor. From a terminal there:
 nix develop
 
 # Or export manually:
-export PATH="$HOME/.local/lib/doorwayde:$PATH"
+export PATH="$HOME/.local/lib/doorway:$PATH"
 export XDG_SESSION_DESKTOP=Hyprland
 export XDG_CURRENT_DESKTOP=Hyprland
 ```
@@ -48,7 +48,7 @@ Then:
 
 > ⚠️ `start-hyprland` only works inside a running Wayland compositor.
 > libseat's builtin backend cannot open `/dev/input/*` in nested mode — keyboard
-> input will be completely dead. This is expected, not a DOORwayDE bug.
+> input will be completely dead. This is expected, not a DOORway bug.
 
 ---
 
@@ -61,10 +61,10 @@ Then:
 cat /run/user/$(id -u)/hypr/*/hyprland.log | grep -v "DEBUG from aquamarine"
 
 # Step 2 — check for daemon crashes (exec-once failures are NOT in the Hyprland log):
-journalctl --user -b -n 200 | grep -iE "(waybar|dunst|doorwayde|hypr)"
+journalctl --user -b -n 200 | grep -iE "(waybar|dunst|doorway|hypr)"
 
 # Step 3 — verify app2unit.sh is findable (root cause of most empty-desktop issues):
-doorwayde-shell app -u test.scope -t scope -- echo "ok"
+doorway-shell app -u test.scope -t scope -- echo "ok"
 ```
 
 ### After `home-manager switch` deploys changes
@@ -95,7 +95,7 @@ home-manager switch --flake .#bittermang@2600AD
 |------|------|----------------|
 | Lua parse | `Hyprland --verify-config` | Syntax errors, nil `hl.*` API calls |
 | Shell lint | `shellcheck Scripts/*.sh` | Shell script bugs |
-| app2unit path | `doorwayde-shell app ... -- echo ok` | PATH / LIB_DIR mismatches in doorwayde-shell |
+| app2unit path | `doorway-shell app ... -- echo ok` | PATH / LIB_DIR mismatches in doorway-shell |
 | Runtime startup | Native Hyprland login | exec-once failures, daemon crashes |
 
 > **Note:** exec-once runtime failures are **silent** in the Hyprland log.

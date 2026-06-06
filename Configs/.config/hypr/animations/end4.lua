@@ -1,7 +1,7 @@
 --[[
     Animation preset: End4
     Credit: https://github.com/end-4/dots-hyprland
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

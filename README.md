@@ -1,16 +1,16 @@
-# DOORwayDE
+# DOORway
 
 **The Hyprland Desktop Environment for HALLway OS**
 
 > **Your desktop should be beautiful, functional, and yours — by default.**
 
-DOORwayDE is a complete Hyprland desktop environment built for NixOS and the [HALLway](https://github.com/MarkusBitterman/HALLway) ecosystem. It originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE) and has been fully rebranded and adapted for declarative NixOS configuration.
+DOORway is a complete Hyprland desktop environment built for NixOS and the [HALLway](https://github.com/MarkusBitterman/HALLway) ecosystem. It originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE) and has been fully rebranded and adapted for declarative NixOS configuration.
 
 ---
 
 ## Table of Contents
 
-- [What is DOORwayDE?](#what-is-doorwayde)
+- [What is DOORway?](#what-is-doorway)
 - [Quick Start](#quick-start)
 - [Components](#components)
 - [Configuration](#configuration)
@@ -21,9 +21,9 @@ DOORwayDE is a complete Hyprland desktop environment built for NixOS and the [HA
 
 ---
 
-## What is DOORwayDE?
+## What is DOORway?
 
-DOORwayDE is the desktop environment layer of HALLway OS. It provides:
+DOORway is the desktop environment layer of HALLway OS. It provides:
 
 | Component | Purpose |
 |-----------|---------|
@@ -34,7 +34,7 @@ DOORwayDE is the desktop environment layer of HALLway OS. It provides:
 | **Hyprlock** | Lock screen |
 | **swww** | Animated wallpaper backend |
 
-**Why DOORwayDE exists:**
+**Why DOORway exists:**
 
 - **NixOS-native** — Designed for declarative configuration with Home Manager
 - **Part of HALLway** — Shares the ecosystem's philosophy of user sovereignty
@@ -47,19 +47,19 @@ DOORwayDE is the desktop environment layer of HALLway OS. It provides:
 
 ### For HALLway OS Users
 
-DOORwayDE is designed to integrate with the [HALLway](https://github.com/MarkusBitterman/HALLway) NixOS flake.
+DOORway is designed to integrate with the [HALLway](https://github.com/MarkusBitterman/HALLway) NixOS flake.
 
 **Prerequisites**: Hyprland and dependencies installed via NixOS/Home Manager
 
 ```nix
 # In your HALLway (or any NixOS home-manager) config:
-imports = [ inputs.doorwayde.homeManagerModules.default ];
-doorwayde.enable = true;
+imports = [ inputs.doorway.homeManagerModules.default ];
+doorway.enable = true;
 ```
 
 ### Required NixOS Packages
 
-When using the flake (`homeManagerModules.default`), all packages are declared in `doorwaydeDeps` and managed automatically — no manual package list needed.
+When using the flake (`homeManagerModules.default`), all packages are declared in `doorwayDeps` and managed automatically — no manual package list needed.
 
 For manual setups, core dependencies include:
 
@@ -92,13 +92,13 @@ hyprsunset  satty  dolphin
 
 | Tool | Description |
 |------|-------------|
-| `doorwayde-shell` | Shell wrapper for DOORwayDE operations |
-| `doorwaydectl` | IPC control utility |
-| `doorwayde-ipc` | Direct IPC communication |
+| `doorway-shell` | Shell wrapper for DOORway operations |
+| `doorwayctl` | IPC control utility |
+| `doorway-ipc` | Direct IPC communication |
 
 ### Scripts Library
 
-Located in `~/.local/lib/doorwayde/`:
+Located in `~/.local/lib/doorway/`:
 
 | Script | Function |
 |--------|----------|
@@ -126,18 +126,18 @@ Located in `~/.local/lib/doorwayde/`:
 │   ├── monitors.lua       # Display configuration ← EDIT THIS
 │   ├── userprefs.lua      # Your personal preferences ← EDIT THIS
 │   └── animations.lua     # Animation settings
-├── quickshell/doorwayde/  # QuickShell shell (bar, sidebars, OSD, notifications)
+├── quickshell/doorway/  # QuickShell shell (bar, sidebars, OSD, notifications)
 │   ├── shell.qml          # Entry point
 │   └── modules/ii/        # IllogicalImpulse-derived panels
 ├── matugen/               # Material You color templates
 ├── rofi/                  # Launcher themes
-└── doorwayde/
-    └── config.toml        # DOORwayDE settings
+└── doorway/
+    └── config.toml        # DOORway settings
 
 ~/.local/
-├── lib/doorwayde/         # Utility scripts
-├── share/doorwayde/       # Data files, schemas
-└── bin/                   # doorwayde-shell, doorwaydectl
+├── lib/doorway/         # Utility scripts
+├── share/doorway/       # Data files, schemas
+└── bin/                   # doorway-shell, doorwayctl
 ```
 
 ### User Configuration Files
@@ -172,22 +172,22 @@ hl.config({
 
 ## Themes
 
-DOORwayDE uses **matugen** (Material You) for dynamic theming — colors are extracted from your active wallpaper and applied to the QuickShell surfaces and Hyprland border colors in real time.
+DOORway uses **matugen** (Material You) for dynamic theming — colors are extracted from your active wallpaper and applied to the QuickShell surfaces and Hyprland border colors in real time.
 
 ### How it works
 
-1. `wallpaper.sh` sets the wallpaper and writes a trigger file to `~/.cache/doorwayde/wall.set`
-2. `doorwayde-matugen-watcher` (systemd user service) detects the change via `inotifywait`
+1. `wallpaper.sh` sets the wallpaper and writes a trigger file to `~/.cache/doorway/wall.set`
+2. `doorway-matugen-watcher` (systemd user service) detects the change via `inotifywait`
 3. `matugen image <wallpaper>` generates a Material You palette and writes:
    - `~/.local/share/matugen/hyprland-colors.lua` — Hyprland border colors (sourced by `dynamic.lua`)
-   - `~/.config/quickshell/doorwayde/modules/common/Colors.qml` — QuickShell color singleton
+   - `~/.config/quickshell/doorway/modules/common/Colors.qml` — QuickShell color singleton
 4. Hyprland reloads automatically; QuickShell picks up the new `Colors.qml` values
 
 ### Wallpaper commands
 
 ```bash
 # Set wallpaper (triggers matugen automatically)
-doorwayde-shell wallpaper.sh /path/to/wallpaper.jpg
+doorway-shell wallpaper.sh /path/to/wallpaper.jpg
 ```
 
 ---
@@ -232,13 +232,13 @@ See [KEYBINDINGS.md](KEYBINDINGS.md) for the complete reference.
 
 ## Styles
 
-> Screenshots coming soon — DOORwayDE is under active development as of 2026-06.
+> Screenshots coming soon — DOORway is under active development as of 2026-06.
 
 ---
 
 ## Contributing
 
-We welcome contributions! DOORwayDE follows HALLway's development practices.
+We welcome contributions! DOORway follows HALLway's development practices.
 
 ### Development Setup
 
@@ -250,7 +250,7 @@ cd DOORway
 nix develop
 
 # Validate before committing
-shellcheck Configs/.local/lib/doorwayde/*.sh
+shellcheck Configs/.local/lib/doorway/*.sh
 ```
 
 ### Testing Hyprland Changes
@@ -279,7 +279,7 @@ in nested mode (libseat cannot open `/dev/input/*`) — this is expected:
 
 ```bash
 # From an XFCE Wayland terminal, or just run nix develop:
-export PATH="$HOME/.local/lib/doorwayde:$PATH"
+export PATH="$HOME/.local/lib/doorway:$PATH"
 export XDG_SESSION_DESKTOP=Hyprland
 export XDG_CURRENT_DESKTOP=Hyprland
 start-hyprland
@@ -292,13 +292,13 @@ start-hyprland
 cat /run/user/$(id -u)/hypr/*/hyprland.log | grep -v "DEBUG from aquamarine"
 
 # Daemon crashes (exec-once failures are silent in the Hyprland log):
-journalctl --user -b -n 200 | grep -iE "(quickshell|doorwayde|hypr)"
+journalctl --user -b -n 200 | grep -iE "(quickshell|doorway|hypr)"
 
 # Sanity-check app2unit.sh is findable (run from the debug terminal above):
-doorwayde-shell app -u test.scope -t scope -- echo "ok"
+doorway-shell app -u test.scope -t scope -- echo "ok"
 ```
 
-Inside DOORwayDE: `Super + F5` reloads the config live (see [Keybindings](#keybindings)).
+Inside DOORway: `Super + F5` reloads the config live (see [Keybindings](#keybindings)).
 
 ### Troubleshooting Hyprland
 
@@ -323,7 +323,7 @@ Common errors and where to fix them:
 | `attempt to call a nil value (field 'X')` | `hl.X` doesn't exist on this Hyprland version | Check the [upstream lua example](https://github.com/hyprwm/Hyprland/blob/main/example/hyprland.lua); note that `hl.source` does **not** exist in 0.55.1 |
 | `... expects string, got table` | Type mismatch in `hl.window_rule` / `hl.monitor` | Convert the table to the string form the API wants (e.g. `opacity = "0.9 0.9 1.0"`) |
 | `Unknown keysym: "X"` | The trailing key in a bind isn't a valid xkb keysym | Use xkb's name (e.g. `Control_R`, not Hyprland's modifier shorthand `CTRL_R`) |
-| `CBackend::create() failed!` | **Not a config issue** — backend / seat problem | Check `journalctl -u greetd`; this is a NixOS/HALLway concern, not DOORwayDE |
+| `CBackend::create() failed!` | **Not a config issue** — backend / seat problem | Check `journalctl -u greetd`; this is a NixOS/HALLway concern, not DOORway |
 
 For the full walkthrough — decision tree, log paths, worked examples, the wallbash-lua gap — see [`Wiki/Troubleshooting-Hyprland.md`](Wiki/Troubleshooting-Hyprland.md).
 
@@ -339,7 +339,7 @@ For the full walkthrough — decision tree, log paths, worked examples, the wall
 
 ## Origins & Acknowledgments
 
-DOORwayDE originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE), the Hyprland Desktop Environment project. We've rebranded and adapted it for NixOS while maintaining theme compatibility with the upstream ecosystem.
+DOORway originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE), the Hyprland Desktop Environment project. We've rebranded and adapted it for NixOS while maintaining theme compatibility with the upstream ecosystem.
 
 **Upstream lineage:**
 - [prasanthrangan/hyprdots](https://github.com/prasanthrangan/hyprdots) — Original Hyprdots project

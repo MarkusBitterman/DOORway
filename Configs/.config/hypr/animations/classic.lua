@@ -1,7 +1,7 @@
 --[[
     Animation preset: Classic
     Credit: https://github.com/mylinuxforwork/dotfiles
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

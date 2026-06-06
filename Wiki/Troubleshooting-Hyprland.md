@@ -15,7 +15,7 @@ The single most important thing to internalize: **a lua parse error and a backen
 | `... expects string, got table` | API mismatch | Convert table to expected string form (e.g. `opacity = "0.9 0.9 1.0"`) |
 | `Unknown keysym: "X"` | Bind syntax | Use the xkb keysym name (e.g. `Control_R`, not `CTRL_R`) |
 | `module 'X' not found` | require() | Check `package.path`; possibly `dofile(absolute_path)` |
-| `CBackend::create() failed!` | **Backend** | NixOS/HALLway problem — not DOORwayDE; see [Backend errors](#backend--system-errors) below |
+| `CBackend::create() failed!` | **Backend** | NixOS/HALLway problem — not DOORway; see [Backend errors](#backend--system-errors) below |
 
 ---
 
@@ -51,7 +51,7 @@ XDG_DATA_HOME=$PWD/Configs/.local/share \
 echo $?
 ```
 
-This works because DOORwayDE's orchestrator (at `Configs/.local/share/doorwayde/hyprland.lua`) does:
+This works because DOORway's orchestrator (at `Configs/.local/share/doorway/hyprland.lua`) does:
 
 ```lua
 local xdg_data = os.getenv("XDG_DATA_HOME") or (home .. "/.local/share")
@@ -163,7 +163,7 @@ module 'env' not found:
     ...
 ```
 
-Lua's `require(name)` searches `package.path`. DOORwayDE's orchestrator (`Configs/.local/share/doorwayde/hyprland.lua` lines 11-18) prepends `$XDG_DATA_HOME/hypr/?.lua` so `require("env")` resolves to `~/.local/share/hypr/env.lua` (or the repo equivalent when `XDG_DATA_HOME` is overridden).
+Lua's `require(name)` searches `package.path`. DOORway's orchestrator (`Configs/.local/share/doorway/hyprland.lua` lines 11-18) prepends `$XDG_DATA_HOME/hypr/?.lua` so `require("env")` resolves to `~/.local/share/hypr/env.lua` (or the repo equivalent when `XDG_DATA_HOME` is overridden).
 
 If `require()` fails:
 
@@ -204,7 +204,7 @@ This decision tree is the most useful part of this page. Run through it before y
 
 ## Backend / system errors
 
-If `--verify-config` is clean but `start-hyprland` still dies, the failure is below DOORwayDE's layer. The characteristic signature:
+If `--verify-config` is clean but `start-hyprland` still dies, the failure is below DOORway's layer. The characteristic signature:
 
 ```
 [ERR] Aquamarine: Couldn't open device at /dev/dri/card1: Permission denied
@@ -229,9 +229,9 @@ pgrep -a Xorg                             # is X11 holding the GPU seat?
 systemctl status seatd                    # seatd running?
 ```
 
-### **These are not DOORwayDE bugs.**
+### **These are not DOORway bugs.**
 
-`libseat`, `seatd`, PAM session modules, GPU seat ownership, and which display-manager owns the login flow are all NixOS / HALLway concerns. DOORwayDE is a payload of dotfiles and scripts — it has zero influence over `/dev/dri` permissions or the seat-control daemon. Filing these issues against this repo wastes everyone's time. File them against HALLway (the NixOS flake) or the upstream component (`seatd`, `greetd`, etc.).
+`libseat`, `seatd`, PAM session modules, GPU seat ownership, and which display-manager owns the login flow are all NixOS / HALLway concerns. DOORway is a payload of dotfiles and scripts — it has zero influence over `/dev/dri` permissions or the seat-control daemon. Filing these issues against this repo wastes everyone's time. File them against HALLway (the NixOS flake) or the upstream component (`seatd`, `greetd`, etc.).
 
 ---
 
@@ -253,7 +253,7 @@ Crashes from emergency-fallback runs are useful because the fallback config does
 
 This actually happened during the lua migration. Annotated walkthrough:
 
-1. **Symptom.** Logging in via greetd, DOORwayDE shows the bright-yellow "EMERGENCY FALLBACK CONFIG ACTIVE" banner instead of the usual desktop.
+1. **Symptom.** Logging in via greetd, DOORway shows the bright-yellow "EMERGENCY FALLBACK CONFIG ACTIVE" banner instead of the usual desktop.
 
 2. **First instinct: backend?** Ran `journalctl -u greetd --since "2 minutes ago"` — no `CBackend::create()` lines, no libseat errors. Backend was fine.
 
@@ -277,7 +277,7 @@ Total time from symptom to root cause: about 90 seconds, mostly thanks to `--ver
 
 | Symptom | File against |
 |---|---|
-| Wrong keybind, wrong window rule, broken theme, wrong rofi launcher | DOORwayDE |
+| Wrong keybind, wrong window rule, broken theme, wrong rofi launcher | DOORway |
 | `CBackend::create() failed!`, libseat errors, regreet "XFCE (Wayland)" missing | HALLway |
 | Hyprland crashes mid-session with a stack trace including `hyprland::CCompositor` | hyprwm/Hyprland upstream |
 | `seatd` socket missing, `/dev/dri/cardN` permissions | NixOS module / `seatd` upstream |

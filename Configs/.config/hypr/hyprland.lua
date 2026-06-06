@@ -7,8 +7,8 @@
    ░▒▒░░▓▓   ▓▓  |___/ \___/ \___/|_|_\ \_/\_/\__,_|\_, |___/|___|
      ░▒▓▓   ▓▓                                      |__/
 
-    DOORwayDE - Hyprland Desktop Environment for HALLway OS
-    https://github.com/MarkusBitterman/DOORwayDE
+    DOORway - Hyprland Desktop Environment for HALLway OS
+    https://github.com/MarkusBitterman/DOORway
 
     Configuration: hyprland.lua (Hyprland 0.55+ lua format)
 
@@ -16,8 +16,8 @@
     See https://wiki.hypr.land/Configuring/Start/ for documentation.
 --]]
 
--- DOORwayDE marker (prevents file overwrite by scripts)
-DOORWAYDE_HYPRLAND = true
+-- DOORway marker (prevents file overwrite by scripts)
+DOORWAY_HYPRLAND = true
 
 --------------------------------------------------------------------------------
 -- XDG Directories
@@ -42,13 +42,13 @@ dofile(hypr_config .. "/windowrules.lua")   -- Custom window rules (dofile avoid
 require("keybindings")   -- Keyboard shortcuts
 
 --------------------------------------------------------------------------------
--- DOORwayDE core orchestrator
+-- DOORway core orchestrator
 -- Loads env, variables, defaults, core-windowrules, dynamic, startup,
 -- workflows, and finale in the canonical order.
 --------------------------------------------------------------------------------
 
-local doorwayde_data = xdg_data .. "/doorwayde"
-dofile(doorwayde_data .. "/hyprland.lua")
+local doorway_data = xdg_data .. "/doorway"
+dofile(doorway_data .. "/hyprland.lua")
 
 --[[
     Migration Progress — see TODO.md for full tracking.

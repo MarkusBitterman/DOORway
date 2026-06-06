@@ -6,7 +6,7 @@
     Saves as much power as possible.
     Disables all animations and effects while preserving readability.
 
-    Select with: doorwayde-shell workflows --select
+    Select with: doorway-shell workflows --select
 --]]
 
 hl.config({

@@ -5,8 +5,8 @@
     Shader Configuration
     https://wiki.hypr.land/Configuring/Variables/#decoration
 
-    DOORwayDE managed — do not edit directly.
-    Use 'doorwayde-shell shaders --select' to change the active shader.
+    DOORway managed — do not edit directly.
+    Use 'doorway-shell shaders --select' to change the active shader.
 --]]
 
 local xdg_config = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")

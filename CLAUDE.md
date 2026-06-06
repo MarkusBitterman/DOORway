@@ -1,10 +1,10 @@
-# CLAUDE.md - AI Assistant Guidelines for DOORwayDE
+# CLAUDE.md - AI Assistant Guidelines for DOORway
 
 ## Project Overview
 
-**DOORwayDE** is the Hyprland Desktop Environment for [HALLway OS](https://github.com/MarkusBitterman/HALLway). It originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE) and has been fully rebranded as an independent project adapted for NixOS.
+**DOORway** is the Hyprland Desktop Environment for [HALLway OS](https://github.com/MarkusBitterman/HALLway). It originated as a fork of [HyDE](https://github.com/HyDE-Project/HyDE) and has been fully rebranded as an independent project adapted for NixOS.
 
-**Important distinction:** DOORwayDE is NOT a "port" of HyDE. It IS DOORwayDE — its own project with its own identity, that happens to share lineage with HyDE. When writing documentation or comments, refer to this project as "DOORwayDE" not "HyDE fork" or "ported from HyDE".
+**Important distinction:** DOORway is NOT a "port" of HyDE. It IS DOORway — its own project with its own identity, that happens to share lineage with HyDE. When writing documentation or comments, refer to this project as "DOORway" not "HyDE fork" or "ported from HyDE".
 
 ### Philosophy
 
@@ -19,27 +19,27 @@ This project follows the HALLway ecosystem principles:
 ## Architecture
 
 ```
-DOORwayDE/
+DOORway/
 ├── Configs/                    # All dotfiles (the payload)
 │   ├── .config/
 │   │   ├── hypr/              # Hyprland config (main entry point)
 │   │   ├── quickshell/        # QuickShell shell (bar, sidebars, OSD, notifications, session)
 │   │   ├── matugen/           # Color template engine (Material You from wallpaper)
 │   │   ├── rofi/              # App launcher
-│   │   ├── doorwayde/         # DOORwayDE-specific settings
+│   │   ├── doorway/         # DOORway-specific settings
 │   │   └── kitty/             # Terminal
 │   └── .local/
-│       ├── bin/               # doorwayde-shell, doorwaydectl, doorwayde-ipc
-│       ├── lib/doorwayde/     # 100+ utility scripts
+│       ├── bin/               # doorway-shell, doorwayctl, doorway-ipc
+│       ├── lib/doorway/     # 100+ utility scripts
 │       ├── share/hypr/        # Session orchestrators (startup, variables, env, dynamic)
-│       └── share/doorwayde/   # Data files, templates
+│       └── share/doorway/   # Data files, templates
 ├── flake.nix                  # Nix flake with Home Manager module
 └── README.md                  # User documentation
 ```
 
 ## QuickShell Shell Architecture
 
-DOORwayDE's shell surface (Initiative II, Phases 12–16) is a single QuickShell process forked from [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) `ii/` (GPLv3, attribution preserved).
+DOORway's shell surface (Initiative II, Phases 12–16) is a single QuickShell process forked from [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) `ii/` (GPLv3, attribution preserved).
 
 ### Surface ownership
 
@@ -56,7 +56,7 @@ All surfaces are loaded by `panelFamilies/IllogicalImpulseFamily.qml` via `Panel
 
 ### Color theming (matugen)
 
-`doorwayde-matugen-watcher.service` calls `matugen image <wallpaper>` whenever the wallpaper changes (inotifywait). Matugen renders two templates:
+`doorway-matugen-watcher.service` calls `matugen image <wallpaper>` whenever the wallpaper changes (inotifywait). Matugen renders two templates:
 
 - `~/.local/share/matugen/colors/hyprland-colors.lua` — Hyprland border accent colors (dofile'd by hyprland.lua)
 - `~/.local/share/matugen/colors/Colors.qml` — QuickShell `Colors` singleton with all Material You tokens
@@ -66,9 +66,9 @@ All surfaces are loaded by `panelFamilies/IllogicalImpulseFamily.qml` via `Panel
 ### IPC keybindings
 
 Sidebar/session toggles use `qs ipc`. Two workarounds are required for QS 0.3.0:
-- `-c doorwayde` — selects the named config instance (not the "default")
+- `-c doorway` — selects the named config instance (not the "default")
 - `--any-display` — bypasses a display-filter bug caused by an empty `instance.lock` file
-- `ExecStartPost` in `doorwayde-quickshell.service` creates `by-id/ipc.sock` → live socket symlink that `qs ipc` resolves to
+- `ExecStartPost` in `doorway-quickshell.service` creates `by-id/ipc.sock` → live socket symlink that `qs ipc` resolves to
 
 ### Runtime writes
 
@@ -85,16 +85,16 @@ QuickShell itself never writes files. All runtime output goes through matugen's 
 | `Configs/.local/share/hypr/startup.lua` | exec-once app launch sequence |
 | `Configs/.local/share/hypr/variables.lua` | App definitions and session variables |
 | `Configs/.local/share/hypr/env.lua` | Environment variable injection into Hyprland |
-| `Configs/.local/share/doorwayde/hyprland.lua` | Core DOORwayDE orchestrator (sources the share/hypr/ files) |
-| `Configs/.local/lib/doorwayde/globalcontrol.sh` | Core environment setup |
+| `Configs/.local/share/doorway/hyprland.lua` | Core DOORway orchestrator (sources the share/hypr/ files) |
+| `Configs/.local/lib/doorway/globalcontrol.sh` | Core environment setup |
 | `flake.nix` | Nix flake with homeManagerModules.default |
 
 ## Nix Store Workflow — CRITICAL
 
 ### Never edit deployed paths directly
 
-Every file under `~/.config/`, `~/.local/bin/`, `~/.local/lib/doorwayde/`,
-`~/.local/share/doorwayde/`, etc. is either:
+Every file under `~/.config/`, `~/.local/bin/`, `~/.local/lib/doorway/`,
+`~/.local/share/doorway/`, etc. is either:
 
 - A **symlink into the Nix store** (`/nix/store/…`) — root-owned, epoch-timestamped,
   `EROFS: read-only file system` on any write attempt, OR
@@ -113,9 +113,9 @@ relative path:
 |---|---|
 | `~/.config/hypr/hyprland.lua` | `Configs/.config/hypr/hyprland.lua` |
 | `~/.local/share/waybar/` | `Configs/.local/share/waybar/` |
-| `~/.local/lib/doorwayde/waybar.py` | `Configs/.local/lib/doorwayde/waybar.py` |
-| `~/.local/bin/doorwayde-shell` | `Configs/.local/bin/doorwayde-shell` |
-| `~/.local/share/doorwayde/hyprland.lua` | `Configs/.local/share/doorwayde/hyprland.lua` |
+| `~/.local/lib/doorway/waybar.py` | `Configs/.local/lib/doorway/waybar.py` |
+| `~/.local/bin/doorway-shell` | `Configs/.local/bin/doorway-shell` |
+| `~/.local/share/doorway/hyprland.lua` | `Configs/.local/share/doorway/hyprland.lua` |
 
 **Rule**: When a file needs changing, always edit under `Configs/`, then rebuild.
 
@@ -131,8 +131,8 @@ The git tree may be dirty — that is expected and harmless during development.
 
 ```bash
 ls -la ~/.config/waybar        # symlink → /nix/store/... → read-only
-ls -la ~/.local/lib/doorwayde/waybar.py  # same pattern
-stat ~/.local/lib/doorwayde/waybar.py   # mtime = Dec 31 1969 (epoch 0) = Nix store
+ls -la ~/.local/lib/doorway/waybar.py  # same pattern
+stat ~/.local/lib/doorway/waybar.py   # mtime = Dec 31 1969 (epoch 0) = Nix store
 ```
 
 Signs a path is Nix-managed:
@@ -150,12 +150,12 @@ symlink. Use the correct XDG write location:
 |---|---|---|
 | Persistent user data | `$XDG_DATA_HOME` (`~/.local/share/`) | theme state |
 | Regeneratable/cache | `$XDG_CACHE_HOME` (`~/.cache/`) | wallbash output, layout backups |
-| Runtime state | `$XDG_STATE_HOME` (`~/.local/state/`) | doorwayde staterc |
+| Runtime state | `$XDG_STATE_HOME` (`~/.local/state/`) | doorway staterc |
 | Temp/socket files | `$XDG_RUNTIME_DIR` (`/run/user/<uid>/`) | IPC sockets |
 
 **Caveat:** `$XDG_DATA_HOME/<app>/` may also be a Nix-managed whole-dir symlink
 (e.g. `~/.local/share/waybar/` → Nix store). If redirecting from config to data
-still hits EROFS, redirect further to `$XDG_CACHE_HOME/doorwayde/<app>/`.
+still hits EROFS, redirect further to `$XDG_CACHE_HOME/doorway/<app>/`.
 
 ### Whole-directory vs individual file links in the flake
 
@@ -185,51 +185,51 @@ one of:
 
 ### Naming Conventions
 
-- **doorwayde** (lowercase) — paths, variables, file names
-- **DOORWAYDE_** — environment variable prefix
-- **DOORwayDE** — branding, documentation, user-facing text
-- **doorwayde-shell** — CLI tools use hyphenated lowercase
+- **doorway** (lowercase) — paths, variables, file names
+- **DOORWAY_** — environment variable prefix
+- **DOORway** — branding, documentation, user-facing text
+- **doorway-shell** — CLI tools use hyphenated lowercase
 
 ### Environment Variables
 
-All DOORwayDE environment variables use the `DOORWAYDE_` prefix:
+All DOORway environment variables use the `DOORWAY_` prefix:
 
 ```bash
-$DOORWAYDE_CONFIG_HOME   # ~/.config/doorwayde
-$DOORWAYDE_DATA_HOME     # ~/.local/share/doorwayde
-$DOORWAYDE_CACHE_HOME    # ~/.cache/doorwayde
-$DOORWAYDE_THEME         # Current theme name
-$DOORWAYDE_HYPRLAND      # Marker variable in hyprland.lua
+$DOORWAY_CONFIG_HOME   # ~/.config/doorway
+$DOORWAY_DATA_HOME     # ~/.local/share/doorway
+$DOORWAY_CACHE_HOME    # ~/.cache/doorway
+$DOORWAY_THEME         # Current theme name
+$DOORWAY_HYPRLAND      # Marker variable in hyprland.lua
 ```
 
-### doorwayde-shell Path Architecture
+### doorway-shell Path Architecture
 
-`doorwayde-shell` resolves `LIB_DIR` relative to its own Nix store path:
+`doorway-shell` resolves `LIB_DIR` relative to its own Nix store path:
 - `BIN_DIR` → `<nix-store>/.local/bin/`
 - `LIB_DIR` → `<nix-store>/.local/lib/`
-- Scripts must live in `$LIB_DIR/doorwayde/` (NOT `hyde/` — which no longer exists)
+- Scripts must live in `$LIB_DIR/doorway/` (NOT `hyde/` — which no longer exists)
 
-`env.lua` injects `~/.local/lib/doorwayde/` into PATH for Hyprland child processes.
+`env.lua` injects `~/.local/lib/doorway/` into PATH for Hyprland child processes.
 `home.sessionPath` in `flake.nix` covers all other session processes (XFCE, TTY).
 The `nix develop` shell also exports this PATH so `launch-unit.sh` works directly.
 
 ### Adding New Features
 
-1. **Scripts** go in `Configs/.local/lib/doorwayde/`
+1. **Scripts** go in `Configs/.local/lib/doorway/`
 2. **Configs** go in `Configs/.config/<app>/`
 3. **Update flake.nix** if adding new config directories
 
-### Flake-based deploy workflow (DOORwayDE → HALLway)
+### Flake-based deploy workflow (DOORway → HALLway)
 
-DOORwayDE is a flake input to HALLway. The Nix evaluator fetches the latest
+DOORway is a flake input to HALLway. The Nix evaluator fetches the latest
 **pushed** commit — local uncommitted changes are completely invisible to it.
 
 ```bash
-# In this repo (DOORwayDE):
+# In this repo (DOORway):
 git commit && git push
 
 # In HALLway:
-nix flake update doorwayde   # updates flake.lock to latest pushed commit
+nix flake update doorway   # updates flake.lock to latest pushed commit
 sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD
 ```
 
@@ -246,21 +246,21 @@ Hyprland --verify-config
 
 # To verify SOURCE files before rebuilding (temporarily redirects system module symlinks):
 orig_hypr=$(readlink ~/.local/share/hypr)
-orig_dw=$(readlink ~/.local/share/doorwayde)
-ln -sfn "$HOME/Developments/DOORwayDE/Configs/.local/share/hypr" ~/.local/share/hypr
-ln -sfn "$HOME/Developments/DOORwayDE/Configs/.local/share/doorwayde" ~/.local/share/doorwayde
+orig_dw=$(readlink ~/.local/share/doorway)
+ln -sfn "$HOME/Developments/DOORway/Configs/.local/share/hypr" ~/.local/share/hypr
+ln -sfn "$HOME/Developments/DOORway/Configs/.local/share/doorway" ~/.local/share/doorway
 Hyprland --verify-config 2>&1
 ln -sfn "$orig_hypr" ~/.local/share/hypr
-ln -sfn "$orig_dw" ~/.local/share/doorwayde
+ln -sfn "$orig_dw" ~/.local/share/doorway
 
 # Full dev environment
 nix develop
-shellcheck Configs/.local/lib/doorwayde/*.sh
+shellcheck Configs/.local/lib/doorway/*.sh
 ```
 
 ## Upstream Relationship
 
-DOORwayDE is forked from HyDE. When referencing upstream:
+DOORway is forked from HyDE. When referencing upstream:
 - Keep GitHub URLs pointing to HyDE-Project for attribution
 - Use "forked from HyDE" in comments where appropriate
 - Don't rename upstream references in theme files
@@ -272,12 +272,12 @@ DOORwayDE is forked from HyDE. When referencing upstream:
 If pulling changes from HyDE upstream:
 ```bash
 # After merge, fix branding
-find . -type f \( -name "*.sh" -o -name "*.conf" \) -exec sed -i 's/hyde/doorwayde/g' {} +
-find . -type f \( -name "*.sh" -o -name "*.conf" \) -exec sed -i 's/HYDE_/DOORWAYDE_/g' {} +
+find . -type f \( -name "*.sh" -o -name "*.conf" \) -exec sed -i 's/hyde/doorway/g' {} +
+find . -type f \( -name "*.sh" -o -name "*.conf" \) -exec sed -i 's/HYDE_/DOORWAY_/g' {} +
 # Review changes carefully - some hyde references should stay (URLs, attribution)
 ```
 
-Note: these `*.conf` sed commands no longer apply to the lua files in `Configs/.config/hypr/` (which DOORwayDE now owns and maintains directly). The commands are still safe to run — they simply won't match much in the hypr/ tree anymore. Lua-side rebranding should be done by hand or with a separate `-name "*.lua"` pass if upstream ever adopts lua.
+Note: these `*.conf` sed commands no longer apply to the lua files in `Configs/.config/hypr/` (which DOORway now owns and maintains directly). The commands are still safe to run — they simply won't match much in the hypr/ tree anymore. Lua-side rebranding should be done by hand or with a separate `-name "*.lua"` pass if upstream ever adopts lua.
 
 ### Add a new config directory
 
@@ -305,18 +305,18 @@ If Hyprland starts but shows only a cursor with no bar or wallpaper:
 
 2. **exec-once failures** — silent in the Hyprland log; check journalctl:
    ```bash
-   journalctl --user -b -n 200 | grep -iE "(waybar|quickshell|doorwayde|hypr)"
+   journalctl --user -b -n 200 | grep -iE "(waybar|quickshell|doorway|hypr)"
    ```
 
 3. **Check for EROFS crashes in startup scripts** — `waybar.py`, `wallpaper.sh`, etc.
    may crash silently if they try to write inside a whole-dir Nix store symlink
    (`~/.config/waybar/`, etc.). See **Nix Store Workflow** section above.
-   Quick test: `~/.local/lib/doorwayde/launch-unit.sh -u doorwayde-Hyprland-bar.scope -t scope -- waybar.py --watch`
-   and check `/tmp/doorwayde-bar-launch.log` for a Python traceback.
+   Quick test: `~/.local/lib/doorway/launch-unit.sh -u doorway-Hyprland-bar.scope -t scope -- waybar.py --watch`
+   and check `/tmp/doorway-bar-launch.log` for a Python traceback.
 
 4. **Sanity-check launch-unit.sh** without logging out (from XFCE Wayland or `nix develop`):
    ```bash
-   export PATH="$HOME/.local/lib/doorwayde:$PATH"
+   export PATH="$HOME/.local/lib/doorway:$PATH"
    export XDG_SESSION_DESKTOP=Hyprland
    export XDG_CURRENT_DESKTOP=Hyprland
    launch-unit.sh -u test.scope -t scope -- echo "ok"
@@ -324,7 +324,7 @@ If Hyprland starts but shows only a cursor with no bar or wallpaper:
 
 5. **Nested Hyprland** (`start-hyprland` inside a Wayland compositor) — visual checks only.
    Keyboard is dead in nested mode: libseat's builtin backend cannot open `/dev/input/*`.
-   This is expected, not a DOORwayDE bug.
+   This is expected, not a DOORway bug.
 
 ## Code Style
 
@@ -336,19 +336,19 @@ If Hyprland starts but shows only a cursor with no bar or wallpaper:
 
 ## Integration with HALLway
 
-DOORwayDE is designed to be imported into HALLway's flake:
+DOORway is designed to be imported into HALLway's flake:
 
 ```nix
 # In HALLway's flake.nix inputs:
-doorwayde.url = "github:MarkusBitterman/DOORway";
+doorway.url = "github:MarkusBitterman/DOORway";
 
 # In home-manager config:
-imports = [ inputs.doorwayde.homeManagerModules.default ];
-doorwayde = {
+imports = [ inputs.doorway.homeManagerModules.default ];
+doorway = {
   enable = true;
   monitor = "HDMI-A-1,1920x1080@100,0x0,1";
   keyboard = "us";
 };
 ```
 
-The flake exposes `lib.doorwaydeDeps` so HALLway can reference the same package list.
+The flake exposes `lib.doorwayDeps` so HALLway can reference the same package list.

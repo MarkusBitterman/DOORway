@@ -1,12 +1,12 @@
 ---
 name: nix-deploy
-description: Deploy DOORwayDE changes to HALLway. Commit and push in this repo, then update the flake lock and rebuild NixOS in HALLway. Always commit+push BEFORE nix flake update — the Nix evaluator fetches the latest pushed commit; local changes are invisible to it.
+description: Deploy DOORway changes to HALLway. Commit and push in this repo, then update the flake lock and rebuild NixOS in HALLway. Always commit+push BEFORE nix flake update — the Nix evaluator fetches the latest pushed commit; local changes are invisible to it.
 disable-model-invocation: true
 ---
 
-Deploy DOORwayDE changes to the live NixOS system:
+Deploy DOORway changes to the live NixOS system:
 
-1. In ~/Developments/DOORwayDE:
+1. In ~/Developments/DOORway:
    ```bash
    git status
    ```
@@ -24,14 +24,14 @@ Deploy DOORwayDE changes to the live NixOS system:
    ```
    If you skip this, `nix flake update` silently reuses the previous commit.
 
-4. In ~/Developments/HALLway, update the flake lock to the latest DOORwayDE commit:
+4. In ~/Developments/HALLway, update the flake lock to the latest DOORway commit:
    ```bash
    cd ~/Developments/HALLway
-   nix flake update doorwayde
+   nix flake update doorway
    ```
    Verify it picked up the right commit:
    ```bash
-   grep -A2 '"doorwayde"' flake.lock | grep '"rev"'
+   grep -A2 '"doorway"' flake.lock | grep '"rev"'
    ```
 
 5. Rebuild:
@@ -42,5 +42,5 @@ Deploy DOORwayDE changes to the live NixOS system:
 6. Smoke-test the deployment:
    ```bash
    Hyprland --verify-config
-   journalctl --user -b -n 20 --no-pager | grep -iE "(waybar|dunst|doorwayde)"
+   journalctl --user -b -n 20 --no-pager | grep -iE "(waybar|dunst|doorway)"
    ```

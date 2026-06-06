@@ -1,5 +1,5 @@
 --[[
-    DOORwayDE default Hyprland settings.
+    DOORway default Hyprland settings.
 
     Originally `defaults.conf` (hyprlang). Hyprland 0.55+ lua migration.
 

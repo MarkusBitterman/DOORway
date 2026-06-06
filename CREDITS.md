@@ -1,6 +1,6 @@
 # Credits
 
-DOORwayDE is forked from [HyDE](https://github.com/HyDE-Project/HyDE) and would not be possible without the work of the following people and projects.
+DOORway is forked from [HyDE](https://github.com/HyDE-Project/HyDE) and would not be possible without the work of the following people and projects.
 
 ## Upstream Projects
 
@@ -9,7 +9,7 @@ DOORwayDE is forked from [HyDE](https://github.com/HyDE-Project/HyDE) and would 
 
 ## Libraries and Tools
 
-All libraries and tools that are bundled with DOORwayDE are listed here.
+All libraries and tools that are bundled with DOORway are listed here.
 
 - [app2unit](https://github.com/Vladimir-csp/app2unit) — Launches Desktop Entries as Systemd user units
 - [xdg-terminal-exec](http://github.com/Vladimir-csp/xdg-terminal-exec) — Proposal for XDG Default Terminal Execution Specification and shell-based reference implementation

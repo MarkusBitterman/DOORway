@@ -1,7 +1,7 @@
 --[[
     Animation preset: Ja
     Credit: https://github.com/JaKooLit/Hyprland-Dots
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

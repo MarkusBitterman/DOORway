@@ -38,7 +38,7 @@ hl.window_rule({
 local pip_match = { title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }
 
 hl.window_rule({
-    name  = "doorwayde_picture_in_picture",
+    name  = "doorway_picture_in_picture",
     match = pip_match,
     tag   = "+picture-in-picture",
     float = true,
@@ -50,7 +50,7 @@ hl.window_rule({
 
 hl.window_rule({
     match = pip_match,
-    tag   = "+doorwayde_picture_in_picture",
+    tag   = "+doorway_picture_in_picture",
 })
 
 --------------------------------------------------------------------------------

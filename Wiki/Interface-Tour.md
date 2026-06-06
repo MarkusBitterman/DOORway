@@ -1,6 +1,6 @@
 # Interface Tour
 
-You just logged into DOORwayDE for the first time. This article tells you what you're looking at, what's clickable, and how to find every menu and panel without having to memorize keybindings yet.
+You just logged into DOORway for the first time. This article tells you what you're looking at, what's clickable, and how to find every menu and panel without having to memorize keybindings yet.
 
 For the *keyboard* side of the interface (which keys do what), see [Keybindings-Primer.md](Keybindings-Primer.md). The two articles are designed to be read together.
 
@@ -32,7 +32,7 @@ If any of these is missing — no bar, no wallpaper, no tray — that's not a co
 
 ## The waybar (top panel)
 
-Waybar is the bar at the top. DOORwayDE ships with **17 different layouts** out of the box (in `~/.local/share/waybar/layouts/hyprdots/`) — plus alternative layout sets (`khing.jsonc`, `macos.jsonc`). What you see right now is whichever layout was active in the last session.
+Waybar is the bar at the top. DOORway ships with **17 different layouts** out of the box (in `~/.local/share/waybar/layouts/hyprdots/`) — plus alternative layout sets (`khing.jsonc`, `macos.jsonc`). What you see right now is whichever layout was active in the last session.
 
 ### How to think about it
 
@@ -40,9 +40,9 @@ Three regions, left to right:
 
 - **Left** — workspace indicator and active window/taskbar
 - **Center** — clock, sometimes keyboard layout, sometimes status indicators
-- **Right** — system tray, audio/network/Bluetooth, battery, notifications, DOORwayDE menu
+- **Right** — system tray, audio/network/Bluetooth, battery, notifications, DOORway menu
 
-The exact module set depends on the layout. Some are minimal (clock + tray); some are loaded (CPU/GPU/temperature/network bytes/cava audio visualizer). All are templated from JSONC files under `~/.local/share/waybar/modules/` — over 40 module definitions exist, including custom ones (`custom-doorwayde-menu`, `custom-cava`, `custom-cpuinfo`, `custom-gpuinfo` with brand-specific variants, `custom-gamemode`, `custom-clipboard`, etc.).
+The exact module set depends on the layout. Some are minimal (clock + tray); some are loaded (CPU/GPU/temperature/network bytes/cava audio visualizer). All are templated from JSONC files under `~/.local/share/waybar/modules/` — over 40 module definitions exist, including custom ones (`custom-doorway-menu`, `custom-cava`, `custom-cpuinfo`, `custom-gpuinfo` with brand-specific variants, `custom-gamemode`, `custom-clipboard`, etc.).
 
 ### Switching layouts
 
@@ -67,17 +67,17 @@ Most modules respond to mouse interaction:
 | Bluetooth | Open Bluetooth applet | — | — |
 | Battery | Open power profile menu | — | — |
 | Notifications | Open notification history (dunstctl) | Clear all | — |
-| **DOORwayDE menu** (rightmost) | Open DOORwayDE control menu | — | — |
+| **DOORway menu** (rightmost) | Open DOORway control menu | — | — |
 
 If your layout has a CPU/GPU/temp module and you click it, you'll typically get a rofi popup with a process list. If it has cava (audio visualizer), it's purely visual — no click action.
 
-The "DOORwayDE menu" button on the far right is the closest thing to a Start menu: it opens a rofi pane with shortcuts to common settings (theme, wallpaper, waybar layout, animations, etc.) for users who haven't memorized the keybindings yet.
+The "DOORway menu" button on the far right is the closest thing to a Start menu: it opens a rofi pane with shortcuts to common settings (theme, wallpaper, waybar layout, animations, etc.) for users who haven't memorized the keybindings yet.
 
 ---
 
 ## Rofi menus
 
-Rofi is the universal menu primitive. DOORwayDE has a *lot* of rofi menus — each one is opened by a keybinding, and most can also be reached through the DOORwayDE menu button on the waybar.
+Rofi is the universal menu primitive. DOORway has a *lot* of rofi menus — each one is opened by a keybinding, and most can also be reached through the DOORway menu button on the waybar.
 
 ### Inventory
 
@@ -108,13 +108,13 @@ Rofi is the universal menu primitive. DOORwayDE has a *lot* of rofi menus — ea
 
 ### Killing a stuck rofi
 
-Every rofi-launching keybind in DOORwayDE is wrapped as `pkill -x rofi || <launch>`, which means pressing the same keybind a second time *closes* an already-open rofi instance instead of erroring. So if a menu seems unresponsive, press the keybind again to dismiss it.
+Every rofi-launching keybind in DOORway is wrapped as `pkill -x rofi || <launch>`, which means pressing the same keybind a second time *closes* an already-open rofi instance instead of erroring. So if a menu seems unresponsive, press the keybind again to dismiss it.
 
 ---
 
 ## Notifications (dunst)
 
-Notifications appear in the top-right corner. DOORwayDE's dunst is configured with a 300px notification width and follow-mouse behavior (notifications appear on the monitor with your cursor).
+Notifications appear in the top-right corner. DOORway's dunst is configured with a 300px notification width and follow-mouse behavior (notifications appear on the monitor with your cursor).
 
 ### Click semantics
 
@@ -133,7 +133,7 @@ Dunst groups notifications by urgency:
 - **Normal** — default
 - **Critical** — sticky (no auto-dismiss), more prominent styling
 
-Apps choose their own urgency. DOORwayDE's volume / brightness / lock-imminent notifications use normal urgency; battery-critical and security-relevant ones use critical.
+Apps choose their own urgency. DOORway's volume / brightness / lock-imminent notifications use normal urgency; battery-critical and security-relevant ones use critical.
 
 ### History
 
@@ -175,17 +175,17 @@ This is the part of the interface most users want to play with first. Here's wha
 | Pick an animation preset | `SUPER + SHIFT + Y` |
 | Pick a hyprlock layout | `SUPER + SHIFT + U` |
 
-Themes ship in the form of palette files, wallpaper sets, GTK/icon theme settings, and waybar styles. DOORwayDE comes with a handful of themes pre-installed (Catppuccin variants, Decay-Green, Tokyo-Night, Gruvbox-Retro, Rosé-Pine, Nordic-Blue, Synth-Wave) and is compatible with anything from [HyDE-Project/hyde-themes](https://github.com/HyDE-Project/hyde-themes).
+Themes ship in the form of palette files, wallpaper sets, GTK/icon theme settings, and waybar styles. DOORway comes with a handful of themes pre-installed (Catppuccin variants, Decay-Green, Tokyo-Night, Gruvbox-Retro, Rosé-Pine, Nordic-Blue, Synth-Wave) and is compatible with anything from [HyDE-Project/hyde-themes](https://github.com/HyDE-Project/hyde-themes).
 
 ### What doesn't work today: wallbash dynamic recoloring
 
-Wallbash is HyDE's "extract palette from current wallpaper → recolor everything live" pipeline. On DOORwayDE today, **the Hyprland side of wallbash is on pause.**
+Wallbash is HyDE's "extract palette from current wallpaper → recolor everything live" pipeline. On DOORway today, **the Hyprland side of wallbash is on pause.**
 
-Why: Hyprland 0.55.1's lua config API doesn't expose `hl.source()`, `hl.include()`, or any equivalent function for sourcing external config files at runtime. The wallbash pipeline writes a hyprlang-format `colors.conf`, which lua-based DOORwayDE has no way to consume. The placeholder `try_source(...)` calls in `Configs/.local/share/hypr/dynamic.lua` are intentionally pcall-wrapped no-ops, waiting for the wallbash pipeline to be refactored to emit `colors.lua` (a lua module returning a color table).
+Why: Hyprland 0.55.1's lua config API doesn't expose `hl.source()`, `hl.include()`, or any equivalent function for sourcing external config files at runtime. The wallbash pipeline writes a hyprlang-format `colors.conf`, which lua-based DOORway has no way to consume. The placeholder `try_source(...)` calls in `Configs/.local/share/hypr/dynamic.lua` are intentionally pcall-wrapped no-ops, waiting for the wallbash pipeline to be refactored to emit `colors.lua` (a lua module returning a color table).
 
 What this means in practice: the **rofi/waybar/dunst** sides of wallbash still recolor when you switch themes (those tools read static colors from the theme files directly), but **the groupbar, window borders, and other Hyprland-rendered chrome** use the Hyprland defaults until wallbash-lua lands.
 
-If full dynamic recoloring is essential to you today, this is the one piece of DOORwayDE that isn't at parity with upstream HyDE. Track progress in `TODO.md`.
+If full dynamic recoloring is essential to you today, this is the one piece of DOORway that isn't at parity with upstream HyDE. Track progress in `TODO.md`.
 
 ---
 
@@ -196,20 +196,20 @@ When you take a screenshot, swap themes, or generate a clipboard entry — where
 | What | Where |
 |---|---|
 | **Screenshots** | `~/Pictures/Screenshots/` (by default; `screenshot.sh` is the source of truth) |
-| **Wallpapers (current)** | `$XDG_CACHE_HOME/doorwayde/wallpaper.set` (the symlink the wallpaper daemon reads) |
-| **Wallpaper sources** | Theme-specific directories under `$XDG_DATA_HOME/doorwayde/themes/<Theme-Name>/wallpapers/` |
-| **Active theme name** | `$XDG_STATE_HOME/doorwayde/staterc` |
-| **Active waybar layout** | `$XDG_STATE_HOME/doorwayde/staterc` (key controlled by `wbarconfgen`) |
+| **Wallpapers (current)** | `$XDG_CACHE_HOME/doorway/wallpaper.set` (the symlink the wallpaper daemon reads) |
+| **Wallpaper sources** | Theme-specific directories under `$XDG_DATA_HOME/doorway/themes/<Theme-Name>/wallpapers/` |
+| **Active theme name** | `$XDG_STATE_HOME/doorway/staterc` |
+| **Active waybar layout** | `$XDG_STATE_HOME/doorway/staterc` (key controlled by `wbarconfgen`) |
 | **Live waybar config** | `~/.config/waybar/{config.jsonc, style.css}` (session state, written by `waybar.py`) |
 | **Clipboard history** | `~/.cache/cliphist/db` (cliphist's own database) |
 | **Recent dunst notifications** | In-memory, not persisted |
 | **Hyprland session log (live)** | `/run/user/$(id -u)/hypr/<INSTANCE_SIG>/hyprland.log` |
 | **Hyprland crash reports** | `~/.cache/hyprland/hyprlandCrashReport*.txt` |
-| **Wallbash cache** | `$XDG_CACHE_HOME/doorwayde/wallbash/` |
+| **Wallbash cache** | `$XDG_CACHE_HOME/doorway/wallbash/` |
 
-`XDG_CACHE_HOME` is `~/.cache`, `XDG_DATA_HOME` is `~/.local/share`, `XDG_STATE_HOME` is `~/.local/state` (DOORwayDE exports all of these via `env.lua`).
+`XDG_CACHE_HOME` is `~/.cache`, `XDG_DATA_HOME` is `~/.local/share`, `XDG_STATE_HOME` is `~/.local/state` (DOORway exports all of these via `env.lua`).
 
-If a script seems to have lost your state, check `$XDG_STATE_HOME/doorwayde/` — `staterc` is the closest thing DOORwayDE has to a session-state registry.
+If a script seems to have lost your state, check `$XDG_STATE_HOME/doorway/` — `staterc` is the closest thing DOORway has to a session-state registry.
 
 ---
 
@@ -217,5 +217,5 @@ If a script seems to have lost your state, check `$XDG_STATE_HOME/doorwayde/` �
 
 - **You want to memorize the keyboard shortcuts** → [Keybindings-Primer.md](Keybindings-Primer.md)
 - **A panel didn't appear or a menu isn't working** → [Troubleshooting-Hyprland.md](Troubleshooting-Hyprland.md)
-- **You want to customize what's in the waybar or add a new module** → the layout/module templates live in `Configs/.local/share/waybar/`; editing-and-rebuilding is the workflow (see [Using-DOORwayDE-with-Nix.md § Editing DOORwayDE](Using-DOORwayDE-with-Nix.md#editing-doorwayde))
-- **You want to write a new rofi menu or doorwayde-shell subcommand** → the script library is in `Configs/.local/lib/doorwayde/`; the planned `Scripting-API.md` article will document the conventions
+- **You want to customize what's in the waybar or add a new module** → the layout/module templates live in `Configs/.local/share/waybar/`; editing-and-rebuilding is the workflow (see [Using-DOORway-with-Nix.md § Editing DOORway](Using-DOORway-with-Nix.md#editing-doorway))
+- **You want to write a new rofi menu or doorway-shell subcommand** → the script library is in `Configs/.local/lib/doorway/`; the planned `Scripting-API.md` article will document the conventions

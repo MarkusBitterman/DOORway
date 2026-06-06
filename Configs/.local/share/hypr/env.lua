@@ -1,5 +1,5 @@
 --[[
-    DOORwayDE environment variables for Hyprland-spawned processes.
+    DOORway environment variables for Hyprland-spawned processes.
 
     Hyprland 0.55+ lua API: env vars are set via the top-level hl.env(K, V)
     function, not via hl.config({ env = ... }). The latter is silently
@@ -23,8 +23,8 @@ local envs = {
     {"XDG_SESSION_TYPE",    "wayland"},
     {"XDG_SESSION_DESKTOP", "Hyprland"},
 
-    -- DOORwayDE: user bin + script library on PATH
-    {"PATH", home .. "/.local/bin:" .. home .. "/.local/lib/doorwayde:" .. existing_path},
+    -- DOORway: user bin + script library on PATH
+    {"PATH", home .. "/.local/bin:" .. home .. "/.local/lib/doorway:" .. existing_path},
 
     -- XDG dirs (defensive; Home Manager + PAM set these at login)
     {"XDG_CONFIG_HOME", home .. "/.config"},

@@ -6,7 +6,7 @@
     Best for writing and editing.
     Disables xray and makes all windows opaque for accurate color rendering.
 
-    Select with: doorwayde-shell workflows --select
+    Select with: doorway-shell workflows --select
 --]]
 
 hl.config({

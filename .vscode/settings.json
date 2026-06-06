@@ -46,7 +46,7 @@
 
   // Lua
   "Lua.workspace.library": [
-    "${workspaceFolder}/Configs/.local/lib/doorwayde/luautils"
+    "${workspaceFolder}/Configs/.local/lib/doorway/luautils"
   ],
   "Lua.runtime.version": "Lua 5.4",
 

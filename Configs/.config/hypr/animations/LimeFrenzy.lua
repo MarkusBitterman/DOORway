@@ -1,7 +1,7 @@
 --[[
     Animation preset: LimeFrenzy
     Source: https://github.com/xaicat/LimeFrenzy/
-    Select with: doorwayde-shell animations --select
+    Select with: doorway-shell animations --select
 --]]
 
 hl.config({

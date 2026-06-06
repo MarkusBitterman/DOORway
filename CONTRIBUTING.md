@@ -1,6 +1,6 @@
-# Contributing to DOORwayDE
+# Contributing to DOORway
 
-Thank you for your interest in contributing to DOORwayDE. This project is part of the HALLway ecosystem and welcomes contributions including bug fixes, feature enhancements, documentation improvements, and general improvements.
+Thank you for your interest in contributing to DOORway. This project is part of the HALLway ecosystem and welcomes contributions including bug fixes, feature enhancements, documentation improvements, and general improvements.
 
 ## Getting Started
 
@@ -11,8 +11,8 @@ Thank you for your interest in contributing to DOORwayDE. This project is part o
 2. **Clone your fork**
 
    ```bash
-   git clone https://github.com/YOUR-USERNAME/DOORwayDE.git
-   cd DOORwayDE
+   git clone https://github.com/YOUR-USERNAME/DOORway.git
+   cd DOORway
    ```
 
 3. **Create a branch for your changes**
@@ -33,7 +33,7 @@ Thank you for your interest in contributing to DOORwayDE. This project is part o
 
    - **Nix build:** `nix build` (if you have flakes enabled)
    - **Symlink testing:** See [CLAUDE.md](CLAUDE.md) for quick test instructions
-   - **VM testing:** Use [doorwaydevm](Scripts/doorwaydevm/README.md) for isolated testing
+   - **VM testing:** Use [doorwayvm](Scripts/doorwayvm/README.md) for isolated testing
 
 6. **Push and submit a PR**
 

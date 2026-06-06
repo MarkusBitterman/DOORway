@@ -1,5 +1,5 @@
 {
-  description = "DOORwayDE - Hyprland Desktop Environment for HALLway OS";
+  description = "DOORway - Hyprland Desktop Environment for HALLway OS";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -10,8 +10,8 @@
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
 
-      # DOORwayDE runtime dependencies
-      doorwaydeDeps = pkgs: with pkgs; [
+      # DOORway runtime dependencies
+      doorwayDeps = pkgs: with pkgs; [
         # Core Hyprland ecosystem
         hyprland
         hyprlock
@@ -53,7 +53,7 @@
         # Initiative II — QuickShell shell + matugen color theming
         quickshell      # QML/Qt6 desktop shell toolkit
         matugen         # Material You color generation from wallpaper
-        inotify-tools   # inotifywait for doorwayde-matugen-watcher
+        inotify-tools   # inotifywait for doorway-matugen-watcher
         material-symbols  # Google Material Symbols variable font (used by MaterialSymbol.qml)
       ];
 
@@ -81,17 +81,17 @@
       ];
 
       # Home Manager module definition
-      doorwaydeModule = { config, lib, pkgs, ... }:
+      doorwayModule = { config, lib, pkgs, ... }:
         let
-          cfg = config.doorwayde;
+          cfg = config.doorway;
           configDir = "${self}/Configs";
 
-          # Shared template for DOORwayDE long-running services. All graphical-
+          # Shared template for DOORway long-running services. All graphical-
           # session-dependent services use Type=exec, ExitType=cgroup, the
           # app-graphical.slice, and the graphical-session.target lifecycle.
           # Callers supply description + execStart (and optionally execStartPre,
           # documentation). See TODO.md Phase 9 Pass 2 design decisions.
-          mkDoorwaydeService = {
+          mkDoorwayService = {
             description, execStart,
             execStartPre ? null, documentation ? null,
           }: {
@@ -120,13 +120,13 @@
           # Oneshot variant for session-bootstrap actions: portal restart,
           # config initialization, etc. RemainAfterExit=true so graphical-
           # session.target sees them as "active" not "exited" after completion.
-          # Watches ~/.cache/doorwayde/wall.set for symlink replacement (ln -fs
+          # Watches ~/.cache/doorway/wall.set for symlink replacement (ln -fs
           # uses rename(2) → inotify fires moved_to). Runs matugen to generate
           # Material You color files, then signals Hyprland to reload so
           # dynamic.lua picks up the new hyprland-colors.lua via dofile().
           matugenWatcherScript = pkgs.writeShellScript "matugen-watcher" ''
             set -euo pipefail
-            WALL="''${XDG_CACHE_HOME:-$HOME/.cache}/doorwayde/wall.set"
+            WALL="''${XDG_CACHE_HOME:-$HOME/.cache}/doorway/wall.set"
             WATCH_DIR="$(dirname "$WALL")"
 
             run_matugen() {
@@ -162,7 +162,7 @@
             '';
           };
 
-          mkDoorwaydeOneshot = {
+          mkDoorwayOneshot = {
             description, execStart, after ? [], documentation ? null,
           }: {
             Unit = {
@@ -182,8 +182,8 @@
             };
           };
         in {
-          options.doorwayde = {
-            enable = lib.mkEnableOption "DOORwayDE Hyprland configuration";
+          options.doorway = {
+            enable = lib.mkEnableOption "DOORway Hyprland configuration";
 
             monitor = lib.mkOption {
               type = lib.types.str;
@@ -208,7 +208,7 @@
             installPackages = lib.mkOption {
               type = lib.types.bool;
               default = true;
-              description = "Install DOORwayDE dependencies";
+              description = "Install DOORway dependencies";
             };
 
             shell = {
@@ -216,9 +216,9 @@
                 type = lib.types.bool;
                 default = true;
                 description = ''
-                  Enable the DOORwayDE QuickShell UI shell.
+                  Enable the DOORway QuickShell UI shell.
                   Leave false until Phase 12 cutover (top bar parity with waybar).
-                  When true, starts doorwayde-quickshell.service after graphical-session.target.
+                  When true, starts doorway-quickshell.service after graphical-session.target.
                 '';
               };
             };
@@ -227,7 +227,7 @@
           config = lib.mkIf cfg.enable {
             wayland.windowManager.hyprland.configType = "lua";
 
-            home.packages = lib.mkIf cfg.installPackages (doorwaydeDeps pkgs);
+            home.packages = lib.mkIf cfg.installPackages (doorwayDeps pkgs);
 
             xdg.configFile = {
               # Individual file links instead of a directory symlink, so the
@@ -249,14 +249,14 @@
               "hypr/workflows".source       = "${configDir}/.config/hypr/workflows";
               "hypr/hyprlock".source        = "${configDir}/.config/hypr/hyprlock";
               "rofi".source = "${configDir}/.config/rofi";
-              "doorwayde".source = "${configDir}/.config/doorwayde";
+              "doorway".source = "${configDir}/.config/doorway";
               "kitty".source = "${configDir}/.config/kitty";
 
               # Initiative II: QuickShell shell and matugen color theming.
-              # quickshell/doorwayde is whole-dir (QML is source-controlled config).
+              # quickshell/doorway is whole-dir (QML is source-controlled config).
               # matugen templates are Nix-managed; outputs go to ~/.local/share/matugen/
-              # (writable, not Nix-managed) via doorwayde-matugen-watcher.service.
-              "quickshell/doorwayde".source   = "${configDir}/.config/quickshell/doorwayde";
+              # (writable, not Nix-managed) via doorway-matugen-watcher.service.
+              "quickshell/doorway".source   = "${configDir}/.config/quickshell/doorway";
               "matugen/config.toml".source    = "${configDir}/.config/matugen/config.toml";
               "matugen/templates".source      = "${configDir}/.config/matugen/templates";
 
@@ -264,13 +264,13 @@
                 parseMon = m: let p = lib.splitString "," m;
                 in ''hl.monitor({ output="${lib.elemAt p 0}", mode="${lib.elemAt p 1}", position="${lib.elemAt p 2}", scale="${lib.elemAt p 3}" })'';
               in ''
-                -- DOORwayDE Monitor Configuration (generated by NixOS via Home Manager)
+                -- DOORway Monitor Configuration (generated by NixOS via Home Manager)
                 ${parseMon cfg.monitor}
                 ${lib.concatStringsSep "\n" (map parseMon cfg.extraMonitors)}
               '';
 
               "hypr/userprefs.lua".text = ''
-                -- DOORwayDE User Preferences (generated by NixOS via Home Manager)
+                -- DOORway User Preferences (generated by NixOS via Home Manager)
                 hl.config({
                     input = {
                         kb_layout = "${cfg.keyboard}",
@@ -287,24 +287,24 @@
             };
 
             home.file = {
-              ".local/lib/doorwayde".source = "${configDir}/.local/lib/doorwayde";
-              ".local/share/doorwayde".source = "${configDir}/.local/share/doorwayde";
+              ".local/lib/doorway".source = "${configDir}/.local/lib/doorway";
+              ".local/share/doorway".source = "${configDir}/.local/share/doorway";
               ".local/share/hypr".source = "${configDir}/.local/share/hypr";
-              ".local/bin/doorwayde-shell" = {
-                source = "${configDir}/.local/bin/doorwayde-shell";
+              ".local/bin/doorway-shell" = {
+                source = "${configDir}/.local/bin/doorway-shell";
                 executable = true;
               };
-              ".local/bin/doorwaydectl" = {
-                source = "${configDir}/.local/bin/doorwaydectl";
+              ".local/bin/doorwayctl" = {
+                source = "${configDir}/.local/bin/doorwayctl";
                 executable = true;
               };
-              ".local/bin/doorwayde-ipc" = {
-                source = "${configDir}/.local/bin/doorwayde-ipc";
+              ".local/bin/doorway-ipc" = {
+                source = "${configDir}/.local/bin/doorway-ipc";
                 executable = true;
               };
             };
 
-            home.sessionPath = [ "$HOME/.local/bin" "$HOME/.local/lib/doorwayde" ];
+            home.sessionPath = [ "$HOME/.local/bin" "$HOME/.local/lib/doorway" ];
 
             # Static toolkit/Wayland env vars — session-wide (all processes, not
             # just Hyprland children). Centralises what was duplicated across env.lua
@@ -320,7 +320,7 @@
               ELECTRON_OZONE_PLATFORM_HINT        = "auto";
             };
 
-            # DOORwayDE ships one theme: Wallbash (dynamic colors from wallpaper).
+            # DOORway ships one theme: Wallbash (dynamic colors from wallpaper).
             # The static aspects — GTK theme name, icon theme, cursor, UI font — are
             # declared here. Wallbash generates the actual Wallbash-Gtk theme content
             # at runtime into ~/.local/share/themes/Wallbash-Gtk/ (writable path).
@@ -355,83 +355,83 @@
               };
             };
 
-            # All DOORwayDE long-running services and session-bootstrap oneshots.
+            # All DOORway long-running services and session-bootstrap oneshots.
             # Replaced the HyDE-era runtime-imperative pattern (launch-unit.sh +
             # variables.lua's app() helper birthing units at session start, both
             # deleted in Pass 7). See TODO.md Phase 9 for the migration history.
             systemd.user.services = {
-              doorwayde-text-clipboard = mkDoorwaydeService {
-                description = "DOORwayDE clipboard text watcher (cliphist)";
+              doorway-text-clipboard = mkDoorwayService {
+                description = "DOORway clipboard text watcher (cliphist)";
                 execStart = "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store";
               };
 
-              doorwayde-image-clipboard = mkDoorwaydeService {
-                description = "DOORwayDE clipboard image watcher (cliphist)";
+              doorway-image-clipboard = mkDoorwayService {
+                description = "DOORway clipboard image watcher (cliphist)";
                 execStart = "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store";
               };
 
-              doorwayde-network-manager-applet = mkDoorwaydeService {
-                description = "DOORwayDE NetworkManager tray applet";
+              doorway-network-manager-applet = mkDoorwayService {
+                description = "DOORway NetworkManager tray applet";
                 execStart = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
               };
 
-              doorwayde-removable-media-applet = mkDoorwaydeService {
-                description = "DOORwayDE removable-media tray applet (udiskie)";
+              doorway-removable-media-applet = mkDoorwayService {
+                description = "DOORway removable-media tray applet (udiskie)";
                 execStart = "${pkgs.udiskie}/bin/udiskie --no-automount --smart-tray";
               };
 
-              doorwayde-bluetooth-applet = mkDoorwaydeService {
-                description = "DOORwayDE Bluetooth tray applet (blueman)";
+              doorway-bluetooth-applet = mkDoorwayService {
+                description = "DOORway Bluetooth tray applet (blueman)";
                 execStart = "${pkgs.blueman}/bin/blueman-applet";
               };
 
-              # doorwayde-notifications (dunst) removed in Phase 15 — QuickShell's
+              # doorway-notifications (dunst) removed in Phase 15 — QuickShell's
               # NotificationServer (Notifications.qml) registers on org.freedesktop.Notifications.
 
               # battery-notify reclassified to app-graphical.slice in Pass 4: it
               # uses notify-send → quickshell, which is graphical-session-only.
-              doorwayde-battery-notify = mkDoorwaydeService {
-                description = "DOORwayDE low-battery notification watcher";
-                execStart = "%h/.local/lib/doorwayde/batterynotify.sh";
+              doorway-battery-notify = mkDoorwayService {
+                description = "DOORway low-battery notification watcher";
+                execStart = "%h/.local/lib/doorway/batterynotify.sh";
               };
 
-              # wallpaper.sh bootstraps via `eval $(doorwayde-shell init)` — needs
+              # wallpaper.sh bootstraps via `eval $(doorway-shell init)` — needs
               # PATH to include ~/.local/bin (propagated via systemctl --user
               # import-environment from startup.lua's SYSTEMD_SHARE_PICKER).
-              doorwayde-wallpaper = mkDoorwaydeService {
-                description = "DOORwayDE wallpaper daemon";
-                execStart = "%h/.local/lib/doorwayde/wallpaper.sh --start --global";
+              doorway-wallpaper = mkDoorwayService {
+                description = "DOORway wallpaper daemon";
+                execStart = "%h/.local/lib/doorway/wallpaper.sh --start --global";
               };
 
-              doorwayde-idle = mkDoorwaydeService {
-                description = "DOORwayDE idle daemon (hypridle)";
+              doorway-idle = mkDoorwayService {
+                description = "DOORway idle daemon (hypridle)";
                 documentation = "https://wiki.hypr.land/Hypr-Ecosystem/hypridle/";
                 execStart = "${pkgs.hypridle}/bin/hypridle";
               };
 
-              doorwayde-blue-light-filter = mkDoorwaydeService {
-                description = "DOORwayDE blue-light filter (hyprsunset)";
+              doorway-blue-light-filter = mkDoorwayService {
+                description = "DOORway blue-light filter (hyprsunset)";
                 documentation = "https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/";
                 execStart = "${pkgs.hyprsunset}/bin/hyprsunset";
               };
 
-              doorwayde-polkit-auth = mkDoorwaydeService {
-                description = "DOORwayDE polkit authentication agent (polkit-gnome)";
+              doorway-polkit-auth = mkDoorwayService {
+                description = "DOORway polkit authentication agent (polkit-gnome)";
                 execStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
               };
 
-              doorwayde-config-bootstrap = mkDoorwaydeOneshot {
-                description = "DOORwayDE config initialization (oneshot at session start)";
-                execStart = "%h/.local/lib/doorwayde/doorwayde-config --no-startup";
+              doorway-config-bootstrap = mkDoorwayOneshot {
+                description = "DOORway config initialization (oneshot at session start)";
+                execStart = "%h/.local/lib/doorway/doorway-config --no-startup";
               };
 
-              # Watches ~/.cache/doorwayde/wall.set for changes and runs matugen
+              # Watches ~/.cache/doorway/wall.set for changes and runs matugen
               # to regenerate Material You color files for Hyprland + QuickShell.
               # Starts alongside all other graphical-session services; the initial
               # run on service start handles the wallpaper set before first change.
-              doorwayde-matugen-watcher = {
+              doorway-matugen-watcher = {
                 Unit = {
-                  Description = "DOORwayDE matugen wallpaper color watcher";
+                  Description = "DOORway matugen wallpaper color watcher";
                   After = [ "graphical-session.target" ];
                   PartOf = [ "graphical-session.target" ];
                 };
@@ -446,17 +446,17 @@
                 };
               };
 
-              # QuickShell UI shell — gated by doorwayde.shell.enable.
+              # QuickShell UI shell — gated by doorway.shell.enable.
               # QML_IMPORT_PATH exposes qt5compat (Qt5Compat.GraphicalEffects) which
               # quickshell 0.3.0 does not bundle in its own store path.
               # ExecStartPost creates by-id/ipc.sock → the live instance socket.
               # Workaround: qs ipc resolves the instance ID from lock file content,
               # but QS 0.3.0 uses raw fcntl locks on an empty file, so the ID reads
               # as "" and the client looks for by-id/ipc.sock (missing the subdir).
-              doorwayde-quickshell = lib.mkIf cfg.shell.enable (lib.mkMerge [
-                (mkDoorwaydeService {
-                  description = "DOORwayDE QuickShell (QML-based UI shell)";
-                  execStart = "${pkgs.quickshell}/bin/quickshell -c %h/.config/quickshell/doorwayde";
+              doorway-quickshell = lib.mkIf cfg.shell.enable (lib.mkMerge [
+                (mkDoorwayService {
+                  description = "DOORway QuickShell (QML-based UI shell)";
+                  execStart = "${pkgs.quickshell}/bin/quickshell -c %h/.config/quickshell/doorway";
                 })
                 (let
                   qsIpcSymlink = pkgs.writeShellScript "qs-ipc-symlink" ''
@@ -484,13 +484,13 @@
     in {
       # Home Manager module (the main export)
       # Usage in HALLway flake:
-      #   inputs.doorwayde.url = "github:MarkusBitterman/DOORway";
+      #   inputs.doorway.url = "github:MarkusBitterman/DOORway";
       #   ...
-      #   imports = [ inputs.doorwayde.homeManagerModules.default ];
-      #   doorwayde.enable = true;
+      #   imports = [ inputs.doorway.homeManagerModules.default ];
+      #   doorway.enable = true;
       homeManagerModules = {
-        default = doorwaydeModule;
-        doorwayde = doorwaydeModule;
+        default = doorwayModule;
+        doorway = doorwayModule;
       };
 
       # Development shell with all Hyprland packages
@@ -498,13 +498,13 @@
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
           default = pkgs.mkShell {
-            name = "doorwayde-dev";
-            buildInputs = (doorwaydeDeps pkgs) ++ (devDeps pkgs);
+            name = "doorway-dev";
+            buildInputs = (doorwayDeps pkgs) ++ (devDeps pkgs);
             shellHook = ''
-              echo "DOORwayDE Development Shell"
+              echo "DOORway Development Shell"
               echo "All Hyprland packages available."
               echo ""
-              echo "  shellcheck Configs/.local/lib/doorwayde/*.sh  - Lint shell scripts"
+              echo "  shellcheck Configs/.local/lib/doorway/*.sh  - Lint shell scripts"
               echo "  nixfmt flake.nix           - Format Nix"
               echo ""
               echo "Testing Hyprland:"
@@ -514,33 +514,33 @@
               echo "    Keyboard is dead in nested mode (libseat cannot open /dev/input)."
               echo "    Use for visual checks only; native login required for keybinding tests."
               echo ""
-              echo "Flake-based deploy workflow (DOORwayDE → HALLway):"
-              echo "  DOORwayDE is a flake input — changes must be committed AND pushed"
+              echo "Flake-based deploy workflow (DOORway → HALLway):"
+              echo "  DOORway is a flake input — changes must be committed AND pushed"
               echo "  before HALLway can see them. Local uncommitted changes are invisible."
               echo "  1. git commit && git push              (in this repo)"
-              echo "  2. nix flake update doorwayde          (in HALLway repo)"
+              echo "  2. nix flake update doorway          (in HALLway repo)"
               echo "  3. sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD"
               echo ""
               echo "Debugging startup failures:"
               echo "  cat /run/user/\$(id -u)/hypr/*/hyprland.log | grep -v 'DEBUG from aquamarine'"
               echo "    Lua config errors appear here; exec_once failures do NOT."
-              echo "  journalctl --user -b -n 200 | grep -iE '(quickshell|doorwayde|hypr)'"
+              echo "  journalctl --user -b -n 200 | grep -iE '(quickshell|doorway|hypr)'"
               echo "    Daemon crashes from exec_once land here."
-              echo "  doorwayde-shell app -u test.scope -t scope -- echo ok"
+              echo "  doorway-shell app -u test.scope -t scope -- echo ok"
               echo "    Sanity check: verifies app2unit.sh is findable in PATH."
               echo ""
-              # Mimic what env.lua injects before exec_once so doorwayde-shell app works
+              # Mimic what env.lua injects before exec_once so doorway-shell app works
               # directly from this dev shell or an XFCE Wayland terminal.
-              export PATH="$HOME/.local/lib/doorwayde:$PATH"
+              export PATH="$HOME/.local/lib/doorway:$PATH"
               export XDG_SESSION_DESKTOP=Hyprland
               export XDG_CURRENT_DESKTOP=Hyprland
-              echo "  (PATH includes ~/.local/lib/doorwayde — doorwayde-shell app works here)"
+              echo "  (PATH includes ~/.local/lib/doorway — doorway-shell app works here)"
               echo ""
             '';
           };
         });
 
       # Expose the dependency list for HALLway to import
-      lib.doorwaydeDeps = doorwaydeDeps;
+      lib.doorwayDeps = doorwayDeps;
     };
 }

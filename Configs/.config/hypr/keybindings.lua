@@ -5,7 +5,7 @@
     Keybindings
     https://wiki.hypr.land/Configuring/Binds/
 
-    Keyboard shortcuts for DOORwayDE.
+    Keyboard shortcuts for DOORway.
     The [Group|Subgroup] comments preserve the original grouping system
     for use by keybinds hint and other GUI tools.
 --]]
@@ -20,7 +20,7 @@ local terminal = os.getenv("TERMINAL") or "kitty"
 local editor   = os.getenv("EDITOR")   or "code"
 local explorer = os.getenv("EXPLORER") or "dolphin"
 local browser  = os.getenv("BROWSER")  or "firefox"
-local rofiLaunch = "doorwayde-shell rofilaunch"
+local rofiLaunch = "doorway-shell rofilaunch"
 
 local moveactivewindow = 'grep -q "true" <<< $(hyprctl activewindow -j | jq -r .floating) && hyprctl dispatch moveactive'
 
@@ -31,13 +31,13 @@ local moveactivewindow = 'grep -q "true" <<< $(hyprctl activewindow -j | jq -r .
 -- [Window Management]
 hl.bind(mainMod .. " + Q",       hl.dsp.window.close(),                                { description = "[Window Management] close focused window" })
 hl.bind("ALT + F4",              hl.dsp.window.close(),                                { description = "[Window Management] close focused window" })
-hl.bind(mainMod .. " + Delete",  hl.dsp.exec_cmd("qs -c doorwayde ipc --any-display call sessionScreen open"), { description = "[Session] open session screen (lock/suspend/logout/shutdown)" })
+hl.bind(mainMod .. " + Delete",  hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sessionScreen open"), { description = "[Session] open session screen (lock/suspend/logout/shutdown)" })
 hl.bind(mainMod .. " + W",       hl.dsp.window.float({ action = "toggle" }),           { description = "[Window Management] toggle floating" })
 hl.bind(mainMod .. " + G",       hl.dsp.group.toggle(),                                { description = "[Window Management] toggle group" })
 hl.bind("SHIFT + F11",           hl.dsp.window.fullscreen({ action = "toggle" }),      { description = "[Window Management] toggle fullscreen" })
 hl.bind(mainMod .. " + L",       hl.dsp.exec_cmd("lockscreen.sh"),                     { description = "[Window Management] lock screen" })
-hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("doorwayde-shell window.pin"),        { description = "[Window Management] toggle pin on focused window" })
-hl.bind("CTRL + ALT + Delete",     hl.dsp.exec_cmd("qs -c doorwayde ipc --any-display call sessionScreen open"), { description = "[Session] open session screen (lock/suspend/logout/shutdown)" })
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("doorway-shell window.pin"),        { description = "[Window Management] toggle pin on focused window" })
+hl.bind("CTRL + ALT + Delete",     hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sessionScreen open"), { description = "[Session] open session screen (lock/suspend/logout/shutdown)" })
 hl.bind(mainMod .. " + F5",      hl.dsp.exec_cmd("hyprctl reload"),                    { description = "[Window Management] reload Hyprland config" })
 
 -- [Window Management|Group Navigation]
@@ -78,81 +78,81 @@ hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "[Windo
 
 -- [Launcher|Apps]
 hl.bind(mainMod .. " + T",         hl.dsp.exec_cmd(terminal),                               { description = "[Launcher|Apps] terminal emulator" })
-hl.bind(mainMod .. " + ALT + T",     hl.dsp.exec_cmd("doorwayde-shell pypr toggle console"),  { description = "[Launcher|Apps] dropdown terminal" })
+hl.bind(mainMod .. " + ALT + T",     hl.dsp.exec_cmd("doorway-shell pypr toggle console"),  { description = "[Launcher|Apps] dropdown terminal" })
 hl.bind(mainMod .. " + E",         hl.dsp.exec_cmd(explorer),                               { description = "[Launcher|Apps] file explorer" })
 hl.bind(mainMod .. " + C",         hl.dsp.exec_cmd(editor),                                 { description = "[Launcher|Apps] text editor" })
 hl.bind(mainMod .. " + B",         hl.dsp.exec_cmd(browser),                                { description = "[Launcher|Apps] web browser" })
-hl.bind("CTRL + SHIFT + Escape",     hl.dsp.exec_cmd("doorwayde-shell system.monitor"),       { description = "[Launcher|Apps] system monitor" })
+hl.bind("CTRL + SHIFT + Escape",     hl.dsp.exec_cmd("doorway-shell system.monitor"),       { description = "[Launcher|Apps] system monitor" })
 
 -- [Launcher|Rofi menus]
 hl.bind(mainMod .. " + A",       hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " d"),   { description = "[Launcher|Rofi] application finder" })
 hl.bind(mainMod .. " + TAB",     hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " w"),   { description = "[Launcher|Rofi] window switcher" })
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " f"),   { description = "[Launcher|Rofi] file finder" })
-hl.bind(mainMod .. " + slash",   hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell keybinds_hint c"),  { description = "[Launcher|Rofi] keybindings hint" })
-hl.bind(mainMod .. " + comma",   hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell emoji-picker"),     { description = "[Launcher|Rofi] emoji picker" })
+hl.bind(mainMod .. " + slash",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell keybinds_hint c"),  { description = "[Launcher|Rofi] keybindings hint" })
+hl.bind(mainMod .. " + comma",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell emoji-picker"),     { description = "[Launcher|Rofi] emoji picker" })
 
 -- [QuickShell panels]
-hl.bind(mainMod .. " + SPACE",         hl.dsp.exec_cmd("qs -c doorwayde ipc --any-display call sidebarRight toggle"), { description = "[QuickShell] toggle right sidebar" })
-hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("qs -c doorwayde ipc --any-display call sidebarLeft toggle"),  { description = "[QuickShell] toggle left sidebar" })
-hl.bind(mainMod .. " + period",  hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell glyph-picker"),     { description = "[Launcher|Rofi] glyph picker" })
-hl.bind(mainMod .. " + V",       hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell cliphist -c"),      { description = "[Launcher|Rofi] clipboard" })
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell cliphist"),         { description = "[Launcher|Rofi] clipboard manager" })
-hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell rofiselect"),       { description = "[Launcher|Rofi] select rofi launcher" })
+hl.bind(mainMod .. " + SPACE",         hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sidebarRight toggle"), { description = "[QuickShell] toggle right sidebar" })
+hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sidebarLeft toggle"),  { description = "[QuickShell] toggle left sidebar" })
+hl.bind(mainMod .. " + period",  hl.dsp.exec_cmd("pkill -x rofi || doorway-shell glyph-picker"),     { description = "[Launcher|Rofi] glyph picker" })
+hl.bind(mainMod .. " + V",       hl.dsp.exec_cmd("pkill -x rofi || doorway-shell cliphist -c"),      { description = "[Launcher|Rofi] clipboard" })
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("pkill -x rofi || doorway-shell cliphist"),         { description = "[Launcher|Rofi] clipboard manager" })
+hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("pkill -x rofi || doorway-shell rofiselect"),       { description = "[Launcher|Rofi] select rofi launcher" })
 
 --------------------------------------------------------------------------------
 -- Hardware Controls
 --------------------------------------------------------------------------------
 
 -- [Hardware Controls|Audio]
-hl.bind("F10",                   hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
-hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
-hl.bind("F11",                   hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
-hl.bind("F12",                   hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
-hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("doorwayde-shell volumecontrol -i m"), { description = "[Hardware Controls|Audio] un/mute microphone",  locked = true })
-hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
-hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("doorwayde-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
+hl.bind("F10",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
+hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("doorway-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
+hl.bind("F11",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
+hl.bind("F12",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
+hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("doorway-shell volumecontrol -i m"), { description = "[Hardware Controls|Audio] un/mute microphone",  locked = true })
+hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
+hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
 
 -- [Hardware Controls|Media]
 hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { description = "[Hardware Controls|Media] play media",     locked = true })
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { description = "[Hardware Controls|Media] pause media",    locked = true })
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { description = "[Hardware Controls|Media] next media",     locked = true })
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { description = "[Hardware Controls|Media] previous media", locked = true })
-hl.bind(mainMod .. " + CTRL + M", hl.dsp.exec_cmd("doorwayde-shell window.mute"), { description = "[Hardware Controls|Media] toggle mute for active window" })
+hl.bind(mainMod .. " + CTRL + M", hl.dsp.exec_cmd("doorway-shell window.mute"), { description = "[Hardware Controls|Media] toggle mute for active window" })
 
 -- [Hardware Controls|Brightness]
-hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("doorwayde-shell brightnesscontrol i"), { description = "[Hardware Controls|Brightness] increase brightness", repeating = true, locked = true })
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("doorwayde-shell brightnesscontrol d"), { description = "[Hardware Controls|Brightness] decrease brightness", repeating = true, locked = true })
+hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("doorway-shell brightnesscontrol i"), { description = "[Hardware Controls|Brightness] increase brightness", repeating = true, locked = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("doorway-shell brightnesscontrol d"), { description = "[Hardware Controls|Brightness] decrease brightness", repeating = true, locked = true })
 
 --------------------------------------------------------------------------------
 -- Utilities
 --------------------------------------------------------------------------------
 
 -- [Utilities]
-hl.bind(mainMod .. " + K",       hl.dsp.exec_cmd("doorwayde-shell keyboardswitch"), { description = "[Utilities] toggle keyboard layout", locked = true })
-hl.bind(mainMod .. " + ALT + G",   hl.dsp.exec_cmd("doorwayde-shell gamemode"),       { description = "[Utilities] game mode" })
-hl.bind(mainMod .. " + SHIFT + G", hl.dsp.exec_cmd("doorwayde-shell gamelauncher"),   { description = "[Utilities] open game launcher" })
+hl.bind(mainMod .. " + K",       hl.dsp.exec_cmd("doorway-shell keyboardswitch"), { description = "[Utilities] toggle keyboard layout", locked = true })
+hl.bind(mainMod .. " + ALT + G",   hl.dsp.exec_cmd("doorway-shell gamemode"),       { description = "[Utilities] game mode" })
+hl.bind(mainMod .. " + SHIFT + G", hl.dsp.exec_cmd("doorway-shell gamelauncher"),   { description = "[Utilities] open game launcher" })
 
 -- [Utilities|Screen Capture]
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -an"),                       { description = "[Utilities|Screen Capture] color picker" })
-hl.bind(mainMod .. " + P",       hl.dsp.exec_cmd("doorwayde-shell screenshot s"),          { description = "[Utilities|Screen Capture] snip screen" })
-hl.bind(mainMod .. " + CTRL + P",  hl.dsp.exec_cmd("doorwayde-shell screenshot sf"),         { description = "[Utilities|Screen Capture] freeze and snip screen" })
-hl.bind(mainMod .. " + ALT + P",   hl.dsp.exec_cmd("doorwayde-shell screenshot m"),          { description = "[Utilities|Screen Capture] print monitor",      locked = true })
-hl.bind("Print",                  hl.dsp.exec_cmd("doorwayde-shell screenshot p"),          { description = "[Utilities|Screen Capture] print all monitors", locked = true })
+hl.bind(mainMod .. " + P",       hl.dsp.exec_cmd("doorway-shell screenshot s"),          { description = "[Utilities|Screen Capture] snip screen" })
+hl.bind(mainMod .. " + CTRL + P",  hl.dsp.exec_cmd("doorway-shell screenshot sf"),         { description = "[Utilities|Screen Capture] freeze and snip screen" })
+hl.bind(mainMod .. " + ALT + P",   hl.dsp.exec_cmd("doorway-shell screenshot m"),          { description = "[Utilities|Screen Capture] print monitor",      locked = true })
+hl.bind("Print",                  hl.dsp.exec_cmd("doorway-shell screenshot p"),          { description = "[Utilities|Screen Capture] print all monitors", locked = true })
 
 --------------------------------------------------------------------------------
 -- Theming and Wallpaper
 --------------------------------------------------------------------------------
 
 -- [Theming and Wallpaper]
-hl.bind(mainMod .. " + ALT + Right", hl.dsp.exec_cmd("doorwayde-shell wallpaper -Gn"),                        { description = "[Theming] next global wallpaper" })
-hl.bind(mainMod .. " + ALT + Left",  hl.dsp.exec_cmd("doorwayde-shell wallpaper -Gp"),                        { description = "[Theming] previous global wallpaper" })
-hl.bind(mainMod .. " + SHIFT + W",   hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell wallpaper -SG"),       { description = "[Theming] select a global wallpaper" })
+hl.bind(mainMod .. " + ALT + Right", hl.dsp.exec_cmd("doorway-shell wallpaper -Gn"),                        { description = "[Theming] next global wallpaper" })
+hl.bind(mainMod .. " + ALT + Left",  hl.dsp.exec_cmd("doorway-shell wallpaper -Gp"),                        { description = "[Theming] previous global wallpaper" })
+hl.bind(mainMod .. " + SHIFT + W",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell wallpaper -SG"),       { description = "[Theming] select a global wallpaper" })
 -- SUPER+SHIFT+R (wallbash mode) and SUPER+SHIFT+T (theme select) removed:
 -- wallbashtoggle.sh depended on theme.switch.sh (deleted Phase 10); color mode
 -- selection moves to QuickShell right sidebar in Phase 13. themeselect had no
--- theme gallery in DOORwayDE (single Wallbash theme); Phase 14 brings a new UI.
-hl.bind(mainMod .. " + SHIFT + Y",   hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell animations --select"), { description = "[Theming] select animations" })
-hl.bind(mainMod .. " + SHIFT + U",   hl.dsp.exec_cmd("pkill -x rofi || doorwayde-shell hyprlock --select"),   { description = "[Theming] select hyprlock layout" })
+-- theme gallery in DOORway (single Wallbash theme); Phase 14 brings a new UI.
+hl.bind(mainMod .. " + SHIFT + Y",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell animations --select"), { description = "[Theming] select animations" })
+hl.bind(mainMod .. " + SHIFT + U",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell hyprlock --select"),   { description = "[Theming] select hyprlock layout" })
 
 --------------------------------------------------------------------------------
 -- Workspaces

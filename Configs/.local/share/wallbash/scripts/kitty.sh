@@ -3,11 +3,11 @@
 # source variables
 confDir="${confDir:-$HOME/.config}"
 kittyConf="${confDir}/kitty/kitty.conf"
-doorwaydeKitty="${DOORWAYDE_DATA_HOME}/kitty.conf"
+doorwayKitty="${DOORWAY_DATA_HOME}/kitty.conf"
 
-INC_LINE="include doorwayde.conf"
+INC_LINE="include doorway.conf"
 
-sed -i "/include .*share\/doorwayde\/kitty.conf.*/d" "$kittyConf"
+sed -i "/include .*share\/doorway\/kitty.conf.*/d" "$kittyConf"
 # Ensure the line is at the top and remove duplicates
 if ! grep -Fxq "$INC_LINE" "$kittyConf"; then
     sed -i "1i $INC_LINE" "$kittyConf"

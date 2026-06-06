@@ -1,6 +1,6 @@
 # Release Policy
 
-DOORwayDE follows a rolling release model aligned with the HALLway ecosystem.
+DOORway follows a rolling release model aligned with the HALLway ecosystem.
 
 ## Rolling Releases
 
@@ -12,11 +12,11 @@ There are no scheduled release cycles. Changes are committed to `master` when re
 
 ## Versioning with Nix Flakes
 
-DOORwayDE uses Nix flakes for reproducible versioning:
+DOORway uses Nix flakes for reproducible versioning:
 
 ```bash
 # Lock to a specific commit
-nix flake lock --update-input doorwayde
+nix flake lock --update-input doorway
 
 # Pin a known-good state
 git rev-parse HEAD  # This is your "version"
@@ -26,7 +26,7 @@ The `flake.lock` file pins exact dependencies. To reproduce a specific state, ch
 
 ## HALLway Ecosystem Alignment
 
-DOORwayDE is a component of HALLway OS. Its release cadence follows the parent project:
+DOORway is a component of HALLway OS. Its release cadence follows the parent project:
 
 - **Coordinated updates** — Major changes sync with HALLway releases when practical
 - **Independent iteration** — Bug fixes and improvements don't wait for HALLway

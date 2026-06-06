@@ -1,0 +1,490 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
+# shellcheck disable=SC2086
+# shellcheck disable=SC1090
+
+initialized() {
+	cat <<EOF
+DOORWAY_SHELL_INIT=1
+BIN_DIR="${BIN_DIR}"
+LIB_DIR="${LIB_DIR}"
+SHARE_DIR="${SHARE_DIR}"
+PATH=${PATH}
+DOORWAY_SCRIPTS_PATH=${DOORWAY_SCRIPTS_PATH}
+export BIN_DIR LIB_DIR SHARE_DIR PATH DOORWAY_SCRIPTS_PATH DOORWAY_SHELL_INIT
+EOF
+	#? Use sed to remove any shebang hints to avoid conflicts with "eval"
+	command cat "${LIB_DIR}/doorway/globalcontrol.sh"
+}
+
+USAGE() {
+	local cols
+	cols=$(tput cols 2>/dev/null || echo 80)
+	local sep
+	sep=$(printf '─%.0s' $(seq 1 "$((cols - 2))"))
+
+	local _R=$'\e[0m' _BOLD=$'\e[1m' _DIM=$'\e[2m' _CYAN=$'\e[36m'
+
+	printf '\n%s  DOORway Shell%s\n' "$_BOLD" "$_R"
+	printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
+
+	printf '  %sUSAGE%s\n' "$_BOLD" "$_R"
+	printf '    doorway-shell %s[command]%s %s[args]%s\n\n' "$_CYAN" "$_R" "$_DIM" "$_R"
+
+	printf '  %sCOMMANDS%s\n' "$_BOLD" "$_R"
+	local cmds=(
+		'help, -h'            'Show this help message'
+		'-s, scripts'         'List available scripts (formatted)'
+		'wallbash <script>'   'Execute a wallbash script'
+		'completions [shell]' 'Generate completions (bash|zsh|fish)'
+		'init'                'Source initialization script'
+		'logout'              'Log out of the current session'
+		'lock-session'        'Lock the current session'
+	)
+	for ((i = 0; i < ${#cmds[@]}; i += 2)); do
+		printf '    %s%-26s%s %s\n' "$_CYAN" "${cmds[i]}" "$_R" "${cmds[i + 1]}"
+	done
+	printf '\n'
+
+	printf '  %sSCRIPTS%s\n' "$_BOLD" "$_R"
+	printf '    Run any script by name (without extension):\n'
+	printf '      %sdoorway-shell theme.switch%s\n' "$_DIM" "$_R"
+	printf '      %sdoorway-shell wallpaper%s\n\n' "$_DIM" "$_R"
+	printf '    Use %sdoorway-shell -s%s to list all available scripts.\n\n' "$_CYAN" "$_R"
+
+	printf '  %s%s%s\n\n' "$_DIM" "$sep" "$_R"
+}
+
+call_wallbashScript() {
+	local scriptName=$1
+	shift
+	local args=("${@}")
+	local dirs=("${WALLBASH_DIRS[@]}")
+	sanitized_dirs=()
+	for dir in "${dirs[@]}"; do
+		if [[ -d "$dir" ]]; then
+			sanitized_dirs+=("$dir")
+		fi
+	done
+	dirs=("${sanitized_dirs[@]}")
+	script_path=$(find -L "${dirs[@]}" -type f -path "*/scripts/*" -name "${scriptName}.sh" -exec echo {} \; -quit)
+
+	for func in $(compgen -A function); do
+		export -f "${func?}"
+	done
+
+	if [[ -n "$script_path" ]]; then
+		"$script_path" "${args[@]}"
+	else
+		echo "Usage: wallbash [script-name] [args]"
+		echo "Executes the specified wallbash script with the provided arguments."
+		echo "Available scripts:"
+		for dir in "${dirs[@]}"; do
+			if [[ -d "$dir" ]]; then
+				echo -e "\n[ $dir ]"
+				find -L "$dir" -type f -path "*/scripts/*" -name "*.sh" -exec basename {} \;
+			fi
+		done
+	fi
+
+}
+
+doorway-logout() {
+	if uwsm check is-active; then
+		uwsm stop
+	elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE}" ]]; then
+		if command -v hyprshutdown >/dev/null 2>&1; then
+			hyprshutdown --top-label "Stay DOORway-ready! 🚪"
+		else
+			hyprctl dispatch exit 0
+		fi
+	fi
+}
+
+run_command() {
+	# Convert to array, deduplicate, and filter out empty entries
+	IFS=':' read -ra RAW_DIRS <<<"$DOORWAY_SCRIPTS_PATH"
+	declare -A seen_dirs
+	SCRIPT_DIRS=()
+	for dir in "${RAW_DIRS[@]}"; do
+		[[ -z "$dir" ]] && continue
+		[[ -n "${seen_dirs[$dir]}" ]] && continue
+		seen_dirs["$dir"]=1
+		[[ -d "$dir" ]] && SCRIPT_DIRS+=("$dir")
+	done
+
+	for dir in "${SCRIPT_DIRS[@]}"; do
+		if [[ -f "$dir/${1}.sh" ]]; then
+			exec bash "$dir/${1}.sh" "${@:2}"
+		elif [[ -f "$dir/${1}.py" ]]; then
+			exec python3 "$dir/${1}.py" "${@:2}"
+		elif [[ -f "$dir/${1}" && -x "$dir/${1}" ]]; then
+			exec "$dir/${1}" "${@:2}"
+		fi
+	done
+
+	if [[ -f "$1" && -x "$1" ]]; then
+		exec "$1" "${@:2}"
+	else
+		echo "Command not found: $1"
+		echo "Available commands:"
+		list_scripts_pretty
+	fi
+}
+
+list_script_path() {
+	IFS=':' read -ra RAW_DIRS <<<"$DOORWAY_SCRIPTS_PATH"
+	declare -A _seen_dirs
+	for dir in "${RAW_DIRS[@]}"; do
+		[[ -z "$dir" ]] && continue
+		[[ -n "${_seen_dirs[$dir]}" ]] && continue
+		_seen_dirs["$dir"]=1
+		[[ -d "$dir" ]] && find -L "$dir" -maxdepth 1 -type f \( -name "*.sh" -o -name "*.py" \) -exec echo {} \;
+	done
+}
+
+list_script() {
+	list_script_path | xargs -I{} basename {} | sort -u
+}
+
+get_completion_data() {
+	local built_in_commands=("--help" "help" "-h" "-s" "scripts" "wallbash" "--completions" "completions" "init" "logout" "lock-session")
+	export DOORWAY_BUILT_IN_COMMANDS="${built_in_commands[*]}"
+}
+
+gen_bash_completion() {
+	get_completion_data
+
+	cat <<'BASH_COMPLETION'
+# Bash completion for doorway-shell
+_doorway_shell_completion() {
+    local cur prev words cword
+    _init_completion 2>/dev/null || {
+        COMPREPLY=()
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]}"
+    }
+
+    local built_in_commands doorway_scripts wallbash_scripts
+    built_in_commands="--help help -h -s scripts wallbash --completions completions init logout lock-session"
+
+    if command -v doorway-shell >/dev/null 2>&1; then
+        doorway_scripts=$(doorway-shell --list-script 2>/dev/null | sed 's/\.[^.]*$//' | tr '\n' ' ')
+        wallbash_scripts="--help"
+    fi
+
+    if [[ $COMP_CWORD -eq 1 ]]; then
+        local all_commands="$built_in_commands $doorway_scripts"
+        COMPREPLY=($(compgen -W "$all_commands" -- "$cur"))
+    elif [[ $COMP_CWORD -eq 2 ]]; then
+        case $prev in
+            wallbash)
+                COMPREPLY=($(compgen -W "$wallbash_scripts" -- "$cur"))
+                return 0
+                ;;
+            --completions)
+                COMPREPLY=($(compgen -W "bash zsh fish" -- "$cur"))
+                return 0
+                ;;
+            *)
+                COMPREPLY=()
+                return 0
+                ;;
+        esac
+    else
+        COMPREPLY=()
+        return 0
+    fi
+}
+
+complete -F _doorway_shell_completion doorway-shell
+BASH_COMPLETION
+}
+
+gen_zsh_completion() {
+	get_completion_data
+
+	cat <<'ZSH_COMPLETION'
+#compdef doorway-shell
+
+_doorway_shell() {
+    local cur prev words
+    cur="${words[CURRENT]}"
+    prev="${words[CURRENT-1]}"
+
+    local built_in_commands doorway_scripts wallbash_scripts
+    built_in_commands=("--help" "help" "-h" "-s" "scripts" "wallbash" "--completions" "completions" "init" "logout" "lock-session")
+
+    if (( $+commands[doorway-shell] )); then
+        local scripts_raw
+        scripts_raw=(${(f)"$(doorway-shell --list-script 2>/dev/null)"})
+        doorway_scripts=(${scripts_raw[@]%.*})
+        wallbash_scripts=("--help")
+    fi
+
+    if [[ $CURRENT -eq 2 ]]; then
+        local all_commands=($built_in_commands $doorway_scripts)
+        compadd -a all_commands
+    elif [[ $CURRENT -eq 3 ]]; then
+        case $words[2] in
+            wallbash)
+                compadd -a wallbash_scripts
+                return 0
+                ;;
+            --completions)
+                compadd "bash" "zsh" "fish"
+                return 0
+                ;;
+            *)
+                return 0
+                ;;
+        esac
+    else
+        return 0
+    fi
+}
+
+compdef _doorway_shell doorway-shell
+ZSH_COMPLETION
+}
+
+gen_fish_completion() {
+	get_completion_data
+
+	cat <<'FISH_COMPLETION'
+# Fish completion for doorway-shell
+
+function __doorway_shell_get_commands
+    echo "--help
+help
+-h
+-s
+scripts
+wallbash
+--completions
+completions
+init
+logout
+lock-session"
+
+    if command -v doorway-shell >/dev/null 2>&1
+        doorway-shell --list-script 2>/dev/null | sed 's/\.[^.]*$//'
+    end
+end
+
+function __doorway_shell_get_wallbash_scripts
+    echo "--help"
+end
+
+complete -c doorway-shell -f
+complete -c doorway-shell -n "not __fish_seen_subcommand_from (__doorway_shell_get_commands)" -a "(__doorway_shell_get_commands)" -d "DOORway shell commands"
+complete -c doorway-shell -n "__fish_seen_subcommand_from wallbash" -a "(__doorway_shell_get_wallbash_scripts)" -d "Wallbash scripts"
+complete -c doorway-shell -n "__fish_seen_subcommand_from --completions" -a "bash zsh fish" -d "Shell completion types"
+complete -c doorway-shell -s h -l help -d "Display help message"
+complete -c doorway-shell -s s -l scripts -d "List available scripts (formatted)"
+complete -c doorway-shell -l completions -d "Generate shell completions"
+FISH_COMPLETION
+}
+
+generate_completions() {
+	local shell_type="$1"
+	case "$shell_type" in
+	bash) gen_bash_completion ;;
+	zsh)  gen_zsh_completion ;;
+	fish) gen_fish_completion ;;
+	*)
+		echo "Usage: doorway-shell --completions [bash|zsh|fish]"
+		echo "Generate shell completions for the specified shell"
+		return 1
+		;;
+	esac
+}
+
+list_scripts_pretty() {
+	local cols
+	cols=$(tput cols 2>/dev/null || echo 80)
+	local sep
+	sep=$(printf '─%.0s' $(seq 1 "$((cols - 2))"))
+
+	local _R=$'\e[0m' _BOLD=$'\e[1m' _DIM=$'\e[2m'
+	local _VIOLET=$'\e[35m' _GREEN=$'\e[92m'
+
+	IFS=':' read -ra RAW_DIRS <<<"$DOORWAY_SCRIPTS_PATH"
+	declare -A seen_dirs
+	local SCRIPT_DIRS=()
+
+	for dir in "${RAW_DIRS[@]}"; do
+		[[ -z "$dir" ]] && continue
+		[[ -n "${seen_dirs[$dir]}" ]] && continue
+		seen_dirs["$dir"]=1
+		[[ -d "$dir" ]] && SCRIPT_DIRS+=("$dir")
+	done
+
+	local total=0
+
+	printf '\n%s  Available Scripts%s\n' "$_BOLD" "$_R"
+	printf '  %s%s%s\n' "$_DIM" "$sep" "$_R"
+
+	for dir in "${SCRIPT_DIRS[@]}"; do
+		local scripts=()
+		while IFS= read -r f; do
+			[[ -n "$f" ]] && scripts+=("$f")
+		done < <(find -L "$dir" -maxdepth 1 -type f \( -name "*.sh" -o -name "*.py" \) -exec basename {} \; 2>/dev/null | sort)
+
+		[[ ${#scripts[@]} -eq 0 ]] && continue
+
+		printf '\n  %s%s%s\n' "$_VIOLET" "$dir" "$_R"
+
+		unset groups roots
+		declare -A groups roots
+
+		for s in "${scripts[@]}"; do
+			local name="${s%.*}"
+			if [[ "$name" == *.* ]]; then
+				local root="${name%%.*}"
+				roots["$root"]=1
+			fi
+		done
+
+		for s in "${scripts[@]}"; do
+			local name="${s%.*}"
+
+			if [[ "$name" == *.* ]]; then
+				local root="${name%%.*}"
+				groups["$root"]+="$name "
+			else
+				if [[ -n "${roots[$name]}" ]]; then
+					groups["$name"]="$name ${groups[$name]}"
+				else
+					groups["$name"]="$name"
+				fi
+			fi
+		done
+
+		for key in $(printf "%s\n" "${!groups[@]}" | sort); do
+			read -ra items <<<"${groups[$key]}"
+
+			if [[ ${#items[@]} -gt 1 ]]; then
+				printf "    %s%s%s\n" "$_GREEN" "$key" "$_R"
+
+				for item in "${items[@]}"; do
+					if [[ "$item" != "$key" ]]; then
+						printf "      %s%s%s\n" "$_DIM" "$item" "$_R"
+					fi
+					((total++)) || true
+				done
+			else
+				printf "    %s%s%s\n" "$_GREEN" "$key" "$_R"
+				((total++)) || true
+			fi
+		done
+	done
+
+	local dir_word="directories"
+	((${#SCRIPT_DIRS[@]} == 1)) && dir_word="directory"
+
+	printf '\n  %s%s%s\n' "$_DIM" "$sep" "$_R"
+	printf '  %s%d scripts across %d %s%s\n\n' "$_DIM" "$total" "${#SCRIPT_DIRS[@]}" "$dir_word" "$_R"
+}
+
+lock_session() {
+	#? lock-session checks for FD ScreenSaver inhibitor first; falls back to lockscreen.sh
+	if busctl --user list | grep -q "org.freedesktop.ScreenSaver"; then
+		echo "Using org.freedesktop.ScreenSaver for locking"
+		loginctl lock-session
+	else
+		lockscreen.sh
+	fi
+
+}
+
+#*--------------------------------------------------------------------------------
+
+if [[ -z "${BASH_SOURCE[0]}" ]]; then
+	EXECUTABLE="${0}"
+else
+	EXECUTABLE="${BASH_SOURCE[0]}"
+fi
+
+BIN_DIR=$(dirname "$(which "${EXECUTABLE:-doorway-shell}")")
+LIB_DIR=$(realpath "${BIN_DIR}/../lib")
+SHARE_DIR=$(realpath "${BIN_DIR}/../share")
+PATH="${XDG_CONFIG_HOME:-$HOME/.config}/doorway/scripts:$BIN_DIR:$LIB_DIR/doorway:$PATH" #! doorway lib scripts (app2unit.sh, wallpaper.sh, etc.) must be in PATH
+# Define doorway scripts search paths (colon-separated, user configurable)
+DOORWAY_SCRIPTS_PATH="${DOORWAY_SCRIPTS_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/doorway/scripts:${LIB_DIR}/doorway}:${XDG_DATA_HOME:-$HOME/.local/share}/waybar/scripts:${XDG_CONFIG_HOME:-$HOME/.config}/waybar/scripts"
+
+export BIN_DIR LIB_DIR SHARE_DIR PATH DOORWAY_SCRIPTS_PATH
+
+#*--------------------------------------------------------------------------------
+
+# Prepare runtime directory for doorway
+[[ -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/doorway" ]] || mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/doorway"
+
+# Priority commands (run before sourcing globalcontrol.sh)
+case "$1" in
+init | --init)
+	initialized
+	exit 0
+	;;
+lock-session)
+	lock_session
+	exit 0
+	;;
+*)
+	export DOORWAY_SHELL_INIT=1
+	;;
+esac
+
+# shellcheck disable=SC1091
+if ! source "${LIB_DIR}/doorway/globalcontrol.sh"; then
+	echo "Error: Could not load DOORway, broken installation?"
+	exit 1
+fi
+
+#*--------------------------------------------------------------------------------
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+
+	case $1 in
+	logout)
+		doorway-logout
+		;;
+
+	wallbash)
+		shift
+		call_wallbashScript "$@"
+		;;
+
+	--completions | completions)
+		shift
+		generate_completions "$1"
+		;;
+
+	--help | help | -h)
+		USAGE
+		;;
+
+	-s | scripts)
+		list_scripts_pretty
+		;;
+
+	--list-script)
+		list_script
+		;;
+
+	--list-script-path)
+		list_script_path
+		;;
+
+	"")
+		for func in $(compgen -A function); do
+			export -f "${func?}"
+		done
+		;;
+
+	*)
+		run_command "$@"
+		;;
+	esac
+
+fi

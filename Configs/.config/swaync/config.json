@@ -69,11 +69,11 @@
         },
         {
           "label": "  󰃛  ",
-          "command": "doorwayde-shell hyprsunset --toggle"
+          "command": "doorway-shell hyprsunset --toggle"
         },
         {
           "label": "  ⏻  ",
-          "command": "qs -c doorwayde ipc --any-display call sessionScreen open"
+          "command": "qs -c doorway ipc --any-display call sessionScreen open"
         }
       ]
     }

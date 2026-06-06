@@ -3,9 +3,9 @@
     █▄▀ ██▄ █▀░ █▀█ █▄█ █▄▄ ░█░
 
     Workflow: Default
-    No overrides — standard DOORwayDE configuration applies.
+    No overrides — standard DOORway configuration applies.
 
-    Select with: doorwayde-shell workflows --select
+    Select with: doorway-shell workflows --select
 --]]
 
 -- Default workflow applies no overrides.

@@ -1,5 +1,5 @@
 --[[
-    DOORwayDE shared variable module.
+    DOORway shared variable module.
 
     All Phase 6 core files (dynamic, startup, finale) that need shared state
     do `local vars = require("variables")` to access these values.
@@ -17,10 +17,10 @@ local M = {
 
     -- App commands (mirror hyprlang $VAR names so keybindings.lua can read them)
     QUICKAPPS  = "",
-    BROWSER    = "doorwayde-shell open --fall firefox web-browser",
-    EDITOR     = "doorwayde-shell open --fall code-oss text-editor",
-    EXPLORER   = "doorwayde-shell open --fall dolphin file-manager",
-    TERMINAL   = "doorwayde-shell app -T",
+    BROWSER    = "doorway-shell open --fall firefox web-browser",
+    EDITOR     = "doorway-shell open --fall code-oss text-editor",
+    EXPLORER   = "doorway-shell open --fall dolphin file-manager",
+    TERMINAL   = "doorway-shell app -T",
     LOCKSCREEN = "hyprlock",
     KILLACTIVE = 'hyprctl dispatch killactive ""',
 

@@ -1,0 +1,47 @@
+# Scripts
+Scripts/install_pkg.lst
+Scripts/pkg_black.lst
+Scripts/pkg_user.lst
+
+# User overrides
+user/
+
+# Python
+*__pycache__*
+*.pyc
+
+# Zsh
+.zsh_history*
+.zcompdump*
+
+# Configs that shouldn't be tracked
+Configs/.config/uwsm/*
+Configs/.local/state/
+
+# Nix
+result
+result-*
+.direnv/
+
+# Editors
+.vscode/*.log
+.vscode/.ropeproject/
+.vscode/ipch/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Claude Code — local overrides are machine-specific
+.claude/settings.local.json
+
+# Secrets (should never be here)
+*.age
+secrets/

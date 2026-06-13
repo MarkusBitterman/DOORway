@@ -32,7 +32,7 @@ Singleton {
             default: return "th"
         }
     }
-    property string longDateOrdinal: Qt.locale().toString(clock.date, Config.options?.time.dateFormat ?? "ddd, MMMM d") + dayOrdinal
+    property string longDateOrdinal: Qt.locale().toString(clock.date, Config.options?.time.dateFormat ?? "ddd, MMM d") + dayOrdinal
     property string collapsedCalendarFormat: Qt.locale().toString(clock.date, "dddd, MMMM dd")
     property string uptime: "0h, 0m"
 

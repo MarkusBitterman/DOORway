@@ -14,8 +14,10 @@ local xdg_config = os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")
 local hypr_data = xdg_data .. "/hypr"
 local hypr_config = xdg_config .. "/hypr"
 
--- Add ~/.local/share/hypr/ to package.path so require("env") etc. resolve there
-package.path = hypr_data .. "/?.lua;" .. package.path
+-- Add config and data dirs to package.path.
+-- Config first so Home Manager-generated files (monitors.lua, doorway-cursor.lua, etc.)
+-- can shadow store defaults if needed; data dir holds the Nix-store source modules.
+package.path = hypr_config .. "/?.lua;" .. hypr_data .. "/?.lua;" .. package.path
 
 -- Environment first so child processes inherit
 require("env")

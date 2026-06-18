@@ -344,7 +344,7 @@
           config = lib.mkIf cfg.enable {
             wayland.windowManager.hyprland = {
               configType = "lua";
-              package = hyprland.packages.${pkgs.system}.hyprland;
+              package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
             };
 
             home.packages = lib.mkIf cfg.installPackages (doorwayDeps pkgs);
@@ -695,7 +695,7 @@
           enable = true;
           withUWSM = true;
           xwayland.enable = true;
-          package = hyprland.packages.${pkgs.system}.hyprland;
+          package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
         };
       };
 

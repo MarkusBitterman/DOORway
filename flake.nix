@@ -3,9 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, hyprland }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
@@ -246,10 +250,102 @@
                 '';
               };
             };
+
+            idle = {
+              enable = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Enable the DOORway idle daemon (hypridle).";
+              };
+              timeouts = {
+                dim = lib.mkOption {
+                  type = lib.types.ints.positive;
+                  default = 60;
+                  description = "Seconds of idle before dimming the display.";
+                };
+                lock = lib.mkOption {
+                  type = lib.types.ints.positive;
+                  default = 120;
+                  description = "Seconds of idle before locking the session.";
+                };
+                dpms = lib.mkOption {
+                  type = lib.types.ints.positive;
+                  default = 300;
+                  description = "Seconds of idle before turning off the display (DPMS).";
+                };
+                suspend = lib.mkOption {
+                  type = lib.types.nullOr lib.types.ints.positive;
+                  default = 500;
+                  description = "Seconds of idle before suspending. Set to null to disable suspend entirely.";
+                };
+              };
+            };
+
+            fonts = {
+              ui = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  default = "Cantarell";
+                  description = "UI font family (dialogs, GTK apps, general text). Maps to FONT + DOCUMENT_FONT in variables.lua.";
+                };
+                size = lib.mkOption {
+                  type = lib.types.ints.positive;
+                  default = 10;
+                  description = "UI font size in points.";
+                };
+              };
+              monospace = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  default = "CaskaydiaCove Nerd Font Mono";
+                  description = "Monospace font family (terminal, code editors). Maps to MONOSPACE_FONT in variables.lua.";
+                };
+                size = lib.mkOption {
+                  type = lib.types.ints.positive;
+                  default = 9;
+                  description = "Monospace font size in points.";
+                };
+              };
+              interface = lib.mkOption {
+                type = lib.types.str;
+                default = "JetBrainsMono Nerd Font";
+                description = "Font for the bar, rofi menus, and Hyprland groupbar. Maps to BAR_FONT, MENU_FONT, GROUPBAR_FONT in variables.lua.";
+              };
+              sidebar = lib.mkOption {
+                type = lib.types.str;
+                default = "Cantarell";
+                description = ''
+                  Font for QuickShell sidebar content (Phase 14 left/right sidebars).
+                  A reading font like Spectral or Atkinson Hyperlegible works well here.
+                  Set to the same value as fonts.ui.name to keep a unified look.
+                '';
+              };
+            };
+
+            animations = {
+              preset = lib.mkOption {
+                type = lib.types.enum [
+                  "classic" "diablo-1" "diablo-2" "disable" "dynamic"
+                  "end4" "fast" "high" "ja" "LimeFrenzy"
+                  "me-1" "me-2" "minimal-1" "minimal-2" "moving"
+                  "optimized" "standard" "theme" "vertical"
+                ];
+                default = "standard";
+                example = "fast";
+                description = ''
+                  Animation preset to load from animations/ in the Hyprland config.
+                  Each preset is a self-contained lua file that calls hl.config({ animations = {...} }).
+                  "disable" turns off all animations. "fast" is recommended for low-latency gaming.
+                '';
+              };
+            };
           };
 
           config = lib.mkIf cfg.enable {
-            wayland.windowManager.hyprland.configType = "lua";
+            wayland.windowManager.hyprland = {
+              configType = "lua";
+              package = hyprland.packages.${pkgs.system}.hyprland;
+            };
 
             home.packages = lib.mkIf cfg.installPackages (doorwayDeps pkgs);
 
@@ -263,7 +359,45 @@
               "hypr/workflows.lua".source   = "${configDir}/.config/hypr/workflows.lua";
               "hypr/animations.lua".source  = "${configDir}/.config/hypr/animations.lua";
               "hypr/shaders.lua".source     = "${configDir}/.config/hypr/shaders.lua";
-              "hypr/hypridle.conf".source   = "${configDir}/.config/hypr/hypridle.conf";
+              "hypr/hypridle.conf".text = ''
+                $LOCK_CMD = doorway-shell lockscreen.sh
+                $UNLOCK_CMD = sh -c 'sleep 3 && pkill -9 $(doorway-shell lockscreen --get)'
+
+                general {
+                    lock_cmd = $LOCK_CMD
+                    unlock_cmd = $UNLOCK_CMD
+                    ignore_dbus_inhibit = false
+                    ignore_systemd_inhibit = false
+                }
+
+                listener {
+                    timeout = ${toString cfg.idle.timeouts.dim}
+                    on-timeout = brightnessctl -s && brightnessctl s 1%
+                    on-resume = brightnessctl -r
+                }
+
+                listener {
+                    timeout = ${toString cfg.idle.timeouts.lock}
+                    on-timeout = loginctl lock-session
+                }
+
+                listener {
+                    timeout = ${toString cfg.idle.timeouts.dpms}
+                    on-timeout = hyprctl dispatch dpms off
+                    on-resume = hyprctl dispatch dpms on
+                }
+
+                ${lib.optionalString (cfg.idle.timeouts.suspend != null) ''
+                listener {
+                    timeout = ${toString cfg.idle.timeouts.suspend}
+                    on-timeout = systemctl suspend
+                }
+                ''}
+
+                # hyprlang noerror true
+                source = ./hypridle/*
+                # hyprlang noerror false
+              '';
               "hypr/hyprlock.conf".source   = "${configDir}/.config/hypr/hyprlock.conf";
               "hypr/hyprsunset.conf".source = "${configDir}/.config/hypr/hyprsunset.conf";
               "hypr/nvidia.conf".source     = "${configDir}/.config/hypr/nvidia.conf";
@@ -294,6 +428,27 @@
                 }
               '';
 
+              "hypr/doorway-fonts.lua".text = ''
+                -- DOORway Font Configuration (generated by Home Manager)
+                -- Loaded by variables.lua via pcall; falls back to hardcoded defaults on bare installs.
+                -- Set via doorway.fonts in your home config.
+                return {
+                  ui_name   = "${cfg.fonts.ui.name}",
+                  ui_size   = ${toString cfg.fonts.ui.size},
+                  mono_name = "${cfg.fonts.monospace.name}",
+                  mono_size = ${toString cfg.fonts.monospace.size},
+                  interface = "${cfg.fonts.interface}",
+                  sidebar   = "${cfg.fonts.sidebar}",
+                }
+              '';
+
+              "hypr/doorway-animation-preset.lua".text = ''
+                -- DOORway Animation Preset (generated by Home Manager)
+                -- Loaded by animations.lua via pcall; falls back to "standard" on bare installs.
+                -- Set via doorway.animations.preset in your home config.
+                return { preset = "${cfg.animations.preset}" }
+              '';
+
               "hypr/monitors.lua".text = let
                 parseMon = m: let p = lib.splitString "," m;
                 in ''hl.monitor({ output="${lib.elemAt p 0}", mode="${lib.elemAt p 1}", position="${lib.elemAt p 2}", scale="${lib.elemAt p 3}" })'';
@@ -301,6 +456,7 @@
                 -- DOORway Monitor Configuration (generated by NixOS via Home Manager)
                 ${parseMon cfg.monitor}
                 ${lib.concatStringsSep "\n" (map parseMon cfg.extraMonitors)}
+                hl.monitor({ output="", mode="preferred", position="auto", scale="1" })
               '';
 
               "hypr/userprefs.lua".text = ''
@@ -321,6 +477,20 @@
             };
 
             home.file = {
+              # Systemd drop-in: restart Hyprland on crash (e.g. HDMI hot-unplug
+              # triggers onDisconnect → enterUnsafeState → segfault in 0.55.x).
+              # Drop-in merges into UWSM's wayland-wm@hyprland.service without
+              # conflicting with its unit definition. Burst limit prevents loops.
+              ".config/systemd/user/wayland-wm@hyprland.service.d/crash-restart.conf".text = ''
+                [Unit]
+                StartLimitBurst=3
+                StartLimitIntervalSec=120
+
+                [Service]
+                Restart=on-failure
+                RestartSec=3
+              '';
+
               ".local/lib/doorway".source = "${configDir}/.local/lib/doorway";
               ".local/share/doorway".source = "${configDir}/.local/share/doorway";
               ".local/share/hypr".source = "${configDir}/.local/share/hypr";
@@ -437,11 +607,11 @@
                 execStart = "%h/.local/lib/doorway/wallpaper.sh --start --global";
               };
 
-              doorway-idle = mkDoorwayService {
+              doorway-idle = lib.mkIf cfg.idle.enable (mkDoorwayService {
                 description = "DOORway idle daemon (hypridle)";
                 documentation = "https://wiki.hypr.land/Hypr-Ecosystem/hypridle/";
                 execStart = "${pkgs.hypridle}/bin/hypridle";
-              };
+              });
 
               doorway-blue-light-filter = mkDoorwayService {
                 description = "DOORway blue-light filter (hyprsunset)";
@@ -516,6 +686,19 @@
         };
 
     in {
+      # NixOS system-level module — registers Hyprland session, enables UWSM,
+      # XWayland, and xdg-desktop-portal-hyprland. Owns the Hyprland version pin.
+      # Usage in HALLway flake: add `inputs.doorway.nixosModules.default` to the
+      # nixosSystem modules list (no specialArgs threading required).
+      nixosModules.default = { pkgs, lib, ... }: {
+        programs.hyprland = {
+          enable = true;
+          withUWSM = true;
+          xwayland.enable = true;
+          package = hyprland.packages.${pkgs.system}.hyprland;
+        };
+      };
+
       # Home Manager module (the main export)
       # Usage in HALLway flake:
       #   inputs.doorway.url = "github:MarkusBitterman/DOORway";
@@ -526,6 +709,12 @@
         default = doorwayModule;
         doorway = doorwayModule;
       };
+
+      # Hyprland package re-export for downstream consumers that want to reference
+      # DOORway's pinned version without importing the full NixOS module.
+      packages = forAllSystems (system: {
+        hyprland = hyprland.packages.${system}.hyprland;
+      });
 
       # Development shell with all Hyprland packages
       devShells = forAllSystems (system:

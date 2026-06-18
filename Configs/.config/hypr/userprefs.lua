@@ -14,20 +14,26 @@
 -- https://wiki.hypr.land/Configuring/Variables/#input
 --------------------------------------------------------------------------------
 
+-- On Nix installs, this file is replaced by the generated version from
+-- doorway.input options in your home config. Edits here only affect bare installs.
 hl.config({
     input = {
-        -- kb_layout = "us",
+        -- kb_layout = "us",        -- set via doorway.keyboard
         -- follow_mouse = 1,
         -- sensitivity = 0,
         -- force_no_accel = false,
-        -- accel_profile = "flat",
-        -- numlock_by_default = true,
+        accel_profile      = "flat",       -- doorway.input.accelProfile
+        numlock_by_default = true,         -- doorway.input.numlock
 
         -- Touchpad settings
         -- https://wiki.hypr.land/Configuring/Variables/#touchpad
         touchpad = {
-            natural_scroll = false,
+            natural_scroll = false,        -- doorway.input.naturalScroll
         },
+    },
+    decoration = {
+        active_opacity   = 0.9,            -- doorway.input.activeOpacity
+        inactive_opacity = 0.75,           -- doorway.input.inactiveOpacity
     },
 })
 

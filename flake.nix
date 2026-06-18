@@ -602,7 +602,7 @@
               # wallpaper.sh bootstraps via `eval $(doorway-shell init)` — needs
               # PATH to include ~/.local/bin (propagated via systemctl --user
               # import-environment from startup.lua's SYSTEMD_SHARE_PICKER).
-              doorway-wallpaper = mkDoorwayService {
+              doorway-wallpaper = mkDoorwayOneshot {
                 description = "DOORway wallpaper daemon";
                 execStart = "%h/.local/lib/doorway/wallpaper.sh --start --global";
               };

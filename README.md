@@ -14,6 +14,8 @@ DOORway is a complete Hyprland desktop environment built for NixOS and the [HALL
 - [Quick Start](#quick-start)
 - [Components](#components)
 - [Configuration](#configuration)
+  - [Module Options Reference](#module-options-reference)
+  - [Bare / Non-Nix Install](#bare--non-nix-install)
 - [Themes](#themes)
 - [Keybindings](#keybindings)
 - [Contributing](#contributing)
@@ -115,34 +117,189 @@ Located in `~/.local/lib/doorway/`:
 
 ## Configuration
 
-### Directory Structure
+All DOORway settings are declared declaratively in the `doorway.*` namespace of your Home Manager configuration. Options take effect after `nixos-rebuild switch` — no manual file editing required.
 
+### Complete Example
+
+```nix
+doorway = {
+  enable  = true;
+  monitor = "HDMI-A-1,1920x1080@100,0x0,1";
+  keyboard = "us";
+
+  # Cursor
+  cursor.name = "oreo_spark_neon_pink_bordered_cursors";
+  cursor.size = 36;
+
+  # Fonts (scaled for distance viewing on a large monitor)
+  fonts.ui.name        = "Atkinson Hyperlegible";
+  fonts.ui.size        = 15;
+  fonts.monospace.name = "JetBrainsMono Nerd Font Mono";
+  fonts.monospace.size = 13;
+
+  # Window geometry & blur
+  theme.rounding    = 14;
+  theme.gapsIn      = 4;
+  theme.gapsOut     = 18;
+  theme.borderSize  = 4;
+  theme.blur.size   = 8;
+  theme.blur.passes = 4;
+
+  # Transparency (higher = more wallpaper glow-through)
+  input.activeOpacity   = 0.88;
+  input.inactiveOpacity = 0.70;
+
+  # Animations, lock screen
+  animations.preset = "LimeFrenzy";
+  lock.layout       = "Anurati";
+
+  # Blue-light filter schedule
+  blueLight.temperature        = 3500;
+  blueLight.schedule.nightTime = "21:00";
+  blueLight.schedule.dayTime   = "06:00";
+
+  # Service toggles (disable what you don't need)
+  networkApplet.enable = false;  # using iwgtk instead of nm-applet
+};
 ```
-~/.config/
-├── hypr/
-│   ├── hyprland.lua       # Main config (sources others)
-│   ├── keybindings.lua    # All keybindings
-│   ├── windowrules.lua    # Window-specific rules
-│   ├── monitors.lua       # Display configuration ← EDIT THIS
-│   ├── userprefs.lua      # Your personal preferences ← EDIT THIS
-│   └── animations.lua     # Animation settings
-├── quickshell/doorway/  # QuickShell shell (bar, sidebars, OSD, notifications)
-│   ├── shell.qml          # Entry point
-│   └── modules/ii/        # IllogicalImpulse-derived panels
-├── matugen/               # Material You color templates
-├── rofi/                  # Launcher themes
-└── doorway/
-    └── config.toml        # DOORway settings
 
-~/.local/
-├── lib/doorway/         # Utility scripts
-├── share/doorway/       # Data files, schemas
-└── bin/                   # doorway-shell, doorwayctl
-```
+---
 
-### User Configuration Files
+### Module Options Reference
 
-**`~/.config/hypr/monitors.lua`** — Your display setup:
+#### Core
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enable` | bool | `false` | Enable the DOORway desktop environment |
+| `monitor` | str | `""` | Primary monitor (Hyprland format: `"NAME,WIDTHxHEIGHT@HZ,XxY,SCALE"`) |
+| `extraMonitors` | list of str | `[]` | Additional monitor strings (same format) |
+| `keyboard` | str | `"us"` | Keyboard layout identifier |
+| `installPackages` | bool | `true` | Install all DOORway dependency packages automatically |
+
+#### `doorway.cursor` — Cursor theme
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cursor.package` | package | `pkgs.oreo-cursors-plus` | Nix package providing the cursor theme files |
+| `cursor.name` | str | `"oreo_spark_pink_cursors"` | Theme name as it appears under `share/icons/` in the cursor package |
+| `cursor.size` | int | `24` | Cursor size in pixels |
+
+All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (static) and `oreo_spark_{colour}_cursors` / `oreo_spark_{colour}_bordered_cursors` (animated).
+
+#### `doorway.fonts` — Typography
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fonts.ui.name` | str | `"Cantarell"` | UI font for dialogs, GTK apps, and general text |
+| `fonts.ui.size` | int | `10` | UI font size in points |
+| `fonts.monospace.name` | str | `"CaskaydiaCove Nerd Font Mono"` | Monospace font for terminals and editors |
+| `fonts.monospace.size` | int | `9` | Monospace font size in points |
+| `fonts.interface` | str | `"JetBrainsMono Nerd Font"` | Font for the bar, rofi menus, and Hyprland groupbar |
+| `fonts.sidebar` | str | `"Cantarell"` | Font for QuickShell sidebar content |
+
+#### `doorway.theme` — Window geometry and blur
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `theme.gapsIn` | int (≥ 0) | `3` | Inner gap between tiled windows in pixels |
+| `theme.gapsOut` | int (≥ 0) | `8` | Outer gap between windows and screen edge in pixels |
+| `theme.borderSize` | int (≥ 0) | `2` | Window border width in pixels. `0` disables borders |
+| `theme.rounding` | int (≥ 0) | `10` | Corner rounding radius in pixels. `0` disables rounding |
+| `theme.layout` | `"dwindle"` \| `"master"` | `"dwindle"` | Default tiling layout algorithm |
+| `theme.blur.enabled` | bool | `true` | Enable background blur behind transparent surfaces |
+| `theme.blur.size` | int (≥ 1) | `6` | Blur kernel radius — larger is blurrier but heavier |
+| `theme.blur.passes` | int (≥ 1) | `3` | Number of blur passes — more passes = smoother result |
+
+Borders are painted by **matugen** with Material You accent colors extracted from your active wallpaper. `theme.borderSize = 4` with a bold wallpaper and `animations.preset = "LimeFrenzy"` gives a continuously animated neon glow effect.
+
+#### `doorway.animations` — Window animations
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `animations.preset` | enum | `"standard"` | Animation preset loaded from `animations/` |
+
+Available presets:
+
+| Preset | Character |
+|--------|-----------|
+| `classic` | Traditional slide |
+| `diablo-1`, `diablo-2` | Gothic, dramatic |
+| `disable` | No animations — for gaming/low-latency |
+| `dynamic` | Physics-based slide with looping border gradient |
+| `end4` | Material Design 3 curves, `popin 60%` window reveal |
+| `fast` | Snappy, minimal duration |
+| `high` | Elaborate, high-quality |
+| `ja` | Japanese-style |
+| `LimeFrenzy` | Overshot spring open/close + looping animated border gradient |
+| `me-1`, `me-2` | Personal presets |
+| `minimal-1`, `minimal-2` | Subtle, minimal |
+| `moving` | Overshot slide |
+| `optimized` | Performance-tuned |
+| `standard` | Balanced default |
+| `theme` | Follows active theme |
+| `vertical` | Vertical slide |
+
+#### `doorway.lock` — Lock screen
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `lock.layout` | enum | `"DOORway"` | Hyprlock layout preset from `hyprlock/` |
+
+Available layouts: `DOORway` (wallbash colors), `Anurati` (sci-fi typeface), `Arfan on Clouds`, `greetd`, `greetd-wallbash`, `IBM Plex`, `IMB Xtented`, `SF Pro`.
+
+#### `doorway.idle` — Idle management
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `idle.enable` | bool | `true` | Enable the idle daemon (hypridle) |
+| `idle.timeouts.dim` | int | `60` | Seconds until screen dims |
+| `idle.timeouts.lock` | int | `120` | Seconds until session locks |
+| `idle.timeouts.dpms` | int | `300` | Seconds until display turns off (DPMS) |
+| `idle.timeouts.suspend` | int \| null | `500` | Seconds until suspend. `null` disables suspend |
+
+#### `doorway.input` — Input and opacity
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `input.numlock` | bool | `true` | Enable NumLock by default |
+| `input.accelProfile` | `"flat"` \| `"adaptive"` \| `"custom"` | `"flat"` | Mouse acceleration profile. `"flat"` = raw input (recommended for gaming) |
+| `input.naturalScroll` | bool | `false` | Natural (reversed) touchpad scroll direction |
+| `input.activeOpacity` | float 0–1 | `0.9` | Focused window opacity. `1.0` = fully opaque |
+| `input.inactiveOpacity` | float 0–1 | `0.75` | Unfocused window opacity |
+
+#### `doorway.blueLight` — Blue-light filter
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `blueLight.enable` | bool | `true` | Enable hyprsunset |
+| `blueLight.temperature` | int 1000–10000 | `3500` | Night-mode color temperature in Kelvin. Lower = warmer/redder |
+| `blueLight.schedule.dayTime` | str | `"06:00"` | Time (HH:MM) to restore daylight colors |
+| `blueLight.schedule.nightTime` | str | `"21:00"` | Time (HH:MM) to apply night temperature |
+
+Reference temperatures: `2700K` incandescent · `3500K` warm white · `5500K` neutral · `6500K` daylight.
+
+#### `doorway.shell` — QuickShell UI shell
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `shell.enable` | bool | `true` | Enable the QuickShell bar, sidebars, OSD, and notification popups |
+
+#### Service Toggles
+
+| Option | Type | Default | Controls |
+|--------|------|---------|----------|
+| `bluetooth.enable` | bool | `true` | `blueman-applet` Bluetooth tray icon |
+| `networkApplet.enable` | bool | `true` | `nm-applet --indicator` network tray icon |
+| `removableMedia.enable` | bool | `true` | `udiskie` removable-media auto-mount tray |
+
+---
+
+### Bare / Non-Nix Install
+
+For setups not using the Home Manager module, edit these files directly:
+
+**`~/.config/hypr/monitors.lua`** — Display configuration:
 ```lua
 -- Single monitor
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "0x0", scale = "1" })
@@ -152,20 +309,25 @@ hl.monitor({ output = "DP-1",     mode = "2560x1440@144", position = "0x0",    s
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60",  position = "2560x0", scale = "1" })
 ```
 
-**`~/.config/hypr/userprefs.lua`** — Personal preferences:
+**`~/.config/hypr/userprefs.lua`** — Input and opacity:
 ```lua
 hl.config({
     input = {
-        kb_layout = "us",
-        follow_mouse = 1,
-        sensitivity = 0,
-        touchpad = { natural_scroll = true },
+        kb_layout          = "us",
+        accel_profile      = "flat",
+        numlock_by_default = true,
+        touchpad = { natural_scroll = false },
     },
-    misc = {
-        enable_swallow = true,
-        swallow_regex = "(kitty|Alacritty)",
+    decoration = {
+        active_opacity   = 0.9,
+        inactive_opacity = 0.75,
     },
 })
+```
+
+**`~/.config/hypr/animations.lua`** — Animation preset:
+```lua
+require("animations/standard")  -- replace with any preset name from animations/
 ```
 
 ---

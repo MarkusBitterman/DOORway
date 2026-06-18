@@ -22,8 +22,8 @@ hl.config({
     decoration = {
         rounding           = 10,
         dim_special        = 0.3,
-        active_opacity     = 0.90,
-        inactive_opacity   = 0.75,
+        -- active_opacity and inactive_opacity live in userprefs.lua (loads first)
+        -- so they can be driven by doorway.input without being overridden here.
         fullscreen_opacity = 1,
         shadow = {
             enabled = false,
@@ -45,13 +45,6 @@ hl.config({
     -- per-leaf animation specs use hl.curve / hl.animation below.
     animations = {
         enabled = true,
-    },
-
-    -- // █ █▄░█ █▀█ █░█ ▀█▀
-    -- // █ █░▀█ █▀▀ █▄█ ░█░
-    input = {
-        accel_profile      = "flat",
-        numlock_by_default = true,
     },
 
     -- // █░░ ▄▀█ █▄█ █▀█ █░█ ▀█▀ █▀

@@ -757,3 +757,46 @@ require("themes/colors")
 - [x] **Phase 8 recoded** — wallbash → Hyprland Lua port moved from "blocked on missing upstream API" to "superseded by Phase 11 matugen." Architecture no longer depends on `hl.source()`; QuickShell `FileView` will own color subscription.
 - [x] **Initiative II added** — Phases 10–16 (DOORway Shell & Visual Redesign) inserted between Phase 9's "Caveats / risk-control" and "Files to Keep as hyprlang." Design decisions: QuickShell (QML/Qt6) over AGS/eww; matugen Material You over wallbash port; AI tool deferred to Phase 17+; left sidebar = Notes / Overview / Tasks / Scratchpads; waybar replaced entirely; end-4's `ii` shell as fork target (GPLv3, attribution).
 - [x] **Hydenix's `mutable.nix`** — flagged for adoption in Phase 11 as `lib.mkMutableHomeFile`; resolves the EROFS-on-runtime-writes class once for all future passes.
+
+### 2026-06-18
+- [x] **doorway.idle + doorway.cursor** — idle daemon timeouts and cursor theme/size exposed as Home Manager module options. `hypridle.conf` converted from `.source` to generated `.text` in flake.nix.
+- [x] **nixosModules.default** — DOORway now owns `programs.hyprland` at the NixOS level. HALLway no longer declares it directly.
+- [x] **Guest user migrated** — `hosts/2600AD/home/guest.nix` replaced with DOORway module import (`installPackages = false`).
+- [x] **Hyprland version pinned in DOORway** — direct `hyprland` flake input added; both HM and NixOS modules reference it.
+- [x] **doorway.fonts** — UI, monospace, and interface font name+size exposed as Home Manager module options. `doorway-fonts.lua` sidecar pattern (same as `doorway-cursor.lua`). `variables.lua` updated with `pcall` loader + fallback defaults.
+
+---
+
+## Initiative III: Module Options (Phase 18+)
+
+> **Goal**: Expose DOORway's hardcoded config values as declarative Home Manager module options so HALLway users can customise their desktop without forking the DOORway source tree.
+
+### Currently exposed (`doorway.*`)
+
+| Option | File | Status |
+|---|---|---|
+| `enable`, `monitor`, `extraMonitors`, `keyboard`, `installPackages` | flake.nix | ✅ |
+| `cursor.{package, name, size}` | `doorway-cursor.lua` | ✅ |
+| `shell.enable` | flake.nix service gate | ✅ |
+| `idle.{enable, timeouts.{dim,lock,dpms,suspend}}` | generated `hypridle.conf` | ✅ |
+| `fonts.{ui.{name,size}, monospace.{name,size}, interface, sidebar}` | `doorway-fonts.lua` | ✅ |
+
+### Tier 1 — preset selectors (simple enum, high UX value)
+
+- [x] **`doorway.animations.preset`** — 18 presets in `animations/`; `animations.lua` now reads from `doorway-animation-preset.lua` sidecar via pcall.
+- [ ] **`doorway.lock.layout`** — 9 presets in `hyprlock/`; `hyprlock.conf` line 13 sets `$LAYOUT_PATH`. Generate that variable.
+
+### Tier 2 — user-configurable values (convert static file → `.text` in flake)
+
+- [ ] **`doorway.theme`** — gaps (in/out), border size, rounding, layout (dwindle|master). Requires converting `Configs/.config/hypr/themes/theme.conf` from `.source` to `.text`.
+- [ ] **`doorway.input`** — numlock default, mouse accel profile, touchpad natural scroll, active/inactive window opacity.
+
+### Tier 3 — service toggles
+
+- [ ] **`doorway.blueLight`** — `hyprsunset` enable + temperature (K) + schedule times (currently all commented-out in `hyprsunset.conf`).
+- [ ] **`doorway.bluetooth.enable`** / **`doorway.networkApplet.enable`** / **`doorway.removableMedia.enable`** — gate existing `mkDoorwayService` entries.
+
+### Do NOT parameterise
+
+- `col.active_border` / `col.inactive_border` — matugen/wallbash owns these at runtime; Nix options would conflict.
+- GTK theme name — use HM's `gtk.theme.name` directly (DOORway sets a `lib.mkDefault`; users override with their own `gtk.*` declarations).

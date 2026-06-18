@@ -17,4 +17,10 @@ hl.on("hyprland.start", function()
     -- UWSM handles env propagation before Hyprland starts; HALLway-side
     -- services.gnome.gnome-keyring.enable handles the keyring daemon + PAM.
     hl.exec_cmd("hyprctl setcursor " .. vars.CURSOR_THEME .. " " .. tostring(vars.CURSOR_SIZE))
+
+    -- Persistent headless virtual output: prevents Hyprland from entering
+    -- "unsafe state" (zero monitors) when the physical display is unplugged.
+    -- Without this, onDisconnect → enterUnsafeState → getViewsForWorkspace
+    -- segfaults in Hyprland 0.55.x (confirmed across all crash reports).
+    hl.exec_cmd("hyprctl output create headless")
 end)

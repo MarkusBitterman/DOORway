@@ -784,7 +784,7 @@ require("themes/colors")
 ### Tier 1 — preset selectors (simple enum, high UX value)
 
 - [x] **`doorway.animations.preset`** — 18 presets in `animations/`; `animations.lua` now reads from `doorway-animation-preset.lua` sidecar via pcall.
-- [ ] **`doorway.lock.layout`** — 9 presets in `hyprlock/`; `hyprlock.conf` line 13 sets `$LAYOUT_PATH`. Generate that variable.
+- [x] **`doorway.lock.layout`** — 8 presets in `hyprlock/`; `hyprlock.conf` converted to generated `.text`, `$LAYOUT_PATH` interpolated from option.
 
 ### Tier 2 — user-configurable values (convert static file → `.text` in flake)
 

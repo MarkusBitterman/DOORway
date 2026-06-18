@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 Item {
     id: root
@@ -24,9 +24,11 @@ Item {
     Loader {
         active: root.colorize
         anchors.fill: iconImage
-        sourceComponent: ColorOverlay {
+        sourceComponent: MultiEffect {
+            anchors.fill: parent
             source: iconImage
-            color: root.color
+            colorization: 1.0
+            colorizationColor: root.color
         }
     }
 }

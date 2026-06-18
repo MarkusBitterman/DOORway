@@ -1,7 +1,7 @@
 import qs.modules.common
 import qs.modules.common.functions
-import Qt5Compat.GraphicalEffects
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.Notifications
@@ -75,7 +75,8 @@ MaterialShape { // App icon
                 asynchronous: true
 
                 layer.enabled: true
-                layer.effect: OpacityMask {
+                layer.effect: MultiEffect {
+                    maskEnabled: true
                     maskSource: Rectangle {
                         width: notifImage.size
                         height: notifImage.size

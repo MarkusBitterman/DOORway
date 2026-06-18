@@ -3,7 +3,7 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 /**
  * A progress bar with both ends rounded and text acts as clipping like OneUI 7's battery indicator.
@@ -80,11 +80,12 @@ ProgressBar {
         }
     }
 
-    OpacityMask {
+    MultiEffect {
         id: roundingMask
         visible: false
         anchors.fill: parent
         source: contentItem
+        maskEnabled: true
         maskSource: Rectangle {
             width: contentItem.width
             height: contentItem.height
@@ -92,10 +93,11 @@ ProgressBar {
         }
     }
 
-    OpacityMask {
+    MultiEffect {
         anchors.fill: parent
         source: roundingMask
-        invert: true
+        maskEnabled: true
+        maskInverted: true
         maskSource: root.textMask
     }
 }

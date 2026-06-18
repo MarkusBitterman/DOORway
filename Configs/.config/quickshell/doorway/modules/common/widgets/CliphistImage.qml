@@ -2,8 +2,8 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import qs.modules.common.functions
-import Qt5Compat.GraphicalEffects
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 
@@ -69,7 +69,8 @@ Rectangle {
     }
 
     layer.enabled: true
-    layer.effect: OpacityMask {
+    layer.effect: MultiEffect {
+        maskEnabled: true
         maskSource: Rectangle {
             width: image.width
             height: image.height
@@ -94,10 +95,12 @@ Rectangle {
         id: blurLoader
         active: root.blur
         anchors.fill: image
-        sourceComponent: GaussianBlur {
+        sourceComponent: MultiEffect {
+            anchors.fill: parent
             source: image
-            radius: 35
-            samples: radius * 2 + 1
+            blurEnabled: true
+            blur: 35 / 64
+            blurMax: 64
 
             Rectangle {
                 anchors.fill: parent

@@ -1,10 +1,10 @@
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
-import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 
 TabButton {
     id: root
@@ -97,7 +97,8 @@ TabButton {
         implicitHeight: 42
         color: (root.hovered ? root.colBackgroundHover : root.colBackground)
         layer.enabled: true
-        layer.effect: OpacityMask {
+        layer.effect: MultiEffect {
+            maskEnabled: true
             maskSource: Rectangle {
                 width: buttonBackground.width
                 height: buttonBackground.height

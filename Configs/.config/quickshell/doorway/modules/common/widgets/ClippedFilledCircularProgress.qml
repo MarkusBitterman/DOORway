@@ -2,7 +2,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
 import QtQuick.Shapes
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 Item {
     id: root
@@ -89,10 +89,11 @@ Item {
         }
     }
 
-    OpacityMask {
+    MultiEffect {
         anchors.fill: parent
         source: contentItem
-        invert: true
+        maskEnabled: true
+        maskInverted: true
         maskSource: root.textMask
     }
 }

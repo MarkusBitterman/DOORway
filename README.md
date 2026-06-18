@@ -15,7 +15,6 @@ DOORway is a complete Hyprland desktop environment built for NixOS and the [HALL
 - [Components](#components)
 - [Configuration](#configuration)
   - [Module Options Reference](#module-options-reference)
-  - [Bare / Non-Nix Install](#bare--non-nix-install)
 - [Themes](#themes)
 - [Keybindings](#keybindings)
 - [Contributing](#contributing)
@@ -292,43 +291,6 @@ Reference temperatures: `2700K` incandescent · `3500K` warm white · `5500K` ne
 | `bluetooth.enable` | bool | `true` | `blueman-applet` Bluetooth tray icon |
 | `networkApplet.enable` | bool | `true` | `nm-applet --indicator` network tray icon |
 | `removableMedia.enable` | bool | `true` | `udiskie` removable-media auto-mount tray |
-
----
-
-### Bare / Non-Nix Install
-
-For setups not using the Home Manager module, edit these files directly:
-
-**`~/.config/hypr/monitors.lua`** — Display configuration:
-```lua
--- Single monitor
-hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "0x0", scale = "1" })
-
--- Dual monitors
-hl.monitor({ output = "DP-1",     mode = "2560x1440@144", position = "0x0",    scale = "1" })
-hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60",  position = "2560x0", scale = "1" })
-```
-
-**`~/.config/hypr/userprefs.lua`** — Input and opacity:
-```lua
-hl.config({
-    input = {
-        kb_layout          = "us",
-        accel_profile      = "flat",
-        numlock_by_default = true,
-        touchpad = { natural_scroll = false },
-    },
-    decoration = {
-        active_opacity   = 0.9,
-        inactive_opacity = 0.75,
-    },
-})
-```
-
-**`~/.config/hypr/animations.lua`** — Animation preset:
-```lua
-require("animations/standard")  -- replace with any preset name from animations/
-```
 
 ---
 

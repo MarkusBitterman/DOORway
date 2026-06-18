@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Pipewire
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 Item {
     id: root
@@ -50,10 +50,10 @@ Item {
                 }
             }
 
-            Desaturate {
+            MultiEffect {
                 anchors.fill: iconImg
                 source: iconImg
-                desaturation: root.node?.audio.muted ? 1.0 : 0.0
+                saturation: root.node?.audio.muted ? -1.0 : 0.0
                 visible: iconImg.source !== ""
                 opacity: root.node?.audio.muted ? 0.4 : 1.0
 
@@ -62,7 +62,7 @@ Item {
                         duration: 150
                     }
                 }
-                Behavior on desaturation {
+                Behavior on saturation {
                     NumberAnimation {
                         duration: 150
                     }

@@ -1,9 +1,9 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
-import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 
 /**
  * A button with ripple effect similar to in Material Design.
@@ -142,7 +142,8 @@ Button {
         }
 
         layer.enabled: true
-        layer.effect: OpacityMask {
+        layer.effect: MultiEffect {
+            maskEnabled: true
             maskSource: Rectangle {
                 width: buttonBackground.width
                 height: buttonBackground.height

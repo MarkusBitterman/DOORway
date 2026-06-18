@@ -849,8 +849,6 @@
               };
 
               # QuickShell UI shell — gated by doorway.shell.enable.
-              # QML_IMPORT_PATH exposes qt5compat (Qt5Compat.GraphicalEffects) which
-              # quickshell 0.3.0 does not bundle in its own store path.
               # ExecStartPost creates by-id/ipc.sock → the live instance socket.
               # Workaround: qs ipc resolves the instance ID from lock file content,
               # but QS 0.3.0 uses raw fcntl locks on an empty file, so the ID reads
@@ -873,9 +871,6 @@
                     done
                   '';
                 in {
-                  Service.Environment = [
-                    "QML_IMPORT_PATH=${pkgs.qt6.qt5compat}/lib/qt-6/qml"
-                  ];
                   Service.ExecStartPost = "${qsIpcSymlink}";
                 })
               ]);

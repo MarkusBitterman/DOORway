@@ -1,10 +1,10 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 
 Item {
     id: root
@@ -19,7 +19,8 @@ Item {
 
         clip: true
         layer.enabled: true
-        layer.effect: OpacityMask {
+        layer.effect: MultiEffect {
+            maskEnabled: true
             maskSource: Rectangle {
                 width: listview.width
                 height: listview.height

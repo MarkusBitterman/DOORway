@@ -2,8 +2,8 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import qs.modules.common.functions
-import Qt5Compat.GraphicalEffects
 import QtQuick
+import QtQuick.Effects
 import Quickshell.Io
 import Quickshell.Widgets
 
@@ -38,7 +38,8 @@ IconImage {
     implicitSize: root.size
 
     layer.enabled: true
-    layer.effect: OpacityMask {
+    layer.effect: MultiEffect {
+        maskEnabled: true
         maskSource: Rectangle {
             width: root.implicitSize
             height: root.implicitSize

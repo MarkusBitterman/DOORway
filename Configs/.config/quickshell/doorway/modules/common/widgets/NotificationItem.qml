@@ -4,7 +4,7 @@ import qs.services
 import qs.modules.common.functions
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Notifications
@@ -215,7 +215,8 @@ Item { // Notification item area
                     implicitHeight: actionsFlickable.implicitHeight
 
                     layer.enabled: true
-                    layer.effect: OpacityMask {
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
                         maskSource: Rectangle {
                             width: actionsFlickable.width
                             height: actionsFlickable.height

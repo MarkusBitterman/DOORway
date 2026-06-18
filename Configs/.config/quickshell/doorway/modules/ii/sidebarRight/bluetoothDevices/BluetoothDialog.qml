@@ -6,7 +6,6 @@ import qs.modules.common.functions
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import Quickshell.Io
 import Quickshell.Bluetooth
 import Quickshell

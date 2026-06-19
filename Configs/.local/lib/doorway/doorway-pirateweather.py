@@ -168,6 +168,8 @@ def main() -> None:
         "press": f"{round(cur.get('pressure', 0))} hPa",
         "sunrise": fmt_local_time(sunrise_ts, "%-I:%M %p") if sunrise_ts else "--",
         "sunset": fmt_local_time(sunset_ts, "%-I:%M %p") if sunset_ts else "--",
+        "sunriseHHMM": fmt_local_time(sunrise_ts, "%H:%M") if sunrise_ts else "06:30",
+        "sunsetHHMM": fmt_local_time(sunset_ts, "%H:%M") if sunset_ts else "19:00",
         "summary": cur.get("summary", ""),
         "lastRefresh": datetime.now().strftime("%-I:%M %p"),
         "hourly": hourly,

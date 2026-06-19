@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import qs.modules.common
+import qs.services
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
@@ -17,8 +18,10 @@ Singleton {
 
     readonly property real gammaLowerLimit: 25
 
-    property string from: Config.options?.light?.night?.from ?? "19:00" 
-    property string to: Config.options?.light?.night?.to ?? "06:30"
+    property bool useWeatherTimes: (Config.options?.light?.night?.useWeatherTimes ?? false) && Weather.available
+    // When useWeatherTimes is on, from/to track actual local sunset/sunrise instead of fixed clock times
+    property string from: useWeatherTimes ? Weather.data.sunsetHHMM : (Config.options?.light?.night?.from ?? "19:00")
+    property string to: useWeatherTimes ? Weather.data.sunriseHHMM : (Config.options?.light?.night?.to ?? "06:30")
     property bool automatic: Config.options?.light?.night?.automatic && (Config?.ready ?? true)
     property int colorTemperature: Config.options?.light?.night?.colorTemperature ?? 5000
     property int defaultColorTemperature: 6000

@@ -468,6 +468,15 @@
                   default = "21:00";
                   description = "Time (HH:MM, 24-hour) to apply the night-mode temperature.";
                 };
+                useWeatherTimes = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = ''
+                    When true (and doorway.weather.enable is set), use today's actual
+                    sunrise/sunset from PirateWeather instead of the fixed dayTime/nightTime.
+                    Night light turns on at sunset and off at sunrise, adapting across seasons.
+                  '';
+                };
               };
             };
 
@@ -942,6 +951,27 @@
                 Install.WantedBy = [ "timers.target" ];
               };
             };
+
+            # Seed the QuickShell night-light schedule into config.json so Nix options
+            # actually drive Hyprsunset.qml (which bypasses hyprsunset.conf entirely).
+            # Runs at every nixos-rebuild switch; user UI edits reset on next rebuild.
+            home.activation.doorwayNightLightConfig = lib.mkIf cfg.enable
+              (lib.hm.dag.entryAfter ["writeBoundary"] (let
+                nightTime = cfg.blueLight.schedule.nightTime;
+                dayTime = cfg.blueLight.schedule.dayTime;
+                useWeather = lib.boolToString cfg.blueLight.schedule.useWeatherTimes;
+              in ''
+                config_file="$HOME/.config/illogical-impulse/config.json"
+                mkdir -p "$(dirname "$config_file")"
+                [ -f "$config_file" ] || echo '{}' > "$config_file"
+                tmp="$(${pkgs.coreutils}/bin/mktemp)"
+                ${pkgs.jq}/bin/jq \
+                  --arg from "${nightTime}" \
+                  --arg to "${dayTime}" \
+                  --argjson useWeather ${useWeather} \
+                  '.light.night.from = $from | .light.night.to = $to | .light.night.useWeatherTimes = $useWeather' \
+                  "$config_file" > "$tmp" && mv "$tmp" "$config_file"
+              ''));
           };
         };
 

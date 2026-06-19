@@ -39,8 +39,9 @@ Item {
             StyledImage {
                 id: iconImg
                 anchors.fill: parent
-                visible: false
-                layer.enabled: true
+                // opacity:0 instead of visible:false — MultiEffect requires the source
+                // item to be in the scene graph to render from it.
+                opacity: 0
                 source: {
                     let icon;
                     icon = AppSearch.guessIcon(root.node?.properties["application.icon-name"] ?? "");

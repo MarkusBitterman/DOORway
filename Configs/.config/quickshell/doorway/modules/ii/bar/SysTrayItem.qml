@@ -70,23 +70,22 @@ MouseArea {
 
     IconImage {
         id: trayIcon
-        visible: !Config.options.tray.monochromeIcons
+        // opacity:0 keeps the item renderable so MultiEffect can use it as source.
+        // visible:false would silently prevent MultiEffect from producing any output.
+        opacity: Config.options.tray.monochromeIcons ? 0 : 1
         source: root.item.icon
         anchors.centerIn: parent
         width: parent.width
         height: parent.height
     }
 
-    Loader {
-        active: Config.options.tray.monochromeIcons
+    MultiEffect {
         anchors.fill: trayIcon
-        sourceComponent: MultiEffect {
-            anchors.fill: parent
-            source: trayIcon
-            saturation: -0.8
-            colorization: 1.0
-            colorizationColor: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
-        }
+        visible: Config.options.tray.monochromeIcons
+        source: trayIcon
+        saturation: -0.8
+        colorization: 1.0
+        colorizationColor: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
     }
 
     PopupToolTip {

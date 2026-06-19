@@ -57,6 +57,9 @@
         # Initiative II — QuickShell shell + matugen color theming
         quickshell      # QML/Qt6 desktop shell toolkit
         matugen         # Material You color generation from wallpaper
+
+        # Weather fetch script (doorway-pirateweather.py uses requests)
+        (python3.withPackages (ps: [ ps.requests ]))
         inotify-tools   # inotifywait for doorway-matugen-watcher
         material-symbols  # Google Material Symbols variable font (used by MaterialSymbol.qml)
       ];
@@ -491,6 +494,36 @@
                 description = "Enable the removable-media tray applet (udiskie). Provides auto-mount prompts for USB drives and SD cards.";
               };
             };
+
+            weather = {
+              enable = lib.mkEnableOption "DOORway PirateWeather bar widget and periodic fetch service";
+              zipCode = lib.mkOption {
+                type = lib.types.str;
+                default = "";
+                example = "52240";
+                description = "US ZIP code (or postal code if country is set). Geocoded to lat/long via Nominatim on first run; result is cached at ~/.cache/doorway/weather-location.json.";
+              };
+              updateFrequency = lib.mkOption {
+                type = lib.types.ints.positive;
+                default = 15;
+                description = "How often (in minutes) the systemd timer fires to refresh weather data.";
+              };
+              pirateWeatherApiKeyFile = lib.mkOption {
+                type = lib.types.str;
+                default = "";
+                description = ''
+                  Path to a file containing the PirateWeather API key in systemd EnvironmentFile format:
+                    PIRATE_WEATHER_API_KEY=your_key_here
+                  With sops-nix in HALLway: osConfig.sops.secrets."pirate_weather_api_key".path
+                  Obtain a key at https://pirateweather.net
+                '';
+              };
+              units = lib.mkOption {
+                type = lib.types.enum [ "us" "si" "ca" "uk2" ];
+                default = "us";
+                description = "'us' = °F/mph, 'si' = °C/m/s, 'ca' = °C/km/h, 'uk2' = °C/mph";
+              };
+            };
           };
 
           config = lib.mkIf cfg.enable {
@@ -877,6 +910,37 @@
                   Service.ExecStartPost = "${qsIpcSymlink}";
                 })
               ]);
+
+              # Fetch weather from PirateWeather; fired by doorway-weather-fetch.timer.
+              # API key arrives via EnvironmentFile (sops secret, not hardcoded).
+              doorway-weather-fetch = lib.mkIf cfg.weather.enable {
+                Unit = {
+                  Description = "DOORway PirateWeather data fetch";
+                  After = [ "network-online.target" ];
+                };
+                Service = {
+                  Type = "oneshot";
+                  ExecStart = "%h/.local/lib/doorway/doorway-pirateweather.py";
+                  Environment = [
+                    "PIRATE_WEATHER_ZIP=${cfg.weather.zipCode}"
+                    "PIRATE_WEATHER_UNITS=${cfg.weather.units}"
+                  ];
+                } // lib.optionalAttrs (cfg.weather.pirateWeatherApiKeyFile != "") {
+                  EnvironmentFile = cfg.weather.pirateWeatherApiKeyFile;
+                };
+              };
+            };
+
+            systemd.user.timers = lib.mkIf cfg.weather.enable {
+              doorway-weather-fetch = {
+                Unit.Description = "DOORway PirateWeather periodic fetch timer";
+                Timer = {
+                  OnBootSec = "1min";
+                  OnUnitActiveSec = "${toString cfg.weather.updateFrequency}min";
+                  Persistent = true;
+                };
+                Install.WantedBy = [ "timers.target" ];
+              };
             };
           };
         };

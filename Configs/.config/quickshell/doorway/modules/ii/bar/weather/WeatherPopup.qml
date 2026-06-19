@@ -51,6 +51,50 @@ StyledPopup {
             }
         }
 
+        // Hourly forecast
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            text: Translation.tr("Hourly")
+            font {
+                weight: Font.DemiBold
+                pixelSize: Appearance.font.pixelSize.smaller
+            }
+            color: Appearance.colors.colOnSurfaceVariant
+        }
+
+        Repeater {
+            model: Weather.data.hourly ?? []
+            delegate: RowLayout {
+                required property var modelData
+                spacing: 8
+                Layout.alignment: Qt.AlignHCenter
+
+                StyledText {
+                    text: modelData.time
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colOnSurfaceVariant
+                    Layout.preferredWidth: 44
+                }
+                MaterialSymbol {
+                    fill: 0
+                    text: modelData.icon || "cloud"
+                    iconSize: Appearance.font.pixelSize.normal
+                    color: Appearance.colors.colOnSurfaceVariant
+                }
+                StyledText {
+                    text: modelData.temp
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colOnSurfaceVariant
+                    Layout.preferredWidth: 44
+                }
+                StyledText {
+                    text: modelData.precip
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colOnSurfaceVariant
+                }
+            }
+        }
+
         // Metrics grid
         GridLayout {
             id: gridLayout

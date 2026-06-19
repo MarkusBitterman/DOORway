@@ -332,7 +332,8 @@ Item { // Bar content region
             // Weather
             Loader {
                 Layout.leftMargin: 4
-                active: Config.options.bar.weather.enable
+                // Also auto-shows when the doorway.weather Nix service has produced data
+                active: Config.options.bar.weather.enable || Weather.available
 
                 sourceComponent: BarGroup {
                     WeatherBar {}

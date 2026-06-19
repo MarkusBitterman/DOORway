@@ -407,6 +407,37 @@
                   description = "Number of blur passes. More passes produce a smoother, higher-quality blur.";
                 };
               };
+              iconTheme = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  default = "Tela-dracula";
+                  description = ''
+                    Icon theme name as it appears under share/icons/ in the icon theme package.
+                    tela-icon-theme variants (each also has -dark and -light suffix):
+                    Tela, Tela-black, Tela-blue, Tela-brown, Tela-dracula, Tela-green,
+                    Tela-grey, Tela-manjaro, Tela-nord, Tela-orange, Tela-pink,
+                    Tela-purple, Tela-red, Tela-ubuntu, Tela-yellow.
+                  '';
+                };
+                package = lib.mkOption {
+                  type = lib.types.package;
+                  default = pkgs.tela-icon-theme;
+                  description = "Nix package providing the icon theme.";
+                };
+              };
+            };
+
+            bar = {
+              topLeftIcon = lib.mkOption {
+                type = lib.types.str;
+                default = "distro";
+                description = ''
+                  Icon shown in the top-left sidebar button.
+                  "distro" auto-detects the running distro (nixos-symbolic, arch-symbolic, etc.).
+                  Any other string is used as "<name>-symbolic" and looked up first in the icon
+                  theme, then in assets/icons/ (supports both .svg and .png assets).
+                '';
+              };
             };
 
             input = {
@@ -772,7 +803,7 @@
             gtk = {
               enable = true;
               theme.name     = lib.mkDefault "Wallbash-Gtk";
-              iconTheme = { name = lib.mkDefault "Tela-dracula"; package = lib.mkDefault pkgs.tela-icon-theme; };
+              iconTheme = { name = cfg.theme.iconTheme.name; package = cfg.theme.iconTheme.package; };
               # cursorTheme is managed by home.pointerCursor.gtk.enable below.
               font = { name = lib.mkDefault "Cantarell"; size = lib.mkDefault 10; };
               # HM 26.05 changed the gtk4.theme default from config.gtk.theme to null.
@@ -955,11 +986,12 @@
             # Seed the QuickShell night-light schedule into config.json so Nix options
             # actually drive Hyprsunset.qml (which bypasses hyprsunset.conf entirely).
             # Runs at every nixos-rebuild switch; user UI edits reset on next rebuild.
-            home.activation.doorwayNightLightConfig = lib.mkIf cfg.enable
+            home.activation.doorwayJsonConfig = lib.mkIf cfg.enable
               (lib.hm.dag.entryAfter ["writeBoundary"] (let
                 nightTime = cfg.blueLight.schedule.nightTime;
                 dayTime = cfg.blueLight.schedule.dayTime;
                 useWeather = lib.boolToString cfg.blueLight.schedule.useWeatherTimes;
+                topLeftIcon = cfg.bar.topLeftIcon;
               in ''
                 config_file="$HOME/.config/illogical-impulse/config.json"
                 mkdir -p "$(dirname "$config_file")"
@@ -969,7 +1001,8 @@
                   --arg from "${nightTime}" \
                   --arg to "${dayTime}" \
                   --argjson useWeather ${useWeather} \
-                  '.light.night.from = $from | .light.night.to = $to | .light.night.useWeatherTimes = $useWeather' \
+                  --arg topLeftIcon "${topLeftIcon}" \
+                  '.light.night.from = $from | .light.night.to = $to | .light.night.useWeatherTimes = $useWeather | .bar.topLeftIcon = $topLeftIcon' \
                   "$config_file" > "$tmp" && mv "$tmp" "$config_file"
               ''));
           };

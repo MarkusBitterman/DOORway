@@ -44,6 +44,7 @@ ProgressBar {
         radius: 9999
         color: root.trackColor
         visible: false
+        layer.enabled: true
 
         Rectangle {
             id: progressFill
@@ -83,6 +84,7 @@ ProgressBar {
     MultiEffect {
         id: roundingMask
         visible: false
+        layer.enabled: true
         anchors.fill: parent
         source: contentItem
         maskEnabled: true

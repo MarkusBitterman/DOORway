@@ -40,6 +40,7 @@ Item {
                 id: iconImg
                 anchors.fill: parent
                 visible: false
+                layer.enabled: true
                 source: {
                     let icon;
                     icon = AppSearch.guessIcon(root.node?.properties["application.icon-name"] ?? "");

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="51.875004"
+   height="44.71875"
+   id="svg7719"
+   sodipodi:docname="Atari-Logo.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.034188"
+     inkscape:cx="16.222689"
+     inkscape:cy="22.367647"
+     inkscape:window-width="1022"
+     inkscape:window-height="996"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7719" />
+  <defs
+     id="defs7721" />
+  <g
+     id="g1"
+     transform="translate(-95.921875,-21.578125)">
+    <path
+       d="m 114.32812,21.578125 c 0,5.037837 -0.0603,15.07105 -3.25,21.9375 -3.49059,7.512213 -12.477422,11.630612 -15.156245,11.65625 v 11.125 c 10.276495,-1.03455 17.259635,-11.088511 19.875005,-20.84375 2.22595,-8.2959 1.95655,-22.449225 1.96875,-23.875 z m 5.53126,0 c 0,0 0.0662,18.873414 -0.40625,26.4375 -0.82031,13.175662 -4.46875,18.281247 -4.46875,18.28125 h 14.3125 c 0,0 -3.94348,-5.141348 -4.84375,-18.375 -0.52369,-7.69165 -0.53125,-26.34375 -0.53125,-26.34375 z m 6.125,0 c 0.0122,1.425775 -0.2566,15.579101 1.96875,23.875 2.61474,9.755237 9.56726,19.809204 19.84375,20.84375 v -11.125 c -2.68007,-0.02564 -11.63806,-4.144038 -15.125,-11.65625 -3.19397,-6.86645 -3.25,-16.899662 -3.25,-21.9375 z"
+       id="path13509"
+       style="fill:#fe000c"
+       sodipodi:nodetypes="ccccccccccccccccccccc" />
+  </g>
+</svg>

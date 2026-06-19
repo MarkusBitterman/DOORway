@@ -12,7 +12,7 @@ Item {
     width: 30
     height: 30
 
-    // Expose load state so callers can hide when no icon is available
+    // Expose load state so callers can hide when no icon resolves
     property bool valid: iconImage.status === Image.Ready
 
     property string _localSvg: iconFolder + "/" + source + ".svg"
@@ -20,17 +20,18 @@ Item {
     property string _primarySource: source !== "" ? Quickshell.iconPath(source, _localSvg) : ""
     property bool _svgFailed: false
 
-    // Reset fallback state when the requested icon changes
+    // Reset fallback state when the requested icon name changes
     onSourceChanged: _svgFailed = false
 
     Image {
         id: iconImage
         anchors.fill: parent
         fillMode: Image.PreserveAspectFit
-        // Try XDG theme → local SVG → local PNG
+        // XDG theme → local SVG → local PNG
         source: root._svgFailed ? root._localPng : root._primarySource
-        visible: !root.colorize
-        layer.enabled: root.colorize
+        // opacity:0 keeps the item in the scene graph so MultiEffect can render from it.
+        // visible:false would silently prevent MultiEffect from producing any output.
+        opacity: root.colorize ? 0 : 1
 
         onStatusChanged: {
             if (status === Image.Error && !root._svgFailed)
@@ -38,14 +39,11 @@ Item {
         }
     }
 
-    Loader {
-        active: root.colorize
+    MultiEffect {
         anchors.fill: iconImage
-        sourceComponent: MultiEffect {
-            anchors.fill: parent
-            source: iconImage
-            colorization: 1.0
-            colorizationColor: root.color
-        }
+        visible: root.colorize
+        source: iconImage
+        colorization: 1.0
+        colorizationColor: root.color
     }
 }

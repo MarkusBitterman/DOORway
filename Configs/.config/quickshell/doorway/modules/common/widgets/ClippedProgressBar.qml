@@ -28,12 +28,14 @@ ProgressBar {
     }
 
     // Qt6: default property Item does not auto-set the visual parent.
-    // OpacityMask (like the original) reads from layer.enabled texture without
-    // redirecting the item's own visual rendering, so the mask stays visible.
+    // visible:false keeps the icon off-screen while layer.enabled:true keeps
+    // the layer populated — Qt Quick still renders to the layer when it is
+    // referenced as an OpacityMask maskSource, even for invisible items.
     onTextMaskChanged: {
         if (textMask) {
             textMask.parent = root
             textMask.layer.enabled = true
+            textMask.visible = false
         }
     }
 

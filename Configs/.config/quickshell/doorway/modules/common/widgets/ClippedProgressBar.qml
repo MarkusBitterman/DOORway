@@ -1,9 +1,9 @@
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 
 /**
  * A progress bar with both ends rounded and text acts as clipping like OneUI 7's battery indicator.
@@ -28,6 +28,8 @@ ProgressBar {
     }
 
     // Qt6: default property Item does not auto-set the visual parent.
+    // OpacityMask (like the original) reads from layer.enabled texture without
+    // redirecting the item's own visual rendering, so the mask stays visible.
     onTextMaskChanged: {
         if (textMask) {
             textMask.parent = root
@@ -89,8 +91,6 @@ ProgressBar {
         }
     }
 
-    // Inline Rectangle as maskSource has no visual parent and can't be sampled.
-    // Named child with layer.enabled lets MultiEffect read the texture.
     Rectangle {
         id: roundingShape
         visible: false
@@ -100,21 +100,21 @@ ProgressBar {
         radius: contentItem.radius
     }
 
-    MultiEffect {
+    // Stage 1: clip contentItem to rounded ends
+    OpacityMask {
         id: roundingMask
-        visible: false
-        layer.enabled: true
         anchors.fill: parent
         source: contentItem
-        maskEnabled: true
         maskSource: roundingShape
+        visible: false
+        layer.enabled: true
     }
 
-    MultiEffect {
+    // Stage 2: punch text-shaped cutout through the rounded bar
+    OpacityMask {
         anchors.fill: parent
         source: roundingMask
-        maskEnabled: true
-        maskInverted: true
         maskSource: root.textMask
+        invert: true
     }
 }

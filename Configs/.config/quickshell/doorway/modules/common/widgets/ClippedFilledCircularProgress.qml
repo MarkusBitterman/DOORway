@@ -1,8 +1,8 @@
 import qs.modules.common
 import qs.modules.common.functions
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Shapes
-import QtQuick.Effects
 
 Item {
     id: root
@@ -26,8 +26,9 @@ Item {
         }
     }
 
-    // Qt6: default property Item does not auto-set the visual parent.
-    // Explicitly reparent so the mask item renders AND can be sampled.
+    // Qt6: default property Item no longer auto-sets the visual parent.
+    // Explicit parent + layer backing lets OpacityMask sample the texture
+    // without redirecting the item's own visual rendering.
     onTextMaskChanged: {
         if (textMask) {
             textMask.parent = root
@@ -92,11 +93,10 @@ Item {
         }
     }
 
-    MultiEffect {
+    OpacityMask {
         anchors.fill: parent
         source: contentItem
-        maskEnabled: true
-        maskInverted: true
         maskSource: root.textMask
+        invert: true
     }
 }

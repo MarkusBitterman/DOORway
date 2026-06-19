@@ -20,11 +20,18 @@ ProgressBar {
     default property Item textMask: Item {
         width: valueBarWidth
         height: valueBarHeight
-        layer.enabled: true
         StyledText {
             anchors.centerIn: parent
             font: root.font
             text: root.text
+        }
+    }
+
+    // Qt6: default property Item does not auto-set the visual parent.
+    onTextMaskChanged: {
+        if (textMask) {
+            textMask.parent = root
+            textMask.layer.enabled = true
         }
     }
 
@@ -82,6 +89,17 @@ ProgressBar {
         }
     }
 
+    // Inline Rectangle as maskSource has no visual parent and can't be sampled.
+    // Named child with layer.enabled lets MultiEffect read the texture.
+    Rectangle {
+        id: roundingShape
+        visible: false
+        layer.enabled: true
+        width: contentItem.width
+        height: contentItem.height
+        radius: contentItem.radius
+    }
+
     MultiEffect {
         id: roundingMask
         visible: false
@@ -89,11 +107,7 @@ ProgressBar {
         anchors.fill: parent
         source: contentItem
         maskEnabled: true
-        maskSource: Rectangle {
-            width: contentItem.width
-            height: contentItem.height
-            radius: contentItem.radius
-        }
+        maskSource: roundingShape
     }
 
     MultiEffect {

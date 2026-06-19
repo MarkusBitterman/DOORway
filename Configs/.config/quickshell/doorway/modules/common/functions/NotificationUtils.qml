@@ -16,9 +16,12 @@ Singleton {
             'record': 'screen_record',
             'battery': 'power',
             'power': 'power',
+            'bluetooth': 'bluetooth',
+            'connected': 'bluetooth_connected',
+            'disconnected': 'bluetooth_disabled',
             'screenshot': 'screenshot_monitor',
             'welcome': 'waving_hand',
-            'time': 'scheduleb',
+            'time': 'schedule',
             'installed': 'download',
             'configuration reloaded': 'reset_wrench',
             'unable': 'question_mark',
@@ -32,7 +35,7 @@ Singleton {
             'install': 'deployed_code_update',
             'input': 'keyboard_alt',
             'preedit': 'keyboard_alt',
-            'startswith:file': 'folder_copy', // Declarative startsWith check
+            'startswith:file': 'folder_copy',
         };
 
         const lowerSummary = summary.toLowerCase();

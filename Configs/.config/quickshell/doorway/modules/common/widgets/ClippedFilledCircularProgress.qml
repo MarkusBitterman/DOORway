@@ -22,6 +22,7 @@ Item {
     default property Item textMask: Item {
         width: implicitSize
         height: implicitSize
+        layer.enabled: true
         StyledText {
             anchors.centerIn: parent
             text: Math.round(root.value * 100)

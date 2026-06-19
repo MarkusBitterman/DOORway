@@ -61,7 +61,8 @@ Item {
                 anchors.centerIn: parent
                 width: mediaCircProg.implicitSize
                 height: mediaCircProg.implicitSize
-                
+                layer.enabled: true
+
                 MaterialSymbol {
                     anchors.centerIn: parent
                     fill: 1

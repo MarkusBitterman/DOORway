@@ -20,6 +20,7 @@ ProgressBar {
     default property Item textMask: Item {
         width: valueBarWidth
         height: valueBarHeight
+        layer.enabled: true
         StyledText {
             anchors.centerIn: parent
             font: root.font

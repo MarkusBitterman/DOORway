@@ -28,6 +28,7 @@ MouseArea {
             anchors.centerIn: parent
             width: batteryProgress.valueBarWidth
             height: batteryProgress.valueBarHeight
+            layer.enabled: true
 
             RowLayout {
                 anchors {

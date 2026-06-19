@@ -37,7 +37,8 @@ Item {
                 anchors.centerIn: parent
                 width: resourceCircProg.implicitSize
                 height: resourceCircProg.implicitSize
-                
+                layer.enabled: true
+
                 MaterialSymbol {
                     anchors.centerIn: parent
                     font.weight: Font.DemiBold

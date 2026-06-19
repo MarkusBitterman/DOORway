@@ -16,37 +16,52 @@ Item {
     property bool focusingThisMonitor: HyprlandData.activeWorkspace?.monitor == monitor?.name
     property var biggestWindow: HyprlandData.biggestWindowForWorkspace(HyprlandData.monitors[root.monitor?.id]?.activeWorkspace.id)
 
-    implicitWidth: colLayout.implicitWidth
+    property string activeAppId: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow
+        ? root.activeWindow?.appId ?? ""
+        : root.biggestWindow?.class ?? ""
 
-    ColumnLayout {
-        id: colLayout
+    implicitWidth: rowLayout.implicitWidth
+
+    RowLayout {
+        id: rowLayout
 
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: -4
+        spacing: 6
 
-        StyledText {
-            Layout.fillWidth: true
-            font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colSubtext
-            elide: Text.ElideRight
-            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
-                root.activeWindow?.appId :
-                (root.biggestWindow?.class) ?? Translation.tr("Desktop")
-
+        CustomIcon {
+            id: appIcon
+            Layout.preferredWidth: Appearance.font.pixelSize.normal * 1.5
+            Layout.preferredHeight: Appearance.font.pixelSize.normal * 1.5
+            Layout.alignment: Qt.AlignVCenter
+            source: root.activeAppId
+            visible: valid
         }
 
-        StyledText {
+        ColumnLayout {
+            spacing: -4
             Layout.fillWidth: true
-            font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnLayer0
-            elide: Text.ElideRight
-            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
-                root.activeWindow?.title :
-                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${monitor?.activeWorkspace?.id ?? 1}`
-        }
 
+            StyledText {
+                Layout.fillWidth: true
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colSubtext
+                elide: Text.ElideRight
+                text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
+                    root.activeWindow?.appId :
+                    (root.biggestWindow?.class) ?? Translation.tr("Desktop")
+            }
+
+            StyledText {
+                Layout.fillWidth: true
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: Appearance.colors.colOnLayer0
+                elide: Text.ElideRight
+                text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
+                    root.activeWindow?.title :
+                    (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${monitor?.activeWorkspace?.id ?? 1}`
+            }
+        }
     }
-
 }

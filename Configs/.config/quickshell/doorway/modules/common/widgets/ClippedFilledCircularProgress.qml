@@ -27,12 +27,14 @@ Item {
     }
 
     // Qt6: default property Item no longer auto-sets the visual parent.
-    // Explicit parent + layer backing lets OpacityMask sample the texture
-    // without redirecting the item's own visual rendering.
+    // visible:false keeps the icon off-screen while layer.enabled:true keeps
+    // the layer populated — Qt Quick still renders to the layer when it is
+    // referenced as an OpacityMask maskSource, even for invisible items.
     onTextMaskChanged: {
         if (textMask) {
             textMask.parent = root
             textMask.layer.enabled = true
+            textMask.visible = false
         }
     }
 

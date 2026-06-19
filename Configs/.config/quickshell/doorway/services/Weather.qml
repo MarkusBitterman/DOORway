@@ -33,6 +33,8 @@ Singleton {
         press: "--",
         sunrise: "--",
         sunset: "--",
+        sunriseHHMM: "06:30",
+        sunsetHHMM: "19:00",
         summary: "",
         lastRefresh: "--",
         hourly: []

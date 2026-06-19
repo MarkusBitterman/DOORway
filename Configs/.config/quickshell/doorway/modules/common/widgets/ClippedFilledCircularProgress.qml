@@ -14,16 +14,6 @@ Item {
     property bool enableAnimation: true
     property int animationDuration: 800
     property var easingType: Easing.OutCubic
-    default property Item textMask: Item {
-        width: implicitSize
-        height: implicitSize
-        StyledText {
-            anchors.centerIn: parent
-            text: Math.round(root.value * 100)
-            font.pixelSize: 12
-            font.weight: Font.Medium
-        }
-    }
 
     implicitWidth: implicitSize
     implicitHeight: implicitSize

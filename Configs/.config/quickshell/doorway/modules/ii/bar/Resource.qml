@@ -26,11 +26,9 @@ Item {
         ClippedFilledCircularProgress {
             id: resourceCircProg
             Layout.alignment: Qt.AlignVCenter
-            lineWidth: Appearance.rounding.unsharpen
             value: percentage
             implicitSize: 20
             colPrimary: root.warning ? Appearance.colors.colError : Appearance.colors.colOnSecondaryContainer
-            accountForLightBleeding: !root.warning
             enableAnimation: false
 
             Item {

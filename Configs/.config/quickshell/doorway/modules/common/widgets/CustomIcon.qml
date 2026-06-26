@@ -29,9 +29,11 @@ Item {
         fillMode: Image.PreserveAspectFit
         // XDG theme → local SVG → local PNG
         source: root._svgFailed ? root._localPng : root._primarySource
-        // opacity:0 keeps the item in the scene graph so MultiEffect can render from it.
-        // visible:false would silently prevent MultiEffect from producing any output.
+        // opacity:0 + layer.enabled keeps the item in the scene graph with a committed
+        // offscreen texture so MultiEffect can render from it. visible:false removes it
+        // from the scene graph entirely, and opacity:0 alone lets the optimizer skip it.
         opacity: root.colorize ? 0 : 1
+        layer.enabled: root.colorize
 
         onStatusChanged: {
             if (status === Image.Error && !root._svgFailed)

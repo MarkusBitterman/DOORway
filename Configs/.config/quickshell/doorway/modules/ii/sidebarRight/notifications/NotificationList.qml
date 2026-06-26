@@ -9,6 +9,18 @@ import QtQuick.Effects
 Item {
     id: root
 
+    // maskSource must be a visual-tree item with layer.enabled so MultiEffect
+    // gets a real offscreen texture. Inline property objects have no scene graph
+    // node and produce a transparent mask, hiding the entire listview.
+    Rectangle {
+        id: listviewMask
+        width: listview.width
+        height: listview.height
+        radius: Appearance.rounding.normal
+        visible: false
+        layer.enabled: true
+    }
+
     NotificationListView { // Scrollable window
         id: listview
         anchors.left: parent.left
@@ -21,11 +33,7 @@ Item {
         layer.enabled: true
         layer.effect: MultiEffect {
             maskEnabled: true
-            maskSource: Rectangle {
-                width: listview.width
-                height: listview.height
-                radius: Appearance.rounding.normal
-            }
+            maskSource: listviewMask
         }
 
         popup: false

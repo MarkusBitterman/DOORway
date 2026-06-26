@@ -4,92 +4,111 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     hyprland = {
-      url = "github:hyprwm/Hyprland";
+      # Pinned at 7a75ce5f (2026-06-18). hyprgraphics@090db94 (Jun 24) added
+      # TextResource.hpp which requires pango, but hyprland-guiutils hasn't
+      # declared that dep yet — unpin once hyprwm/hyprland-guiutils fixes it.
+      url = "github:hyprwm/Hyprland/7a75ce5f209d8142c40dfe6dd8bb03749987e11d";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, hyprland }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      hyprland,
+    }:
     let
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
 
       # DOORway runtime dependencies
-      doorwayDeps = pkgs: with pkgs; [
-        # Core Hyprland ecosystem
-        hyprland
-        hyprlock
-        hypridle
-        hyprpaper
+      doorwayDeps =
+        pkgs: with pkgs; [
+          # Core Hyprland ecosystem
+          pkgs.hyprland # explicit: 'hyprland' resolves to flake input via outer scope, not pkgs.hyprland
+          hyprlock
+          hypridle
+          hyprpaper
 
-        # UI components
-        rofi
+          # UI components
+          rofi
 
-        # Utilities
-        grim
-        slurp
-        satty
-        cliphist
-        awww
+          # Utilities
+          grim
+          slurp
+          satty
+          cliphist
+          awww
 
-        # System integration
-        brightnessctl
-        wlopm           # zwlr_output_power_manager_v1 — used by hypridle DPMS listener
-        playerctl
-        pamixer
-        libnotify
-        # gnome-keyring: provided by HALLway system-level via
-        #   services.gnome.gnome-keyring.enable = true
-        # + PAM auto-unlock via security.pam.services.greetd.enableGnomeKeyring
-        polkit_gnome    # Polkit auth agent (declarative in Pass 6)
+          # System integration
+          brightnessctl
+          wlopm # zwlr_output_power_manager_v1 — used by hypridle DPMS listener
+          playerctl
+          pamixer
+          libnotify
+          # gnome-keyring: provided by HALLway system-level via
+          #   services.gnome.gnome-keyring.enable = true
+          # + PAM auto-unlock via security.pam.services.greetd.enableGnomeKeyring
+          polkit_gnome # Polkit auth agent (declarative in Pass 6)
 
-        # Applets (system tray daemons started by startup.lua)
-        wl-clipboard          # wl-paste for cliphist text/image clipboard watch
-        udiskie               # removable media tray applet
-        networkmanagerapplet  # nm-applet --indicator
-        blueman               # blueman-applet bluetooth tray
+          # Applets (system tray daemons started by startup.lua)
+          wl-clipboard # wl-paste for cliphist text/image clipboard watch
+          udiskie # removable media tray applet
+          networkmanagerapplet # nm-applet --indicator
+          blueman # blueman-applet bluetooth tray
 
-        # Terminal
-        kitty
+          # Terminal
+          kitty
 
-        # Optional
-        hyprsunset
+          # Optional
+          hyprsunset
 
-        # Initiative II — QuickShell shell + matugen color theming
-        quickshell      # QML/Qt6 desktop shell toolkit
-        matugen         # Material You color generation from wallpaper
+          # Initiative II — QuickShell shell + matugen color theming
+          quickshell # QML/Qt6 desktop shell toolkit
+          matugen # Material You color generation from wallpaper
 
-        # Weather fetch script (doorway-pirateweather.py uses requests)
-        (python3.withPackages (ps: [ ps.requests ]))
-        inotify-tools   # inotifywait for doorway-matugen-watcher
-        material-symbols  # Google Material Symbols variable font (used by MaterialSymbol.qml)
-      ];
+          # Weather fetch script (doorway-pirateweather.py uses requests)
+          (python3.withPackages (ps: [ ps.requests ]))
+          inotify-tools # inotifywait for doorway-matugen-watcher
+          material-symbols # Google Material Symbols variable font (used by MaterialSymbol.qml)
+        ];
 
       # Development dependencies
-      devDeps = pkgs: with pkgs; [
-        # Shell
-        shellcheck
-        shfmt
+      devDeps =
+        pkgs: with pkgs; [
+          # Shell
+          shellcheck
+          shfmt
 
-        # Nix
-        nil          # Nix LSP
-        nixfmt            # Nix formatter
+          # Nix
+          nil # Nix LSP
+          nixfmt # Nix formatter
 
-        # Python
-        python3
-        ruff         # Python linter/formatter
+          # Python
+          python3
+          ruff # Python linter/formatter
 
-        # General
-        git
-        direnv
+          # General
+          git
+          direnv
 
-        # MCP server runtimes (Claude Code)
-        nodejs   # provides npx for @modelcontextprotocol/server-github
-        uv       # provides uvx for mcp-server-git
-      ];
+          # MCP server runtimes (Claude Code)
+          nodejs # provides npx for @modelcontextprotocol/server-github
+          uv # provides uvx for mcp-server-git
+        ];
 
       # Home Manager module definition
-      doorwayModule = { config, lib, pkgs, ... }:
+      doorwayModule =
+        {
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
         let
           cfg = config.doorway;
           configDir = "${self}/Configs";
@@ -99,31 +118,37 @@
           # app-graphical.slice, and the graphical-session.target lifecycle.
           # Callers supply description + execStart (and optionally execStartPre,
           # documentation). See TODO.md Phase 9 Pass 2 design decisions.
-          mkDoorwayService = {
-            description, execStart,
-            execStartPre ? null, documentation ? null,
-          }: {
-            Unit = {
-              Description = description;
-              After = [ "graphical-session.target" ];
-              PartOf = [ "graphical-session.target" ];
-            } // lib.optionalAttrs (documentation != null) {
-              Documentation = documentation;
+          mkDoorwayService =
+            {
+              description,
+              execStart,
+              execStartPre ? null,
+              documentation ? null,
+            }:
+            {
+              Unit = {
+                Description = description;
+                After = [ "graphical-session.target" ];
+                PartOf = [ "graphical-session.target" ];
+              }
+              // lib.optionalAttrs (documentation != null) {
+                Documentation = documentation;
+              };
+              Service = {
+                Type = "exec";
+                ExitType = "cgroup";
+                Slice = "app-graphical.slice";
+                Restart = "always";
+                RestartSec = 1;
+                ExecStart = execStart;
+              }
+              // lib.optionalAttrs (execStartPre != null) {
+                ExecStartPre = execStartPre;
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
             };
-            Service = {
-              Type = "exec";
-              ExitType = "cgroup";
-              Slice = "app-graphical.slice";
-              Restart = "always";
-              RestartSec = 1;
-              ExecStart = execStart;
-            } // lib.optionalAttrs (execStartPre != null) {
-              ExecStartPre = execStartPre;
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-          };
 
           # Oneshot variant for session-bootstrap actions: portal restart,
           # config initialization, etc. RemainAfterExit=true so graphical-
@@ -162,34 +187,48 @@
           # Returns a home.activation entry that copies (not symlinks) a file,
           # making it writable at runtime. Merge the result into home.activation.
           # Example: home.activation = mkMutableHomeFile { path = ".config/foo/bar"; source = ./bar; };
-          mkMutableHomeFile = { path, source, mode ? "0644" }: let
-            name = "mkMutable-" + builtins.replaceStrings ["/" "."] ["-" "_"] path;
-          in {
-            "${name}" = lib.hm.dag.entryAfter ["writeBoundary"] ''
-              install -Dm${mode} "${source}" "$HOME/${path}"
-            '';
-          };
+          mkMutableHomeFile =
+            {
+              path,
+              source,
+              mode ? "0644",
+            }:
+            let
+              name = "mkMutable-" + builtins.replaceStrings [ "/" "." ] [ "-" "_" ] path;
+            in
+            {
+              "${name}" = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                install -Dm${mode} "${source}" "$HOME/${path}"
+              '';
+            };
 
-          mkDoorwayOneshot = {
-            description, execStart, after ? [], documentation ? null,
-          }: {
-            Unit = {
-              Description = description;
-              After = [ "graphical-session.target" ] ++ after;
-              PartOf = [ "graphical-session.target" ];
-            } // lib.optionalAttrs (documentation != null) {
-              Documentation = documentation;
+          mkDoorwayOneshot =
+            {
+              description,
+              execStart,
+              after ? [ ],
+              documentation ? null,
+            }:
+            {
+              Unit = {
+                Description = description;
+                After = [ "graphical-session.target" ] ++ after;
+                PartOf = [ "graphical-session.target" ];
+              }
+              // lib.optionalAttrs (documentation != null) {
+                Documentation = documentation;
+              };
+              Service = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = execStart;
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
             };
-            Service = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-              ExecStart = execStart;
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-          };
-        in {
+        in
+        {
           options.doorway = {
             enable = lib.mkEnableOption "DOORway Hyprland configuration";
 
@@ -202,7 +241,7 @@
 
             extraMonitors = lib.mkOption {
               type = lib.types.listOf lib.types.str;
-              default = [];
+              default = [ ];
               example = [ "DP-1,2560x1440@144,1920x0,1" ];
               description = "Additional monitor configurations";
             };
@@ -329,10 +368,25 @@
             animations = {
               preset = lib.mkOption {
                 type = lib.types.enum [
-                  "classic" "diablo-1" "diablo-2" "disable" "dynamic"
-                  "end4" "fast" "high" "ja" "LimeFrenzy"
-                  "me-1" "me-2" "minimal-1" "minimal-2" "moving"
-                  "optimized" "standard" "theme" "vertical"
+                  "classic"
+                  "diablo-1"
+                  "diablo-2"
+                  "disable"
+                  "dynamic"
+                  "end4"
+                  "fast"
+                  "high"
+                  "ja"
+                  "LimeFrenzy"
+                  "me-1"
+                  "me-2"
+                  "minimal-1"
+                  "minimal-2"
+                  "moving"
+                  "optimized"
+                  "standard"
+                  "theme"
+                  "vertical"
                 ];
                 default = "standard";
                 example = "fast";
@@ -347,9 +401,14 @@
             lock = {
               layout = lib.mkOption {
                 type = lib.types.enum [
-                  "DOORway" "Anurati" "Arfan on Clouds"
-                  "greetd" "greetd-wallbash" "IBM Plex"
-                  "IMB Xtented" "SF Pro"
+                  "DOORway"
+                  "Anurati"
+                  "Arfan on Clouds"
+                  "greetd"
+                  "greetd-wallbash"
+                  "IBM Plex"
+                  "IMB Xtented"
+                  "SF Pro"
                 ];
                 default = "DOORway";
                 example = "Anurati";
@@ -383,7 +442,10 @@
                 description = "Window corner rounding radius in pixels. 0 disables rounding.";
               };
               layout = lib.mkOption {
-                type = lib.types.enum [ "dwindle" "master" ];
+                type = lib.types.enum [
+                  "dwindle"
+                  "master"
+                ];
                 default = "dwindle";
                 description = ''
                   Default window tiling layout algorithm.
@@ -448,7 +510,11 @@
                 description = "Enable NumLock by default on session start.";
               };
               accelProfile = lib.mkOption {
-                type = lib.types.enum [ "flat" "adaptive" "custom" ];
+                type = lib.types.enum [
+                  "flat"
+                  "adaptive"
+                  "custom"
+                ];
                 default = "flat";
                 description = ''
                   Mouse acceleration profile.
@@ -560,7 +626,12 @@
                 '';
               };
               units = lib.mkOption {
-                type = lib.types.enum [ "us" "si" "ca" "uk2" ];
+                type = lib.types.enum [
+                  "us"
+                  "si"
+                  "ca"
+                  "uk2"
+                ];
                 default = "us";
                 description = "'us' = °F/mph, 'si' = °C/m/s, 'ca' = °C/km/h, 'uk2' = °C/mph";
               };
@@ -579,12 +650,12 @@
               # Individual file links instead of a directory symlink, so the
               # generated monitors.lua and userprefs.lua (below) can be placed
               # alongside them — a directory symlink to the Nix store is immutable.
-              "hypr/hyprland.lua".source    = "${configDir}/.config/hypr/hyprland.lua";
+              "hypr/hyprland.lua".source = "${configDir}/.config/hypr/hyprland.lua";
               "hypr/keybindings.lua".source = "${configDir}/.config/hypr/keybindings.lua";
               "hypr/windowrules.lua".source = "${configDir}/.config/hypr/windowrules.lua";
-              "hypr/workflows.lua".source   = "${configDir}/.config/hypr/workflows.lua";
-              "hypr/animations.lua".source  = "${configDir}/.config/hypr/animations.lua";
-              "hypr/shaders.lua".source     = "${configDir}/.config/hypr/shaders.lua";
+              "hypr/workflows.lua".source = "${configDir}/.config/hypr/workflows.lua";
+              "hypr/animations.lua".source = "${configDir}/.config/hypr/animations.lua";
+              "hypr/shaders.lua".source = "${configDir}/.config/hypr/shaders.lua";
               "hypr/hypridle.conf".text = ''
                 $LOCK_CMD = doorway-shell lockscreen.sh
                 $UNLOCK_CMD = sh -c 'sleep 3 && pkill -9 $(doorway-shell lockscreen --get)'
@@ -614,10 +685,10 @@
                 }
 
                 ${lib.optionalString (cfg.idle.timeouts.suspend != null) ''
-                listener {
-                    timeout = ${toString cfg.idle.timeouts.suspend}
-                    on-timeout = systemctl suspend
-                }
+                  listener {
+                      timeout = ${toString cfg.idle.timeouts.suspend}
+                      on-timeout = systemctl suspend
+                  }
                 ''}
 
                 # hyprlang noerror true
@@ -646,12 +717,12 @@
                     temperature = ${toString cfg.blueLight.temperature}
                 }
               '';
-              "hypr/nvidia.conf".source     = "${configDir}/.config/hypr/nvidia.conf";
-              "hypr/animations".source      = "${configDir}/.config/hypr/animations";
-              "hypr/shaders".source         = "${configDir}/.config/hypr/shaders";
-              "hypr/themes".source          = "${configDir}/.config/hypr/themes";
-              "hypr/workflows".source       = "${configDir}/.config/hypr/workflows";
-              "hypr/hyprlock".source        = "${configDir}/.config/hypr/hyprlock";
+              "hypr/nvidia.conf".source = "${configDir}/.config/hypr/nvidia.conf";
+              "hypr/animations".source = "${configDir}/.config/hypr/animations";
+              "hypr/shaders".source = "${configDir}/.config/hypr/shaders";
+              "hypr/themes".source = "${configDir}/.config/hypr/themes";
+              "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
+              "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";
               "rofi".source = "${configDir}/.config/rofi";
               "doorway".source = "${configDir}/.config/doorway";
               "kitty".source = "${configDir}/.config/kitty";
@@ -660,9 +731,9 @@
               # quickshell/doorway is whole-dir (QML is source-controlled config).
               # matugen templates are Nix-managed; outputs go to ~/.local/share/matugen/
               # (writable, not Nix-managed) via doorway-matugen-watcher.service.
-              "quickshell/doorway".source   = "${configDir}/.config/quickshell/doorway";
-              "matugen/config.toml".source    = "${configDir}/.config/matugen/config.toml";
-              "matugen/templates".source      = "${configDir}/.config/matugen/templates";
+              "quickshell/doorway".source = "${configDir}/.config/quickshell/doorway";
+              "matugen/config.toml".source = "${configDir}/.config/matugen/config.toml";
+              "matugen/templates".source = "${configDir}/.config/matugen/templates";
 
               "hypr/doorway-cursor.lua".text = ''
                 -- DOORway Cursor Configuration (generated by Home Manager)
@@ -712,15 +783,21 @@
                 }
               '';
 
-              "hypr/monitors.lua".text = let
-                parseMon = m: let p = lib.splitString "," m;
-                in ''hl.monitor({ output="${lib.elemAt p 0}", mode="${lib.elemAt p 1}", position="${lib.elemAt p 2}", scale="${lib.elemAt p 3}" })'';
-              in ''
-                -- DOORway Monitor Configuration (generated by NixOS via Home Manager)
-                ${parseMon cfg.monitor}
-                ${lib.concatStringsSep "\n" (map parseMon cfg.extraMonitors)}
-                hl.monitor({ output="", mode="preferred", position="auto", scale="1" })
-              '';
+              "hypr/monitors.lua".text =
+                let
+                  parseMon =
+                    m:
+                    let
+                      p = lib.splitString "," m;
+                    in
+                    ''hl.monitor({ output="${lib.elemAt p 0}", mode="${lib.elemAt p 1}", position="${lib.elemAt p 2}", scale="${lib.elemAt p 3}" })'';
+                in
+                ''
+                  -- DOORway Monitor Configuration (generated by NixOS via Home Manager)
+                  ${parseMon cfg.monitor}
+                  ${lib.concatStringsSep "\n" (map parseMon cfg.extraMonitors)}
+                  hl.monitor({ output="", mode="preferred", position="auto", scale="1" })
+                '';
 
               "hypr/userprefs.lua".text = ''
                 -- DOORway User Preferences (generated by Home Manager)
@@ -780,20 +857,23 @@
               };
             };
 
-            home.sessionPath = [ "$HOME/.local/bin" "$HOME/.local/lib/doorway" ];
+            home.sessionPath = [
+              "$HOME/.local/bin"
+              "$HOME/.local/lib/doorway"
+            ];
 
             # Static toolkit/Wayland env vars — session-wide (all processes, not
             # just Hyprland children). Centralises what was duplicated across env.lua
             # and the UWSM env-hyprland.d script. XCURSOR_* are omitted here;
             # home.pointerCursor below sets them automatically.
             home.sessionVariables = {
-              QT_QPA_PLATFORM                     = "wayland;xcb";
-              QT_AUTO_SCREEN_SCALE_FACTOR         = "1";
+              QT_QPA_PLATFORM = "wayland;xcb";
+              QT_AUTO_SCREEN_SCALE_FACTOR = "1";
               QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-              QT_QPA_PLATFORMTHEME                = "qt6ct";
-              MOZ_ENABLE_WAYLAND                  = "1";
-              GDK_SCALE                           = "1";
-              ELECTRON_OZONE_PLATFORM_HINT        = "auto";
+              QT_QPA_PLATFORMTHEME = "qt6ct";
+              MOZ_ENABLE_WAYLAND = "1";
+              GDK_SCALE = "1";
+              ELECTRON_OZONE_PLATFORM_HINT = "auto";
             };
 
             # DOORway ships one theme: Wallbash (dynamic colors from wallpaper).
@@ -803,10 +883,16 @@
             # Use lib.mkDefault so these can be overridden in the user's flake.
             gtk = {
               enable = true;
-              theme.name     = lib.mkDefault "Wallbash-Gtk";
-              iconTheme = { name = cfg.theme.iconTheme.name; package = cfg.theme.iconTheme.package; };
+              theme.name = lib.mkDefault "Wallbash-Gtk";
+              iconTheme = {
+                name = cfg.theme.iconTheme.name;
+                package = cfg.theme.iconTheme.package;
+              };
               # cursorTheme is managed by home.pointerCursor.gtk.enable below.
-              font = { name = lib.mkDefault "Cantarell"; size = lib.mkDefault 10; };
+              font = {
+                name = lib.mkDefault "Cantarell";
+                size = lib.mkDefault 10;
+              };
               # HM 26.05 changed the gtk4.theme default from config.gtk.theme to null.
               # Explicitly keep the legacy inherit so GTK4 apps use Wallbash-Gtk too.
               gtk4.theme = config.gtk.theme;
@@ -816,8 +902,8 @@
             # ~/.local/share/icons/default/index.theme, and syncs gtk.cursorTheme.
             # Replaces the manual Xresources + icon-symlink writes in theme.switch.sh.
             home.pointerCursor = {
-              name    = cfg.cursor.name;
-              size    = cfg.cursor.size;
+              name = cfg.cursor.name;
+              size = cfg.cursor.size;
               package = cfg.cursor.package;
               gtk.enable = true;
             };
@@ -927,30 +1013,35 @@
               # Workaround: qs ipc resolves the instance ID from lock file content,
               # but QS 0.3.0 uses raw fcntl locks on an empty file, so the ID reads
               # as "" and the client looks for by-id/ipc.sock (missing the subdir).
-              doorway-quickshell = lib.mkIf cfg.shell.enable (lib.mkMerge [
-                (mkDoorwayService {
-                  description = "DOORway QuickShell (QML-based UI shell)";
-                  execStart = "${pkgs.quickshell}/bin/quickshell -c %h/.config/quickshell/doorway";
-                })
-                (let
-                  qsIpcSymlink = pkgs.writeShellScript "qs-ipc-symlink" ''
-                    QS=/run/user/$(id -u)/quickshell
-                    for _ in $(seq 30); do
-                      sock=$(ls -t "$QS"/by-id/*/ipc.sock 2>/dev/null | head -1)
-                      if [ -n "$sock" ]; then
-                        ln -sfn "$sock" "$QS/by-id/ipc.sock"
-                        exit 0
-                      fi
-                      sleep 0.5
-                    done
-                  '';
-                in {
-                  Service.Environment = [
-                    "QML_IMPORT_PATH=${pkgs.qt6.qt5compat}/lib/qt-6/qml"
-                  ];
-                  Service.ExecStartPost = "${qsIpcSymlink}";
-                })
-              ]);
+              doorway-quickshell = lib.mkIf cfg.shell.enable (
+                lib.mkMerge [
+                  (mkDoorwayService {
+                    description = "DOORway QuickShell (QML-based UI shell)";
+                    execStart = "${pkgs.quickshell}/bin/quickshell -c %h/.config/quickshell/doorway";
+                  })
+                  (
+                    let
+                      qsIpcSymlink = pkgs.writeShellScript "qs-ipc-symlink" ''
+                        QS=/run/user/$(id -u)/quickshell
+                        for _ in $(seq 30); do
+                          sock=$(ls -t "$QS"/by-id/*/ipc.sock 2>/dev/null | head -1)
+                          if [ -n "$sock" ]; then
+                            ln -sfn "$sock" "$QS/by-id/ipc.sock"
+                            exit 0
+                          fi
+                          sleep 0.5
+                        done
+                      '';
+                    in
+                    {
+                      Service.Environment = [
+                        "QML_IMPORT_PATH=${pkgs.qt6.qt5compat}/lib/qt-6/qml"
+                      ];
+                      Service.ExecStartPost = "${qsIpcSymlink}";
+                    }
+                  )
+                ]
+              );
 
               # Fetch weather from PirateWeather; fired by doorway-weather-fetch.timer.
               # API key arrives via EnvironmentFile (sops secret, not hardcoded).
@@ -966,7 +1057,8 @@
                     "PIRATE_WEATHER_ZIP=${cfg.weather.zipCode}"
                     "PIRATE_WEATHER_UNITS=${cfg.weather.units}"
                   ];
-                } // lib.optionalAttrs (cfg.weather.pirateWeatherApiKeyFile != "") {
+                }
+                // lib.optionalAttrs (cfg.weather.pirateWeatherApiKeyFile != "") {
                   EnvironmentFile = cfg.weather.pirateWeatherApiKeyFile;
                 };
               };
@@ -987,29 +1079,34 @@
             # Seed the QuickShell night-light schedule into config.json so Nix options
             # actually drive Hyprsunset.qml (which bypasses hyprsunset.conf entirely).
             # Runs at every nixos-rebuild switch; user UI edits reset on next rebuild.
-            home.activation.doorwayJsonConfig = lib.mkIf cfg.enable
-              (lib.hm.dag.entryAfter ["writeBoundary"] (let
-                nightTime = cfg.blueLight.schedule.nightTime;
-                dayTime = cfg.blueLight.schedule.dayTime;
-                useWeather = lib.boolToString cfg.blueLight.schedule.useWeatherTimes;
-                topLeftIcon = cfg.bar.topLeftIcon;
-              in ''
-                config_file="$HOME/.config/illogical-impulse/config.json"
-                mkdir -p "$(dirname "$config_file")"
-                [ -f "$config_file" ] || echo '{}' > "$config_file"
-                tmp="$(${pkgs.coreutils}/bin/mktemp)"
-                ${pkgs.jq}/bin/jq \
-                  --arg from "${nightTime}" \
-                  --arg to "${dayTime}" \
-                  --argjson useWeather ${useWeather} \
-                  --arg topLeftIcon "${topLeftIcon}" \
-                  '.light.night.from = $from | .light.night.to = $to | .light.night.useWeatherTimes = $useWeather | .bar.topLeftIcon = $topLeftIcon' \
-                  "$config_file" > "$tmp" && mv "$tmp" "$config_file"
-              ''));
+            home.activation.doorwayJsonConfig = lib.mkIf cfg.enable (
+              lib.hm.dag.entryAfter [ "writeBoundary" ] (
+                let
+                  nightTime = cfg.blueLight.schedule.nightTime;
+                  dayTime = cfg.blueLight.schedule.dayTime;
+                  useWeather = lib.boolToString cfg.blueLight.schedule.useWeatherTimes;
+                  topLeftIcon = cfg.bar.topLeftIcon;
+                in
+                ''
+                  config_file="$HOME/.config/illogical-impulse/config.json"
+                  mkdir -p "$(dirname "$config_file")"
+                  [ -f "$config_file" ] || echo '{}' > "$config_file"
+                  tmp="$(${pkgs.coreutils}/bin/mktemp)"
+                  ${pkgs.jq}/bin/jq \
+                    --arg from "${nightTime}" \
+                    --arg to "${dayTime}" \
+                    --argjson useWeather ${useWeather} \
+                    --arg topLeftIcon "${topLeftIcon}" \
+                    '.light.night.from = $from | .light.night.to = $to | .light.night.useWeatherTimes = $useWeather | .bar.topLeftIcon = $topLeftIcon' \
+                    "$config_file" > "$tmp" && mv "$tmp" "$config_file"
+                ''
+              )
+            );
           };
         };
 
-    in {
+    in
+    {
       # NixOS system-level module — registers Hyprland session, enables UWSM,
       # XWayland, and xdg-desktop-portal-hyprland. Owns the Hyprland version pin.
       # Usage in HALLway flake: add `inputs.doorway.nixosModules.default` to the
@@ -1041,9 +1138,12 @@
       });
 
       # Development shell with all Hyprland packages
-      devShells = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in {
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
           default = pkgs.mkShell {
             name = "doorway-dev";
             buildInputs = (doorwayDeps pkgs) ++ (devDeps pkgs);
@@ -1085,7 +1185,8 @@
               echo ""
             '';
           };
-        });
+        }
+      );
 
       # Expose the dependency list for HALLway to import
       lib.doorwayDeps = doorwayDeps;

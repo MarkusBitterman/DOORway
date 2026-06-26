@@ -50,9 +50,8 @@
           playerctl
           pamixer
           libnotify
-          # gnome-keyring: provided by HALLway system-level via
-          #   services.gnome.gnome-keyring.enable = true
-          # + PAM auto-unlock via security.pam.services.greetd.enableGnomeKeyring
+          # gnome-keyring: provided by nixosModules.default (services.gnome.gnome-keyring.enable
+          # + security.pam.services.greetd.enableGnomeKeyring) — not needed in home packages
           polkit_gnome # Polkit auth agent (declarative in Pass 6)
 
           # Applets (system tray daemons started by startup.lua)
@@ -1111,14 +1110,55 @@
       # XWayland, and xdg-desktop-portal-hyprland. Owns the Hyprland version pin.
       # Usage in HALLway flake: add `inputs.doorway.nixosModules.default` to the
       # nixosSystem modules list (no specialArgs threading required).
-      nixosModules.default = { pkgs, lib, ... }: {
-        programs.hyprland = {
-          enable = true;
-          withUWSM = true;
-          xwayland.enable = true;
-          package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+      nixosModules.default =
+        { pkgs, lib, ... }:
+        {
+          # ── Hyprland session ────────────────────────────────────────────────
+          # Registers the UWSM-wrapped Hyprland session, enables XWayland,
+          # and pins the Hyprland version from DOORway's flake.lock.
+          programs.hyprland = {
+            enable = true;
+            withUWSM = true;
+            xwayland.enable = true;
+            package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+          };
+
+          # ── Display manager: greetd + regreet ───────────────────────────────
+          # cage: minimal Wayland compositor that hosts only the greeter.
+          # regreet: GTK4 greeter — user list, password entry, session picker.
+          # Hosts may override programs.regreet.settings (e.g. background.path).
+          services.gnome.gnome-keyring.enable = true;
+
+          services.greetd = {
+            enable = true;
+            settings.default_session = {
+              command = "${pkgs.cage}/bin/cage -s -- ${pkgs.regreet}/bin/regreet";
+              user = "greeter";
+            };
+          };
+
+          programs.regreet = {
+            enable = true;
+            settings = {
+              background.fit = "Cover";
+              GTK.application_prefer_dark_theme = true;
+            };
+          };
+
+          # Prevent console spam on the greetd TTY.
+          systemd.services.greetd.serviceConfig = {
+            Type = "idle";
+            StandardInput = "tty";
+            StandardOutput = "tty";
+            StandardError = "journal";
+            TTYReset = true;
+            TTYVHangup = true;
+            TTYVTDisallocate = true;
+          };
+
+          # Unlock the GNOME keyring automatically on PAM login via greetd.
+          security.pam.services.greetd.enableGnomeKeyring = true;
         };
-      };
 
       # Home Manager module (the main export)
       # Usage in HALLway flake:

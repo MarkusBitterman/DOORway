@@ -60,8 +60,20 @@ Singleton {
         }
     }
 
+    // watchChanges fires on inotify IN_MODIFY which can arrive at truncation time
+    // (before Python finishes writing). This timer polls the completed file every
+    // minute as a reliable fallback so the UI always reflects the latest fetch.
+    Timer {
+        interval: 60 * 1000
+        running: true
+        repeat: true
+        onTriggered: weatherFile.reload()
+    }
+
+    // Use systemctl to trigger the service so it inherits the API key EnvironmentFile
+    // configured in flake.nix — running the script directly would miss PIRATE_WEATHER_API_KEY.
     Process {
         id: fetchProc
-        command: [FileUtils.trimFileProtocol(Directories.home) + "/.local/lib/doorway/doorway-pirateweather.py"]
+        command: ["systemctl", "--user", "start", "doorway-weather-fetch.service"]
     }
 }

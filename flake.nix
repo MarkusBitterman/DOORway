@@ -34,6 +34,7 @@
 
         # System integration
         brightnessctl
+        wlopm           # zwlr_output_power_manager_v1 — used by hypridle DPMS listener
         playerctl
         pamixer
         libnotify
@@ -608,8 +609,8 @@
 
                 listener {
                     timeout = ${toString cfg.idle.timeouts.dpms}
-                    on-timeout = hyprctl dispatch dpms off
-                    on-resume = hyprctl dispatch dpms on
+                    on-timeout = wlopm --off '*'
+                    on-resume = wlopm --on '*'
                 }
 
                 ${lib.optionalString (cfg.idle.timeouts.suspend != null) ''

@@ -1,4 +1,5 @@
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
@@ -7,8 +8,29 @@ Item {
     id: root
     required property string iconName
     required property double percentage
+    property color accentColor: Appearance.colors.colOnSecondaryContainer
     property int warningThreshold: 100
     property bool shown: true
+
+    // Bulb gradient colors — center brightens and edge rises from transparent as usage climbs
+    readonly property color _gradCenter: Qt.rgba(
+        accentColor.r * (0.3 + 0.7 * percentage),
+        accentColor.g * (0.3 + 0.7 * percentage),
+        accentColor.b * (0.3 + 0.7 * percentage),
+        0.95
+    )
+    readonly property color _gradEdge: Qt.rgba(
+        accentColor.r * 0.45 * percentage,
+        accentColor.g * 0.45 * percentage,
+        accentColor.b * 0.45 * percentage,
+        percentage * 0.85
+    )
+    readonly property color _bgColor: Qt.rgba(
+        accentColor.r * 0.08,
+        accentColor.g * 0.08,
+        accentColor.b * 0.08,
+        0.45
+    )
     clip: true
     visible: width > 0 && height > 0
     implicitWidth: resourceRowLayout.x < 0 ? 0 : resourceRowLayout.implicitWidth
@@ -28,7 +50,12 @@ Item {
             Layout.alignment: Qt.AlignVCenter
             value: percentage
             implicitSize: 20
-            colPrimary: root.warning ? Appearance.colors.colError : Appearance.colors.colOnSecondaryContainer
+            colPrimary:        root.accentColor
+            colSecondary:      root._bgColor
+            colGradientCenter: root.warning ? Appearance.colors.colError
+                                            : root._gradCenter
+            colGradientEdge:   root.warning ? ColorUtils.transparentize(Appearance.colors.colError, 0.6)
+                                            : root._gradEdge
             enableAnimation: false
 
             Item {

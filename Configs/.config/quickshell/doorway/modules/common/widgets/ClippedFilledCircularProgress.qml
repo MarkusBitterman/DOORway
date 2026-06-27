@@ -12,6 +12,8 @@ Item {
     property real value: 0
     property color colPrimary: Appearance?.colors.colOnSecondaryContainer ?? "#685496"
     property color colSecondary: ColorUtils.transparentize(colPrimary, 0.5) ?? "#F1D3F9"
+    property color colGradientCenter: colPrimary
+    property color colGradientEdge:   Qt.rgba(0, 0, 0, 0.15)
     property bool enableAnimation: true
     property int animationDuration: 800
     property var easingType: Easing.OutCubic
@@ -70,10 +72,22 @@ Item {
 
             ShapePath {
                 id: primaryPath
-                strokeColor: root.colPrimary
+                strokeColor: root.colGradientCenter
                 strokeWidth: root.lineWidth
                 capStyle: ShapePath.RoundCap
-                fillColor: root.colPrimary
+                fillColor: "transparent"
+
+                fillGradient: RadialGradient {
+                    centerX: root.centerX
+                    centerY: root.centerY
+                    centerRadius: root.arcRadius
+                    focalX: root.centerX
+                    focalY: root.centerY
+                    focalRadius: 0
+                    GradientStop { position: 0.0;  color: root.colGradientCenter }
+                    GradientStop { position: 0.55; color: ColorUtils.mix(root.colGradientCenter, root.colGradientEdge, 0.45) }
+                    GradientStop { position: 1.0;  color: root.colGradientEdge }
+                }
 
                 startX: root.centerX
                 startY: root.centerY

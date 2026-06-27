@@ -104,13 +104,13 @@ hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("pkill -x rofi || doorway-she
 --------------------------------------------------------------------------------
 
 -- [Hardware Controls|Audio]
-hl.bind("F10",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
-hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("doorway-shell volumecontrol -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
-hl.bind("F11",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
-hl.bind("F12",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
-hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("doorway-shell volumecontrol -i m"), { description = "[Hardware Controls|Audio] un/mute microphone",  locked = true })
-hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
-hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
+hl.bind("F10",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
+hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o m"), { description = "[Hardware Controls|Audio] toggle mute output",  locked = true })
+hl.bind("F11",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
+hl.bind("F12",                   hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
+hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("doorway-shell volumecontrol -q -i m"), { description = "[Hardware Controls|Audio] un/mute microphone",  locked = true })
+hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o d"), { description = "[Hardware Controls|Audio] decrease volume",      repeating = true, locked = true })
+hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("doorway-shell volumecontrol -q -o i"), { description = "[Hardware Controls|Audio] increase volume",      repeating = true, locked = true })
 
 -- [Hardware Controls|Media]
 hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { description = "[Hardware Controls|Media] play media",     locked = true })

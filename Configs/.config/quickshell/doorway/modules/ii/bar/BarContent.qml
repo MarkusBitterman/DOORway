@@ -34,6 +34,16 @@ Item { // Bar content region
             target: barBackground
         }
     }
+    // Neon glow (cyberpunk aesthetic) — sits behind the bar background, follows the
+    // wallpaper accent. Cheap: cached, only re-renders on palette change.
+    Loader {
+        active: Config.options.bar.showBackground && (Config.options.bar.glow?.enable ?? false)
+        anchors.fill: barBackground
+        sourceComponent: NeonGlow {
+            anchors.fill: undefined
+            target: barBackground
+        }
+    }
     // Background
     Rectangle {
         id: barBackground
@@ -43,8 +53,9 @@ Item { // Bar content region
         }
         color: Config.options.bar.showBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
-        border.color: Appearance.colors.colLayer0Border
+        // Glow adds a bright accent edge even on the hug bar (a neon underline at screen top).
+        border.width: (Config.options.bar.cornerStyle === 1 || (Config.options.bar.glow?.enable ?? false)) ? 1 : 0
+        border.color: (Config.options.bar.glow?.enable ?? false) ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
     }
 
     FocusedScrollMouseArea { // Left side | scroll to change brightness

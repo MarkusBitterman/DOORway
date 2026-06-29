@@ -282,6 +282,18 @@ Singleton {
                 property JsonObject tooltips: JsonObject {
                     property bool clickToShow: false
                 }
+                // Cyberpunk neon glow (NeonGlow.qml). All glow reads the matugen primary
+                // accent, so it follows the wallpaper.
+                property JsonObject glow: JsonObject {
+                    property bool enable: true
+                    property real intensity: 0.5 // 0..1 → blur/spread/alpha in NeonGlow
+                    property bool applyToGroups: true
+                    property bool applyToGauges: true
+                }
+                // Real audio-reactive spectrum (Cava.qml). Master toggle for the service.
+                property JsonObject cava: JsonObject {
+                    property bool enable: true
+                }
             }
 
             property JsonObject battery: JsonObject {

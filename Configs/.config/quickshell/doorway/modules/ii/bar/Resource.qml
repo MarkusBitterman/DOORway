@@ -31,6 +31,8 @@ Item {
         accentColor.b * 0.08,
         0.45
     )
+    readonly property bool glowGauges: (Config.options.bar?.glow?.enable ?? false)
+        && (Config.options.bar?.glow?.applyToGauges ?? false)
     clip: true
     visible: width > 0 && height > 0
     implicitWidth: resourceRowLayout.x < 0 ? 0 : resourceRowLayout.implicitWidth
@@ -45,32 +47,63 @@ Item {
             verticalCenter: parent.verticalCenter
         }
 
-        ClippedFilledCircularProgress {
-            id: resourceCircProg
+        Item {
+            id: gaugeContainer
             Layout.alignment: Qt.AlignVCenter
-            value: percentage
-            implicitSize: 20
-            colPrimary:        root.accentColor
-            colSecondary:      root._bgColor
-            colGradientCenter: root.warning ? Appearance.colors.colError
-                                            : root._gradCenter
-            colGradientEdge:   root.warning ? ColorUtils.transparentize(Appearance.colors.colError, 0.6)
-                                            : root._gradEdge
-            enableAnimation: false
+            implicitWidth: 20
+            implicitHeight: 20
 
-            Item {
-                anchors.centerIn: parent
-                width: resourceCircProg.implicitSize
-                height: resourceCircProg.implicitSize
-                layer.enabled: true
+            // Neon glow ring behind the gauge, in this resource's own accent color
+            // (or error red when over threshold). Sits behind the progress circle.
+            Loader {
+                active: root.glowGauges
+                anchors.fill: parent
+                sourceComponent: Item {
+                    anchors.fill: parent
+                    Rectangle {
+                        id: glowRing
+                        anchors.centerIn: parent
+                        width: 20
+                        height: 20
+                        radius: width / 2
+                        color: "transparent"
+                        border.width: 1
+                        border.color: root.warning ? Appearance.colors.colError : root.accentColor
+                    }
+                    NeonGlow {
+                        target: glowRing
+                        glowColor: root.warning ? Appearance.colors.colError : root.accentColor
+                    }
+                }
+            }
 
-                MaterialSymbol {
+            ClippedFilledCircularProgress {
+                id: resourceCircProg
+                anchors.fill: parent
+                value: percentage
+                implicitSize: 20
+                colPrimary:        root.accentColor
+                colSecondary:      root._bgColor
+                colGradientCenter: root.warning ? Appearance.colors.colError
+                                                : root._gradCenter
+                colGradientEdge:   root.warning ? ColorUtils.transparentize(Appearance.colors.colError, 0.6)
+                                                : root._gradEdge
+                enableAnimation: false
+
+                Item {
                     anchors.centerIn: parent
-                    font.weight: Font.DemiBold
-                    fill: 1
-                    text: iconName
-                    iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.m3colors.m3onSecondaryContainer
+                    width: resourceCircProg.implicitSize
+                    height: resourceCircProg.implicitSize
+                    layer.enabled: true
+
+                    MaterialSymbol {
+                        anchors.centerIn: parent
+                        font.weight: Font.DemiBold
+                        fill: 1
+                        text: iconName
+                        iconSize: Appearance.font.pixelSize.normal
+                        color: Appearance.m3colors.m3onSecondaryContainer
+                    }
                 }
             }
         }

@@ -49,6 +49,7 @@
           wlopm # zwlr_output_power_manager_v1 — used by hypridle DPMS listener
           playerctl
           pamixer
+          cava # console audio visualizer — real FFT spectrum for the QuickShell Cava service + hyprlock
           libnotify
           # gnome-keyring: provided by nixosModules.default (services.gnome.gnome-keyring.enable
           # + security.pam.services.greetd.enableGnomeKeyring) — not needed in home packages
@@ -74,6 +75,13 @@
           (python3.withPackages (ps: [ ps.requests ]))
           inotify-tools # inotifywait for doorway-matugen-watcher
           material-symbols # Google Material Symbols variable font (used by MaterialSymbol.qml)
+          # Nerd Fonts — declared by name in doorway.fonts (bar/menu/groupbar, monospace,
+          # workspace glyphs) but never packaged, so fc-match fell back to DejaVu Sans and
+          # Nerd glyphs rendered as blank/incorrect boxes. nixpkgs is nixos-unstable, so the
+          # dotted `nerd-fonts.*` namespace is correct.
+          nerd-fonts.jetbrains-mono # "JetBrainsMono Nerd Font" — bar/menu/groupbar + workspace glyphs
+          nerd-fonts.caskaydia-cove # "CaskaydiaCove Nerd Font Mono" — monospace default
+          nerd-fonts.symbols-only # "Symbols Nerd Font" — symbol-range fallback coverage
         ];
 
       # Development dependencies

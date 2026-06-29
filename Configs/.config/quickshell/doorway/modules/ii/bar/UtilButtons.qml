@@ -146,7 +146,7 @@ Item {
                     fill: 0
                     text: switch(PowerProfiles.profile) {
                         case PowerProfile.PowerSaver: return "energy_savings_leaf"
-                        case PowerProfile.Balanced: return "airwave"
+                        case PowerProfile.Balanced: return "speed"
                         case PowerProfile.Performance: return "local_fire_department"
                     }
                     iconSize: Appearance.font.pixelSize.large

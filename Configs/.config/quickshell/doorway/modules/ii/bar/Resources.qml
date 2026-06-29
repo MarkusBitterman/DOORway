@@ -38,7 +38,7 @@ MouseArea {
         }
 
         Resource {
-            iconName: "planner_review"
+            iconName: "developer_board"
             percentage: ResourceUsage.cpuUsage
             accentColor: "#EF5350"
             shown: Config.options.bar.resources.alwaysShowCpu ||

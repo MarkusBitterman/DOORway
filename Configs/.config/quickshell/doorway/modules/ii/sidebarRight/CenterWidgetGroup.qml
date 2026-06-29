@@ -8,8 +8,13 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    radius: Appearance.rounding.verysmall
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
+        GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
+    }
+    border.width: 1
+    border.color: DoorwayPalette.plasticEdge
 
     NotificationList {
         anchors.fill: parent

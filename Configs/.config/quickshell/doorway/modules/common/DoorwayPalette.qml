@@ -31,4 +31,13 @@ Singleton {
     readonly property color grassBright:   "#7FC95A"
     readonly property color redBright:      "#FF5C4A"
     readonly property color goldDim:        "#5A4A12"
+
+    // --- Cartridge-faceplate plastic tones (central tuning for the whole UI) ---
+    readonly property color plasticShellTop:    "#2C2822" // bar/sidebar shell, top-lit
+    readonly property color plasticShellBottom: "#191611"
+    readonly property color plasticPanelTop:    "#241F18" // recessed inner panels / cards
+    readonly property color plasticPanelBottom: "#16120E"
+    readonly property color plasticEdge:        "#0C0906" // dark molded border
+    readonly property color bevelHighlight:     Qt.rgba(1, 1, 1, 0.06)
+    readonly property color bevelShadow:        Qt.rgba(0, 0, 0, 0.45)
 }

@@ -17,8 +17,13 @@ Rectangle {
 
     implicitWidth: contentItem.implicitWidth + root.horizontalPadding * 2
     implicitHeight: contentItem.implicitHeight + root.verticalPadding * 2
-    radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    radius: Appearance.rounding.verysmall
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
+        GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
+    }
+    border.width: 1
+    border.color: DoorwayPalette.plasticEdge
     property real verticalPadding: 4
     property real horizontalPadding: 12
 

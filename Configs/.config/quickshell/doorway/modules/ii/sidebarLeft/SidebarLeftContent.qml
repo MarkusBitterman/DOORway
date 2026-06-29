@@ -26,11 +26,26 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: Appearance.sizes.sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        color: Appearance.colors.colLayer0
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
+            GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
+        }
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.color: DoorwayPalette.plasticEdge
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
         clip: true
+
+        // Beveled raised-plastic edges.
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 3 }
+            height: 2
+            color: DoorwayPalette.bevelHighlight
+        }
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 3 }
+            height: 2
+            color: DoorwayPalette.bevelShadow
+        }
 
         ColumnLayout {
             anchors {

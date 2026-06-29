@@ -14,7 +14,12 @@ Item {
 
     property string activeWindowAddress: `0x${activeWindow?.HyprlandToplevel?.address}`
     property bool focusingThisMonitor: HyprlandData.activeWorkspace?.monitor == monitor?.name
-    property var biggestWindow: HyprlandData.biggestWindowForWorkspace(HyprlandData.monitors[root.monitor?.id]?.activeWorkspace.id)
+    // Use this monitor's own active workspace id. HyprlandData.monitors is the raw
+    // `hyprctl monitors -j` array in listing order, so indexing it by monitor id breaks
+    // whenever array position != id (e.g. a HEADLESS-* monitor listed before HDMI-A-1) —
+    // it would read the wrong workspace and fall back to "Desktop". monitor.activeWorkspace
+    // is keyed correctly and already drives the fallback text below.
+    property var biggestWindow: HyprlandData.biggestWindowForWorkspace(root.monitor?.activeWorkspace?.id)
 
     property string activeAppId: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow
         ? root.activeWindow?.appId ?? ""

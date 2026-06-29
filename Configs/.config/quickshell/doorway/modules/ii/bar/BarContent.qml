@@ -34,17 +34,7 @@ Item { // Bar content region
             target: barBackground
         }
     }
-    // Neon glow (cyberpunk aesthetic) — sits behind the bar background, follows the
-    // wallpaper accent. Cheap: cached, only re-renders on palette change.
-    Loader {
-        active: Config.options.bar.showBackground && (Config.options.bar.glow?.enable ?? false)
-        anchors.fill: barBackground
-        sourceComponent: NeonGlow {
-            anchors.fill: undefined
-            target: barBackground
-        }
-    }
-    // Background
+    // Background — flat warm cartridge block with a subtle umber edge.
     Rectangle {
         id: barBackground
         anchors {
@@ -53,9 +43,22 @@ Item { // Bar content region
         }
         color: Config.options.bar.showBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        // Glow adds a bright accent edge even on the hug bar (a neon underline at screen top).
-        border.width: (Config.options.bar.cornerStyle === 1 || (Config.options.bar.glow?.enable ?? false)) ? 1 : 0
-        border.color: (Config.options.bar.glow?.enable ?? false) ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
+        border.width: (Config.options.bar.cornerStyle === 1 || Config.options.bar.showBackground) ? 1 : 0
+        border.color: Appearance.colors.colOutlineVariant
+
+        // Nintendo-Power accent stripe along the bottom edge — the signature identity band.
+        RetroStripe {
+            visible: Config.options.bar.showBackground
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+                leftMargin: parent.radius
+                rightMargin: parent.radius
+                bottomMargin: Config.options.bar.cornerStyle === 1 ? 2 : 0
+            }
+            height: 3
+        }
     }
 
     FocusedScrollMouseArea { // Left side | scroll to change brightness

@@ -34,78 +34,87 @@ Singleton {
     property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
     property real contentTransparency: Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
 
+    // DOORway committed signature scheme — a warm-dark Material palette seeded from the
+    // Nintendo-Power tokens in DoorwayPalette (the "gray cartridge" dark mode of the site).
+    // Gated against matugen overwrite in MaterialThemeLoader (committed palette).
     m3colors: QtObject {
         property bool darkmode: true
         property bool transparent: false
-        property color m3background: "#141313"
-        property color m3onBackground: "#e6e1e1"
-        property color m3surface: "#141313"
-        property color m3surfaceDim: "#141313"
-        property color m3surfaceBright: "#3a3939"
-        property color m3surfaceContainerLowest: "#0f0e0e"
-        property color m3surfaceContainerLow: "#1c1b1c"
-        property color m3surfaceContainer: "#201f20"
-        property color m3surfaceContainerHigh: "#2b2a2a"
-        property color m3surfaceContainerHighest: "#363435"
-        property color m3onSurface: "#e6e1e1"
-        property color m3surfaceVariant: "#49464a"
-        property color m3onSurfaceVariant: "#cbc5ca"
-        property color m3inverseSurface: "#e6e1e1"
-        property color m3inverseOnSurface: "#313030"
-        property color m3outline: "#948f94"
-        property color m3outlineVariant: "#49464a"
+        // Warm near-black surfaces (a hint of umber) with aged-paper text.
+        property color m3background: "#161210"
+        property color m3onBackground: DoorwayPalette.agedPaper
+        property color m3surface: "#161210"
+        property color m3surfaceDim: "#161210"
+        property color m3surfaceBright: "#3A2E24"
+        property color m3surfaceContainerLowest: "#100D0B"
+        property color m3surfaceContainerLow: "#1C1713"
+        property color m3surfaceContainer: "#221C17"
+        property color m3surfaceContainerHigh: "#2D261F"
+        property color m3surfaceContainerHighest: "#383029"
+        property color m3onSurface: DoorwayPalette.agedPaper
+        property color m3surfaceVariant: "#4A3D2E"
+        property color m3onSurfaceVariant: "#DBC9A6"
+        property color m3inverseSurface: DoorwayPalette.agedPaper
+        property color m3inverseOnSurface: "#2B2620"
+        property color m3outline: DoorwayPalette.parchmentSand
+        property color m3outlineVariant: "#4A3D2E"
         property color m3shadow: "#000000"
         property color m3scrim: "#000000"
-        property color m3surfaceTint: "#cbc4cb"
-        property color m3primary: "#cbc4cb"
-        property color m3onPrimary: "#322f34"
-        property color m3primaryContainer: "#2d2a2f"
-        property color m3onPrimaryContainer: "#bcb6bc"
-        property color m3inversePrimary: "#615d63"
-        property color m3secondary: "#cac5c8"
-        property color m3onSecondary: "#323032"
-        property color m3secondaryContainer: "#4d4b4d"
-        property color m3onSecondaryContainer: "#ece6e9"
-        property color m3tertiary: "#d1c3c6"
-        property color m3onTertiary: "#372e30"
-        property color m3tertiaryContainer: "#31292b"
-        property color m3onTertiaryContainer: "#c1b4b7"
-        property color m3error: "#ffb4ab"
-        property color m3onError: "#690005"
-        property color m3errorContainer: "#93000a"
-        property color m3onErrorContainer: "#ffdad6"
-        property color m3primaryFixed: "#e7e0e7"
-        property color m3primaryFixedDim: "#cbc4cb"
-        property color m3onPrimaryFixed: "#1d1b1f"
-        property color m3onPrimaryFixedVariant: "#49454b"
-        property color m3secondaryFixed: "#e6e1e4"
-        property color m3secondaryFixedDim: "#cac5c8"
-        property color m3onSecondaryFixed: "#1d1b1d"
-        property color m3onSecondaryFixedVariant: "#484648"
-        property color m3tertiaryFixed: "#eddfe1"
-        property color m3tertiaryFixedDim: "#d1c3c6"
-        property color m3onTertiaryFixed: "#211a1c"
-        property color m3onTertiaryFixedVariant: "#4e4447"
-        property color m3success: "#B5CCBA"
-        property color m3onSuccess: "#213528"
-        property color m3successContainer: "#374B3E"
-        property color m3onSuccessContainer: "#D1E9D6"
-        property color term0: "#EDE4E4"
-        property color term1: "#B52755"
-        property color term2: "#A97363"
-        property color term3: "#AF535D"
-        property color term4: "#A67F7C"
-        property color term5: "#B2416B"
-        property color term6: "#8D76AD"
-        property color term7: "#272022"
-        property color term8: "#0E0D0D"
-        property color term9: "#B52755"
-        property color term10: "#A97363"
-        property color term11: "#AF535D"
-        property color term12: "#A67F7C"
-        property color term13: "#B2416B"
-        property color term14: "#8D76AD"
-        property color term15: "#221A1A"
+        property color m3surfaceTint: DoorwayPalette.powerGold
+        // Primary = the gold signature warmth.
+        property color m3primary: DoorwayPalette.powerGold
+        property color m3onPrimary: DoorwayPalette.inkBlack
+        property color m3primaryContainer: DoorwayPalette.goldDim
+        property color m3onPrimaryContainer: "#FFE08A"
+        property color m3inversePrimary: DoorwayPalette.owlUmber
+        // Secondary = hero/sky blue.
+        property color m3secondary: DoorwayPalette.skyHint
+        property color m3onSecondary: "#06203F"
+        property color m3secondaryContainer: DoorwayPalette.heroBlue
+        property color m3onSecondaryContainer: "#CFE0F6"
+        // Tertiary = grassland green.
+        property color m3tertiary: DoorwayPalette.grassBright
+        property color m3onTertiary: "#0E2A06"
+        property color m3tertiaryContainer: "#2E5A1C"
+        property color m3onTertiaryContainer: "#C8EFB1"
+        // Error = the power-red fire (lifted for legibility on near-black).
+        property color m3error: DoorwayPalette.redBright
+        property color m3onError: "#3A0002"
+        property color m3errorContainer: "#93000A"
+        property color m3onErrorContainer: "#FFDAD5"
+        property color m3primaryFixed: "#FFE08A"
+        property color m3primaryFixedDim: DoorwayPalette.powerGold
+        property color m3onPrimaryFixed: "#251A00"
+        property color m3onPrimaryFixedVariant: "#5A4A12"
+        property color m3secondaryFixed: "#CFE0F6"
+        property color m3secondaryFixedDim: DoorwayPalette.skyHint
+        property color m3onSecondaryFixed: "#06203F"
+        property color m3onSecondaryFixedVariant: "#1F3C88"
+        property color m3tertiaryFixed: "#C8EFB1"
+        property color m3tertiaryFixedDim: DoorwayPalette.grassBright
+        property color m3onTertiaryFixed: "#0E2A06"
+        property color m3onTertiaryFixedVariant: "#2E5A1C"
+        property color m3success: DoorwayPalette.grassBright
+        property color m3onSuccess: "#0E2A06"
+        property color m3successContainer: "#2E5A1C"
+        property color m3onSuccessContainer: "#C8EFB1"
+        // Terminal palette — warm Nintendo set.
+        property color term0: "#1C1C1C"
+        property color term1: "#E60012"
+        property color term2: "#5FAF3A"
+        property color term3: "#FFC20E"
+        property color term4: "#1F3C88"
+        property color term5: "#C46A2D"
+        property color term6: "#6FA3D9"
+        property color term7: "#EFE3C5"
+        property color term8: "#3A2A1E"
+        property color term9: "#FF5C4A"
+        property color term10: "#7FC95A"
+        property color term11: "#FFD453"
+        property color term12: "#6FA3D9"
+        property color term13: "#C9A46A"
+        property color term14: "#8FBCE0"
+        property color term15: "#FFF6E0"
     }
 
     colors: QtObject {
@@ -221,6 +230,7 @@ Singleton {
             property string monospace: Config.options.appearance.fonts.monospace
             property string reading: Config.options.appearance.fonts.reading
             property string expressive: Config.options.appearance.fonts.expressive
+            property string display: Config.options.appearance.fonts.display
         }
         property QtObject variableAxes: QtObject {
             property var main: ({

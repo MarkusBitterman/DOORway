@@ -15,17 +15,30 @@ Item {
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
-    // Real spectrum from cava when available; otherwise the procedural sine path runs.
+    // Real spectrum from cava when available; otherwise a volume-driven fallback.
     readonly property bool useCava: Cava.available && Cava.values.length >= Cava.bars
-    readonly property real cavaPeak: {
-        const v = Cava.values
-        if (!root.useCava || v.length === 0) return 0
-        let m = 0
-        for (let i = 0; i < v.length; i++) if (v[i] > m) m = v[i]
-        return Math.min(1, m / Cava.maxValue)
+    readonly property int vuSegments: 7
+    readonly property color _vuDim: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.82)
+    // Per-segment levels (0..1) for the horizontal VU strip — one frequency band each.
+    readonly property var vuLevels: {
+        const n = root.vuSegments
+        const out = new Array(n).fill(0)
+        const playing = (root.activePlayer?.playbackState === MprisPlaybackState.Playing)
+        if (!playing) return out
+        if (root.useCava) {
+            const v = Cava.values
+            const per = Math.max(1, Math.floor(v.length / n))
+            for (let i = 0; i < n; i++) {
+                let s = 0
+                for (let k = 0; k < per; k++) s += v[i * per + k] || 0
+                out[i] = Math.min(1, (s / per) / Cava.maxValue * 1.7)
+            }
+        } else { // no cava running: a static level meter from volume
+            const base = Math.max(0.25, Audio.value)
+            for (let i = 0; i < n; i++) out[i] = Math.max(0.05, base - i * 0.06)
+        }
+        return out
     }
-    readonly property bool glowGauges: (Config.options.bar?.glow?.enable ?? false)
-        && (Config.options.bar?.glow?.applyToGauges ?? false)
 
     Layout.fillHeight: true
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
@@ -62,142 +75,60 @@ Item {
 
         Item {
             id: mediaIconArea
-            implicitWidth: 20
+            implicitWidth: mediaRow.implicitWidth
             implicitHeight: 20
             Layout.alignment: Qt.AlignVCenter
 
-            // Neon glow ring behind the media circle (cyberpunk accent, matches the bars).
-            Loader {
-                active: root.glowGauges
-                anchors.fill: parent
-                sourceComponent: Item {
-                    anchors.fill: parent
-                    Rectangle {
-                        id: mediaGlowRing
-                        anchors.centerIn: parent
-                        width: 20
-                        height: 20
-                        radius: width / 2
-                        color: "transparent"
-                        border.width: 1
-                        border.color: Appearance.colors.colPrimary
-                    }
-                    NeonGlow {
-                        target: mediaGlowRing
-                        glowColor: Appearance.colors.colPrimary
-                    }
-                }
-            }
-
-            ClippedFilledCircularProgress {
-                id: mediaCircProg
-                anchors.fill: parent
-                value: (activePlayer?.position ?? 0) / (activePlayer?.length ?? 1)
-                implicitSize: 20
-                colPrimary: Appearance.colors.colOnSecondaryContainer
-                enableAnimation: false
-
-                Rectangle {
-                    width: mediaCircProg.implicitSize
-                    height: mediaCircProg.implicitSize
-                    radius: width / 2
-                    color: "white"
-                }
-            }
-
-            FrameAnimation {
-                id: vizAnim
-                running: mediaIconArea.visible
-
-                property real t: 0.0
-                property real smoothedAmp: 0.0
-                // Envelope follows the real spectrum peak when cava is live, else volume
-                // while playing. Drives the bar amplitude (fallback) AND the icon fade.
-                property real targetAmp: root.useCava
-                    ? root.cavaPeak
-                    : ((activePlayer?.playbackState == MprisPlaybackState.Playing)
-                        ? Math.max(0.35, Audio.value) : 0.0)
-
-                readonly property var freqs:  [1.4, 2.2, 1.8, 2.7]
-                readonly property var phases: [0.0, 1.1, 2.4, 0.6]
-                property var heights: [0.0, 0.0, 0.0, 0.0]
-
-                onTriggered: {
-                    t += elapsedTime
-                    var alpha = smoothedAmp < targetAmp ? 0.15 : 0.05
-                    smoothedAmp = smoothedAmp * (1 - alpha) + targetAmp * alpha
-                    if (!root.useCava) { // procedural sine bars — fallback only
-                        var h = []
-                        for (var i = 0; i < 4; i++)
-                            h.push(Math.max(0, Math.sin(t * freqs[i] + phases[i])) * smoothedAmp)
-                        heights = h
-                    }
-                    spectrumCanvas.requestPaint()
-                }
-            }
-
-            Canvas {
-                id: spectrumCanvas
-                anchors.fill: parent
-                z: 1
-
-                onPaint: {
-                    var ctx = getContext("2d")
-                    ctx.clearRect(0, 0, width, height)
-
-                    var barW   = 2
-                    var gap    = 1
-                    var totalW = 4 * barW + 3 * gap
-                    var startX = (width - totalW) / 2
-                    var midY   = height / 2
-                    var maxH   = height * 0.38
-                    var c      = Appearance.colors.colPrimary
-
-                    // 4 bar levels (0..1): real spectrum buckets (bass→treble) when cava is
-                    // live, else the procedural sine heights.
-                    var levels = [0, 0, 0, 0]
-                    if (root.useCava) {
-                        var vals = Cava.values
-                        var per  = Math.floor(vals.length / 4)
-                        var gain = 1.6 // averaging bands lowers peaks; lift to fill the icon
-                        for (var b = 0; b < 4; b++) {
-                            var sum = 0
-                            for (var k = 0; k < per; k++) sum += vals[b * per + k]
-                            levels[b] = Math.min(1, (sum / per) / Cava.maxValue * gain)
-                        }
-                    } else {
-                        for (var j = 0; j < 4; j++) levels[j] = vizAnim.heights[j]
-                    }
-
-                    for (var i = 0; i < 4; i++) {
-                        var barH = Math.max(1, levels[i] * maxH * 2)
-                        var x    = startX + i * (barW + gap)
-                        var y    = midY - barH / 2
-                        var grad = ctx.createLinearGradient(x, y, x, y + barH)
-                        grad.addColorStop(0.0, Qt.rgba(c.r, c.g, c.b, 0.95))
-                        grad.addColorStop(0.5, Qt.rgba(c.r, c.g, c.b, 0.60))
-                        grad.addColorStop(1.0, Qt.rgba(c.r, c.g, c.b, 0.15))
-                        ctx.fillStyle = grad
-                        ctx.fillRect(x, y, barW, barH)
-                    }
-                }
-            }
-
-            MaterialSymbol {
+            RowLayout {
+                id: mediaRow
                 anchors.centerIn: parent
-                z: 2
-                fill: 1
-                text: activePlayer?.isPlaying ? "pause" : "music_note"
-                iconSize: Appearance.font.pixelSize.normal
-                color: Appearance.m3colors.m3onSecondaryContainer
-                opacity: vizAnim.smoothedAmp < 0.05 ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 300 } }
+                spacing: 4
+
+                // Play / pause glyph — always visible, in the gold accent.
+                MaterialSymbol {
+                    Layout.alignment: Qt.AlignVCenter
+                    fill: 1
+                    text: (root.activePlayer?.isPlaying ?? false) ? "pause" : "music_note"
+                    iconSize: Appearance.font.pixelSize.larger
+                    color: Appearance.colors.colPrimary
+                }
+
+                // Horizontal segmented VU strip — each LED tracks a frequency band (cava).
+                RowLayout {
+                    Layout.alignment: Qt.AlignVCenter
+                    spacing: 2
+                    Repeater {
+                        model: root.vuSegments
+                        delegate: Rectangle {
+                            required property int index
+                            implicitWidth: 3
+                            implicitHeight: 13
+                            radius: 1
+                            color: ColorUtils.mix(Appearance.colors.colPrimary, root._vuDim,
+                                                  Math.min(1, root.vuLevels[index] ?? 0))
+                            Behavior on color { ColorAnimation { duration: 90 } }
+                        }
+                    }
+                }
+            }
+
+            // Thin retro progress underline (track position).
+            Rectangle {
+                anchors { left: mediaRow.left; right: mediaRow.right; bottom: parent.bottom }
+                height: 2
+                radius: 1
+                color: root._vuDim
+                Rectangle {
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                    width: parent.width * Math.min(1, Math.max(0, (root.activePlayer?.position ?? 0) / (root.activePlayer?.length ?? 1)))
+                    radius: 1
+                    color: Appearance.colors.colPrimary
+                }
             }
         }
 
         StyledText {
             visible: Config.options.bar.verbose
-            width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space
             Layout.rightMargin: rowLayout.spacing

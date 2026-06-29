@@ -22,14 +22,14 @@ MouseArea {
         Resource {
             iconName: "memory"
             percentage: ResourceUsage.memoryUsedPercentage
-            accentColor: "#4CAF50"
+            accentColor: DoorwayPalette.koholintGrass
             warningThreshold: Config.options.bar.resources.memoryWarningThreshold
         }
 
         Resource {
             iconName: "swap_horiz"
             percentage: ResourceUsage.swapUsedPercentage
-            accentColor: "#29B6F6"
+            accentColor: DoorwayPalette.skyHint
             shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) ||
                 (MprisController.activePlayer?.trackTitle == null) ||
                 root.alwaysShowAllResources
@@ -40,7 +40,7 @@ MouseArea {
         Resource {
             iconName: "developer_board"
             percentage: ResourceUsage.cpuUsage
-            accentColor: "#EF5350"
+            accentColor: DoorwayPalette.redBright
             shown: Config.options.bar.resources.alwaysShowCpu ||
                 !(MprisController.activePlayer?.trackTitle?.length > 0) ||
                 root.alwaysShowAllResources

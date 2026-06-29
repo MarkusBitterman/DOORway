@@ -1,5 +1,4 @@
 import qs.modules.common
-import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 
@@ -7,23 +6,9 @@ Item {
     id: root
     property bool vertical: false
     property real padding: 5
-    // Groups glow subtler than the bar itself, and only when grouping is on.
-    readonly property bool glowEnabled: (Config.options.bar?.glow?.enable ?? false)
-        && (Config.options.bar?.glow?.applyToGroups ?? false)
-        && !(Config.options?.bar.borderless ?? false)
     implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : (gridLayout.implicitWidth + padding * 2)
     implicitHeight: vertical ? (gridLayout.implicitHeight + padding * 2) : Appearance.sizes.baseBarHeight
     default property alias items: gridLayout.children
-
-    Loader {
-        active: root.glowEnabled
-        anchors.fill: background
-        sourceComponent: NeonGlow {
-            anchors.fill: undefined
-            target: background
-            intensity: (Config.options.bar.glow?.intensity ?? 0.5) * 0.6
-        }
-    }
 
     Rectangle {
         id: background
@@ -35,9 +20,10 @@ Item {
             rightMargin: root.vertical ? 4 : 0
         }
         color: Config.options?.bar.borderless ? "transparent" : Appearance.colors.colLayer1
-        radius: Appearance.rounding.small
-        border.width: root.glowEnabled ? 1 : 0
-        border.color: Appearance.colors.colPrimary
+        radius: Appearance.rounding.verysmall // squarer cartridge block
+        // Subtle warm cartridge edge.
+        border.width: (Config.options?.bar.borderless ?? false) ? 0 : 1
+        border.color: Appearance.colors.colOutlineVariant
     }
 
     GridLayout {

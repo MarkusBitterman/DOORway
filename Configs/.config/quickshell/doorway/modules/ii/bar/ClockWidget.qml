@@ -17,6 +17,7 @@ Item {
         spacing: 4
 
         StyledText {
+            font.family: Appearance.font.family.display
             font.pixelSize: Appearance.font.pixelSize.large
             color: Appearance.colors.colOnLayer1
             text: DateTime.time

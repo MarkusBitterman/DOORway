@@ -115,6 +115,7 @@ Singleton {
                     property string monospace: "JetBrains Mono NF"
                     property string reading: "Readex Pro"
                     property string expressive: "Space Grotesk"
+                    property string display: "Departure Mono" // DOORway signature retro pixel-mono display font
                 }
                 property JsonObject transparency: JsonObject {
                     property bool enable: false
@@ -136,6 +137,9 @@ Singleton {
                 property JsonObject palette: JsonObject {
                     property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
                     property string accentColor: ""
+                    // DOORway committed signature palette (Nintendo-Power, fixed). When true,
+                    // MaterialThemeLoader ignores the wallpaper-derived matugen scheme.
+                    property bool committed: true
                 }
             }
 

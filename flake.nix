@@ -82,6 +82,7 @@
           nerd-fonts.jetbrains-mono # "JetBrainsMono Nerd Font" — bar/menu/groupbar + workspace glyphs
           nerd-fonts.caskaydia-cove # "CaskaydiaCove Nerd Font Mono" — monospace default
           nerd-fonts.symbols-only # "Symbols Nerd Font" — symbol-range fallback coverage
+          departure-mono # "Departure Mono" — DOORway signature retro pixel-mono display font
         ];
 
       # Development dependencies

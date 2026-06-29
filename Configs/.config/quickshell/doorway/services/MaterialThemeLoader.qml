@@ -20,6 +20,9 @@ Singleton {
     }
 
     function applyColors(fileContent) {
+        // DOORway commits a fixed signature palette (DoorwayPalette → Appearance.m3colors) and
+        // ignores the wallpaper-derived matugen scheme. Flip this flag for hybrid/adaptive mode.
+        if (Config.options.appearance?.palette?.committed ?? true) return;
         const json = JSON.parse(fileContent)
         for (const key in json) {
             if (json.hasOwnProperty(key)) {

@@ -17,7 +17,7 @@ Item {
 
     // Real spectrum from cava when available; otherwise a volume-driven fallback.
     readonly property bool useCava: Cava.available && Cava.values.length >= Cava.bars
-    readonly property int vuSegments: 7
+    readonly property int vuSegments: 6
     readonly property color _vuDim: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.82)
     // Per-segment levels (0..1) for the horizontal VU strip — one frequency band each.
     readonly property var vuLevels: {

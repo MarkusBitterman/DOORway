@@ -38,7 +38,7 @@ MouseArea {
         }
 
         Resource {
-            iconName: "developer_board"
+            iconName: "deployed_code"
             percentage: ResourceUsage.cpuUsage
             accentColor: DoorwayPalette.redBright
             shown: Config.options.bar.resources.alwaysShowCpu ||

@@ -10,26 +10,39 @@ Canvas {
     id: root
     property color gold: DoorwayPalette.powerGold
     property color red: DoorwayPalette.powerRed
-    property int band: 18
-    property int gap: 8
+    property int band: 10
+    property int gap: 5
+    property bool vertical: false // run the bands down a cartridge-edge label instead of across
 
     implicitHeight: 3
 
     onPaint: {
         const ctx = getContext("2d")
         ctx.clearRect(0, 0, width, height)
-        // Red base — strong at the left, fading out (the logo energy band).
-        const g = ctx.createLinearGradient(0, 0, width, 0)
-        g.addColorStop(0.0, Qt.rgba(red.r, red.g, red.b, 0.55))
-        g.addColorStop(0.6, Qt.rgba(red.r, red.g, red.b, 0.0))
-        ctx.fillStyle = g
-        ctx.fillRect(0, 0, width, height)
-        // Gold dashes.
-        ctx.fillStyle = root.gold
-        for (let x = 0; x < width; x += root.band + root.gap)
-            ctx.fillRect(x, 0, root.band, height)
+        if (!root.vertical) {
+            // Horizontal: red base strong at the left, fading out (the logo energy band).
+            const g = ctx.createLinearGradient(0, 0, width, 0)
+            g.addColorStop(0.0, Qt.rgba(red.r, red.g, red.b, 0.85))
+            g.addColorStop(1.0, Qt.rgba(red.r, red.g, red.b, 0.35))
+            ctx.fillStyle = g
+            ctx.fillRect(0, 0, width, height)
+            ctx.fillStyle = root.gold
+            for (let x = 0; x < width; x += root.band + root.gap)
+                ctx.fillRect(x, 0, root.band, height)
+        } else {
+            // Vertical: a cartridge end-label band.
+            const g = ctx.createLinearGradient(0, 0, 0, height)
+            g.addColorStop(0.0, Qt.rgba(red.r, red.g, red.b, 0.85))
+            g.addColorStop(1.0, Qt.rgba(red.r, red.g, red.b, 0.35))
+            ctx.fillStyle = g
+            ctx.fillRect(0, 0, width, height)
+            ctx.fillStyle = root.gold
+            for (let y = 0; y < height; y += root.band + root.gap)
+                ctx.fillRect(0, y, width, root.band)
+        }
     }
 
     onWidthChanged: requestPaint()
     onHeightChanged: requestPaint()
+    onVerticalChanged: requestPaint()
 }

@@ -14,7 +14,7 @@ Item {
 
     // Segmented LED meter (NES block vocabulary) — discrete blocks lit by usage. Legible
     // and unmistakably retro, in this resource's own accent hue (error red over threshold).
-    property int segments: 5
+    property int segments: 4
     readonly property color _dim: ColorUtils.transparentize(accentColor, 0.8)
     readonly property color _litColor: warning ? Appearance.colors.colError : accentColor
     clip: true
@@ -25,7 +25,7 @@ Item {
 
     RowLayout {
         id: resourceRowLayout
-        spacing: 2
+        spacing: 4
         x: shown ? 0 : -resourceRowLayout.width
         anchors {
             verticalCenter: parent.verticalCenter
@@ -34,7 +34,7 @@ Item {
         // Icon — legible, carrying the resource's accent hue (no obscuring ring).
         MaterialSymbol {
             Layout.alignment: Qt.AlignVCenter
-            Layout.rightMargin: 3
+            Layout.rightMargin: 4
             font.weight: Font.DemiBold
             fill: 1
             text: iconName
@@ -46,13 +46,13 @@ Item {
         RowLayout {
             id: meter
             Layout.alignment: Qt.AlignVCenter
-            spacing: 2
+            spacing: 3
             Repeater {
                 model: root.segments
                 delegate: Rectangle {
                     required property int index
                     implicitWidth: 3
-                    implicitHeight: 12
+                    implicitHeight: 14
                     radius: 1
                     color: (index < Math.round(root.percentage * root.segments)) ? root._litColor : root._dim
                     Behavior on color { ColorAnimation { duration: 200 } }

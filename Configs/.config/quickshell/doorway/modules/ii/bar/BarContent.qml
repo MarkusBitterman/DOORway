@@ -34,30 +34,35 @@ Item { // Bar content region
             target: barBackground
         }
     }
-    // Background — flat warm cartridge block with a subtle umber edge.
+    // Background — beveled warm-plastic cartridge faceplate.
     Rectangle {
         id: barBackground
+        readonly property bool bg: Config.options.bar.showBackground
         anchors {
             fill: parent
             margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
         }
-        color: Config.options.bar.showBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        border.width: (Config.options.bar.cornerStyle === 1 || Config.options.bar.showBackground) ? 1 : 0
-        border.color: Appearance.colors.colOutlineVariant
+        // Top-lit plastic sheen (the "gray cartridge" shell).
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: barBackground.bg ? "#2C2822" : "transparent" }
+            GradientStop { position: 1.0; color: barBackground.bg ? "#191611" : "transparent" }
+        }
+        border.width: barBackground.bg ? 1 : 0
+        border.color: "#0D0A07" // dark molded outer edge
 
-        // Nintendo-Power accent stripe along the bottom edge — the signature identity band.
-        RetroStripe {
-            visible: Config.options.bar.showBackground
-            anchors {
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-                leftMargin: parent.radius
-                rightMargin: parent.radius
-                bottomMargin: Config.options.bar.cornerStyle === 1 ? 2 : 0
-            }
-            height: 3
+        // Beveled raised-plastic edges: lit top, shadowed bottom.
+        Rectangle {
+            visible: barBackground.bg
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
+            height: 2
+            color: Qt.rgba(1, 1, 1, 0.06)
+        }
+        Rectangle {
+            visible: barBackground.bg
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
+            height: 2
+            color: Qt.rgba(0, 0, 0, 0.45)
         }
     }
 
@@ -96,10 +101,25 @@ Item { // Bar content region
             anchors.fill: parent
             spacing: 0
 
+            // Cartridge left edge — molded grip ridges + the gold/red Power end-label.
+            GripRidges {
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: 7
+                Layout.preferredHeight: Appearance.sizes.baseBarHeight - 18
+                ridges: 4
+            }
+            RetroStripe {
+                vertical: true
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: 5
+                Layout.preferredWidth: 5
+                Layout.preferredHeight: Appearance.sizes.baseBarHeight - 16
+            }
+
             LeftSidebarButton { // Left sidebar button
                 id: leftSidebarButton
                 Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: Appearance.rounding.screenRounding
+                Layout.leftMargin: 9
                 colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
             }
 

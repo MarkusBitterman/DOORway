@@ -4,10 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     hyprland = {
-      # Pinned at 7a75ce5f (2026-06-18). hyprgraphics@090db94 (Jun 24) added
-      # TextResource.hpp which requires pango, but hyprland-guiutils hasn't
-      # declared that dep yet — unpin once hyprwm/hyprland-guiutils fixes it.
-      url = "github:hyprwm/Hyprland/7a75ce5f209d8142c40dfe6dd8bb03749987e11d";
+      # Unpinned 2026-06-30: tracks latest Hyprland main now that the pango fix
+      # for hyprgraphics' TextResource.hpp landed upstream (Hyprland and
+      # hyprland-guiutils both declare pango in their Nix buildInputs). Re-pin to
+      # a known-good rev here if main ever breaks the build again.
+      url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

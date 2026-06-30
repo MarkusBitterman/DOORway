@@ -24,3 +24,17 @@ hl.on("hyprland.start", function()
     -- segfaults in Hyprland 0.55.x (confirmed across all crash reports).
     hl.exec_cmd("hyprctl output create headless")
 end)
+
+-- Reconnect recovery: when the physical monitor disconnects, Hyprland moves its
+-- workspaces to the only survivor (the headless output above) and never moves
+-- them back on reconnect, stranding windows on an invisible monitor. On every
+-- monitor (re)connect, sweep any workspaces parked on HEADLESS-1 back onto the
+-- real output. The phantom stays a quiet zero-monitor safety net, nothing more.
+hl.on("monitor.added", function(mon)
+    -- The callback arg is untyped (fun(...)); accept a monitor table, a bare
+    -- name string, or nil. The helper auto-detects the target when no usable
+    -- name is passed, so this stays correct regardless of the payload shape.
+    local name = (type(mon) == "table" and mon.name) or (type(mon) == "string" and mon) or nil
+    if name == "HEADLESS-1" then return end
+    hl.exec_cmd("rescue-stranded-workspaces.sh" .. (name and (" " .. name) or ""))
+end)

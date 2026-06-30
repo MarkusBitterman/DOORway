@@ -17,7 +17,6 @@ Item {
     property bool vertical: false
     property bool borderless: Config.options.bar.borderless
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
-    readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
     readonly property int effectiveActiveWorkspaceId: monitor?.activeWorkspace?.id ?? 1
     
     readonly property int workspacesShown: Config.options.bar.workspaces.shown
@@ -56,10 +55,16 @@ Item {
         }
     }
 
-    // Function to update workspaceOccupied
+    // Function to update workspaceOccupied.
+    // "Occupied" means the workspace actually holds windows — not merely that
+    // Hyprland has it in its workspace list. Empty workspaces (including the
+    // phantom HEADLESS-1 monitor's placeholder workspace) persist in that list,
+    // so testing existence would light them up with nothing running. Window
+    // presence is the same signal the app-icon code below already uses.
     function updateWorkspaceOccupied() {
         workspaceOccupied = Array.from({ length: root.workspacesShown }, (_, i) => {
-            return Hyprland.workspaces.values.some(ws => ws.id === workspaceGroup * root.workspacesShown + i + 1);
+            const wsId = workspaceGroup * root.workspacesShown + i + 1;
+            return HyprlandData.windowList.some(w => w.workspace?.id === wsId);
         })
     }
 
@@ -74,6 +79,13 @@ Item {
     Connections {
         target: Hyprland
         function onFocusedWorkspaceChanged() {
+            updateWorkspaceOccupied();
+        }
+    }
+    // Recompute when windows open/close/move (HyprlandData polls clients).
+    Connections {
+        target: HyprlandData
+        function onWindowListChanged() {
             updateWorkspaceOccupied();
         }
     }
@@ -123,18 +135,21 @@ Item {
                 implicitWidth: workspaceButtonWidth
                 implicitHeight: workspaceButtonWidth
                 radius: (width / 2)
-                property var previousOccupied: (workspaceOccupied[index-1] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index))
-                property var rightOccupied: (workspaceOccupied[index+1] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index+2))
-                property var radiusPrev: previousOccupied ? 0 : (width / 2)
-                property var radiusNext: rightOccupied ? 0 : (width / 2)
+                // Adjacent occupied cells merge into a single pill: square off
+                // the side that touches an occupied neighbour, round the rest.
+                property bool occupied: workspaceOccupied[index] ?? false
+                property bool prevOccupied: workspaceOccupied[index - 1] ?? false
+                property bool nextOccupied: workspaceOccupied[index + 1] ?? false
+                property var radiusPrev: prevOccupied ? 0 : (width / 2)
+                property var radiusNext: nextOccupied ? 0 : (width / 2)
 
                 topLeftRadius: radiusPrev
                 bottomLeftRadius: root.vertical ? radiusNext : radiusPrev
                 topRightRadius: root.vertical ? radiusPrev : radiusNext
                 bottomRightRadius: radiusNext
-                
+
                 color: ColorUtils.transparentize(Appearance.m3colors.m3secondaryContainer, 0.4)
-                opacity: (workspaceOccupied[index] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index+1)) ? 1 : 0
+                opacity: occupied ? 1 : 0
 
                 Behavior on opacity {
                     animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
@@ -199,7 +214,20 @@ Item {
                 property int workspaceValue: workspaceGroup * root.workspacesShown + index + 1
                 implicitHeight: vertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
                 implicitWidth: vertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.verticalBarWidth
-                onPressed: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${workspaceValue}})`)
+                // Bring the workspace to THIS monitor before focusing it.
+                // Plain `focus({workspace})` has `workspace N` semantics: if N
+                // lives on another monitor (e.g. one stranded on HEADLESS-1),
+                // Hyprland focuses that monitor and warps the cursor instead of
+                // switching here. workspace.move is focus-neutral, so moving
+                // first (only when needed) then focusing keeps the cursor put.
+                onPressed: {
+                    const ws = HyprlandData.workspaceById[button.workspaceValue];
+                    const here = root.monitor?.name;
+                    if (here && ws?.monitor && ws.monitor !== here) {
+                        Hyprland.dispatch(`hl.dsp.workspace.move({ workspace = ${button.workspaceValue}, monitor = "${here}" })`);
+                    }
+                    Hyprland.dispatch(`hl.dsp.focus({ workspace = ${button.workspaceValue} })`);
+                }
                 width: vertical ? undefined : root.workspaceButtonWidth
                 height: vertical ? root.workspaceButtonWidth : undefined
 

@@ -24,14 +24,16 @@ Scope {
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: 80
             implicitHeight: 80
-            buttonRadius: Appearance.rounding.full
+            rippleEnabled: false  // mechanical console key, not Material ripple
+            buttonRadius: Appearance.rounding.verysmall  // squared keypad button
+            buttonRadiusPressed: Math.max(3, Appearance.rounding.verysmall - 3)
+            // Raised plastic keys; destructive actions glow red.
             colBackground: btn.destructive
-                ? Qt.rgba(Appearance.m3colors.m3error.r, Appearance.m3colors.m3error.g, Appearance.m3colors.m3error.b, 0.15)
-                : Qt.rgba(Appearance.colors.colLayer1.r, Appearance.colors.colLayer1.g, Appearance.colors.colLayer1.b, 0.7)
+                ? ColorUtils.transparentize(DoorwayPalette.redBright, 0.82)
+                : DoorwayPalette.plasticShellTop
             colBackgroundHover: btn.destructive
-                ? Qt.rgba(Appearance.m3colors.m3error.r, Appearance.m3colors.m3error.g, Appearance.m3colors.m3error.b, 0.28)
-                : Qt.rgba(Appearance.colors.colLayer1Hover.r, Appearance.colors.colLayer1Hover.g, Appearance.colors.colLayer1Hover.b, 0.9)
-            colRipple: btn.destructive ? Appearance.m3colors.m3error : Appearance.colors.colLayer1Active
+                ? ColorUtils.transparentize(DoorwayPalette.redBright, 0.68)
+                : Qt.lighter(DoorwayPalette.plasticShellTop, 1.18)
             onClicked: {
                 GlobalStates.sessionOpen = false;
                 btn.action();
@@ -42,14 +44,14 @@ Scope {
                 verticalAlignment: Text.AlignVCenter
                 text: btn.icon
                 iconSize: 36
-                color: btn.destructive ? Appearance.m3colors.m3error : Appearance.colors.colOnLayer0
+                color: btn.destructive ? DoorwayPalette.redBright : DoorwayPalette.agedPaper
             }
         }
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: btn.label
             font.pixelSize: Appearance.font.pixelSize.small
-            color: "white"
+            color: DoorwayPalette.agedPaper
             opacity: 0.85
         }
     }
@@ -99,13 +101,26 @@ Scope {
                 anchors.centerIn: parent
                 width: buttonsGrid.implicitWidth + 80
                 height: buttonsGrid.implicitHeight + 80
-                radius: Appearance.rounding.large ?? 24
-                color: Qt.rgba(
-                    Appearance.m3colors.m3surfaceContainer.r,
-                    Appearance.m3colors.m3surfaceContainer.g,
-                    Appearance.m3colors.m3surfaceContainer.b,
-                    0.85
-                )
+                radius: Appearance.rounding.normal
+                // Cartridge faceplate housing the session keypad.
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
+                    GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
+                }
+                border.width: 1
+                border.color: DoorwayPalette.plasticEdge
+
+                // Bevel: lit top, shadowed bottom.
+                Rectangle {
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 3 }
+                    height: 2
+                    color: DoorwayPalette.bevelHighlight
+                }
+                Rectangle {
+                    anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 3 }
+                    height: 2
+                    color: DoorwayPalette.bevelShadow
+                }
 
                 MouseArea {
                     anchors.fill: parent
@@ -121,10 +136,9 @@ Scope {
                         text: qsTr("Session")
                         font {
                             pixelSize: Appearance.font.pixelSize.huge
-                            family: Appearance.font.family.title
-                            variableAxes: Appearance.font.variableAxes.title
+                            family: Appearance.font.family.display  // Departure Mono — cartridge label
                         }
-                        color: "white"
+                        color: DoorwayPalette.agedPaper
                         opacity: 0.9
                     }
 

@@ -113,7 +113,7 @@ Item { // Notification item area
         id: background
         width: parent.width
         anchors.left: parent.left
-        radius: Appearance.rounding.small
+        radius: Appearance.rounding.verysmall
         anchors.leftMargin: root.xOffset
 
         Behavior on anchors.leftMargin {
@@ -125,15 +125,40 @@ Item { // Notification item area
             }
         }
 
-        color: (expanded && !onlyNotification) ? 
-            (notificationObject.urgency == NotificationUrgency.Critical) ? 
-                ColorUtils.mix(Appearance.colors.colSecondaryContainer, Appearance.colors.colLayer2, 0.35) :
-                (Appearance.colors.colLayer3) :
-            ColorUtils.transparentize(Appearance.colors.colLayer3)
+        // Expanded cards carry a plastic faceplate (below); collapsed items stay faint so the
+        // stack reads cleanly.
+        readonly property bool plasticCard: expanded && !onlyNotification
+        color: plasticCard ? "transparent" : ColorUtils.transparentize(DoorwayPalette.plasticPanelTop, 0.45)
 
         implicitHeight: expanded ? (contentColumn.implicitHeight + padding * 2) : summaryRow.implicitHeight
         Behavior on implicitHeight {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+        }
+
+        // Recessed plastic-panel faceplate — the cartridge card. Critical urgency gets a red molded edge.
+        Rectangle {
+            id: cardFaceplate
+            anchors.fill: parent
+            visible: background.plasticCard
+            radius: background.radius
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
+                GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
+            }
+            border.width: 1
+            border.color: (notificationObject.urgency == NotificationUrgency.Critical)
+                ? DoorwayPalette.redBright : DoorwayPalette.plasticEdge
+
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
+                height: 1
+                color: DoorwayPalette.bevelHighlight
+            }
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
+                height: 1
+                color: DoorwayPalette.bevelShadow
+            }
         }
 
         ColumnLayout { // Content column

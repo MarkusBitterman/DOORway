@@ -29,20 +29,17 @@ Slider {
 
     property var configuration: StyledSlider.Configuration.S
 
-    property real handleDefaultWidth: 3
-    property real handlePressedWidth: 1.5
-    property color highlightColor: Appearance.colors.colPrimary
-    property color trackColor: Appearance.colors.colSecondaryContainer
-    property color handleColor: Appearance.colors.colPrimary
-    property color dotColor: Appearance.m3colors.m3onSecondaryContainer
-    property color dotColorHighlighted: Appearance.m3colors.m3onPrimary
-    property real unsharpenRadius: Appearance.rounding.unsharpen
+    // Cartridge console fader: a chunky plastic knob riding a recessed groove, not a thin M3 bar.
+    property real handleDefaultWidth: 14
+    property real handlePressedWidth: 12
+    property color highlightColor: DoorwayPalette.powerGold   // gold fill rising in the groove
+    property color trackColor: "#0E0B08"                       // dark recessed channel (darker than panels)
+    property color handleColor: DoorwayPalette.plasticShellTop
+    property color dotColor: Qt.rgba(0, 0, 0, 0.45)           // stop-indicator dot, unreached
+    property color dotColorHighlighted: DoorwayPalette.inkBlack
+    property real unsharpenRadius: 2
     property real trackWidth: configuration
-    property real trackRadius: trackWidth >= StyledSlider.Configuration.XL ? 21
-        : trackWidth >= StyledSlider.Configuration.L ? 12
-        : trackWidth >= StyledSlider.Configuration.M ? 9
-        : trackWidth >= StyledSlider.Configuration.S ? 6
-        : height / 2
+    property real trackRadius: 2  // squared groove ends — the retro tell
     property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : Math.max(33, trackWidth + 9)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
     property real handleMargins: 4
@@ -204,11 +201,31 @@ Slider {
         implicitHeight: root.handleHeight
         x: root.leftPadding + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2)
         anchors.verticalCenter: parent.verticalCenter
-        radius: Appearance.rounding.full
-        color: root.handleColor
+        radius: 3  // squared plastic cap, not a capsule
+        border.width: 1
+        border.color: DoorwayPalette.plasticEdge
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
+            GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
+        }
 
         Behavior on implicitWidth {
             animation: Appearance?.animation.elementMoveFast.numberAnimation.createObject(this)
+        }
+
+        // Molded grip grooves across the knob face (dark line + lit line = 3D plastic).
+        Column {
+            anchors.centerIn: parent
+            spacing: 3
+            Repeater {
+                model: 3
+                Item {
+                    width: handle.width - 8
+                    height: 2
+                    Rectangle { anchors.top: parent.top; width: parent.width; height: 1; color: Qt.rgba(0, 0, 0, 0.45) }
+                    Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Qt.rgba(1, 1, 1, 0.06) }
+                }
+            }
         }
 
         StyledToolTip {

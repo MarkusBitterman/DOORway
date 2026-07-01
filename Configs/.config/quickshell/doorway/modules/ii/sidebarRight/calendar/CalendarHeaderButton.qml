@@ -17,16 +17,17 @@ RippleButton {
     }
 
     background.anchors.fill: button
-    buttonRadius: Appearance.rounding.full
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
-    colRipple: Appearance.colors.colLayer2Active
+    rippleEnabled: false  // mechanical press, not Material ripple
+    buttonRadius: Appearance.rounding.verysmall
+    buttonRadiusPressed: Math.max(2, Appearance.rounding.verysmall - 2)
+    colBackground: DoorwayPalette.plasticPanelTop   // recessed plastic key
+    colBackgroundHover: Qt.lighter(DoorwayPalette.plasticPanelTop, 1.18)
 
     contentItem: StyledText {
         text: buttonText
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnLayer1
+        color: DoorwayPalette.agedPaper
     }
 
     StyledToolTip {

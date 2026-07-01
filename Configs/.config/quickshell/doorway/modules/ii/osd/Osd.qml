@@ -65,19 +65,50 @@ Scope {
             target: osdPill
         }
 
+        // Cartridge readout: a raised plastic panel housing a VU-style segmented meter.
         Rectangle {
             id: osdPill
             anchors.centerIn: parent
             width: parent.width - 8
             height: parent.height - 8
-            radius: height / 2
-            color: Appearance.colors.colLayer0
+            radius: Appearance.rounding.verysmall  // squared cartridge corners, not a pill
+            clip: true
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
+                GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
+            }
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: DoorwayPalette.plasticEdge
+
+            // Bevel: lit top, shadowed bottom — the cartridge faceplate signature.
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
+                height: 1
+                color: DoorwayPalette.bevelHighlight
+            }
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
+                height: 1
+                color: DoorwayPalette.bevelShadow
+            }
+
+            // Faint CRT scanlines drawn over the readout face (cheap, static, clipped to panel).
+            Column {
+                anchors.fill: parent
+                spacing: 2
+                Repeater {
+                    model: Math.ceil(osdPill.height / 3)
+                    Rectangle {
+                        width: osdPill.width
+                        height: 1
+                        color: Qt.rgba(0, 0, 0, 0.10)
+                    }
+                }
+            }
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.margins: 14
                 spacing: 12
 
                 MaterialSymbol {
@@ -88,23 +119,27 @@ Scope {
                             : osdPanel.volumeValue > 0.33 ? "volume_down"
                             : "volume_mute")
                     iconSize: 20
-                    color: Appearance.colors.colOnLayer0
+                    color: DoorwayPalette.agedPaper
                 }
 
-                StyledProgressBar {
+                SegmentMeter {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 16
                     value: osdPanel.isBrightness
                         ? osdPanel.brightnessValue
                         : Math.min(1.0, osdPanel.volumeValue)
+                    // Brightness is a calm gold readout; volume can run "into the red" near max.
+                    peakFraction: osdPanel.isBrightness ? 0 : 0.15
                 }
 
                 StyledText {
                     text: osdPanel.isBrightness
                         ? Math.round(osdPanel.brightnessValue * 100) + "%"
                         : Math.round(osdPanel.volumeValue * 100) + "%"
+                    font.family: Appearance.font.family.display  // Departure Mono — pixel readout
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: Appearance.colors.colOnLayer0
-                    Layout.minimumWidth: 36
+                    color: DoorwayPalette.agedPaper
+                    Layout.minimumWidth: 42
                     horizontalAlignment: Text.AlignRight
                 }
             }

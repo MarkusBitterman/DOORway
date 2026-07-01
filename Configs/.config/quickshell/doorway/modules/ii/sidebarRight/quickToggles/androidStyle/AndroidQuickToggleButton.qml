@@ -6,9 +6,9 @@ import qs.modules.common.models.quickToggles
 import qs.modules.common.functions
 import qs.modules.common.widgets
 
-GroupButton {
+PlasticKey {
     id: root
-    
+
     // Info to be passed to by repeater
     required property int buttonIndex
     required property var buttonData
@@ -31,6 +31,8 @@ GroupButton {
     toggled: toggleModel?.toggled ?? false
     property var mainAction: toggleModel?.mainAction ?? null
     altAction: toggleModel?.hasMenu ? (() => root.openMenu()) : (toggleModel?.altAction ?? null)
+
+    ledColor: DoorwayPalette.ledGold
 
     // Edit mode state
     property bool editMode: false
@@ -59,14 +61,10 @@ GroupButton {
     horizontalPadding: padding
     verticalPadding: padding
 
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundToggled: (altAction && expandedSize) ? Appearance.colors.colLayer2 : Appearance.colors.colPrimary
-    colBackgroundToggledHover: (altAction && expandedSize) ? Appearance.colors.colLayer2Hover : Appearance.colors.colPrimaryHover
-    colBackgroundToggledActive: (altAction && expandedSize) ? Appearance.colors.colLayer2Active : Appearance.colors.colPrimaryActive
-    buttonRadius: toggled ? Appearance.rounding.large : height / 2
-    buttonRadiusPressed: Appearance.rounding.normal
-    property color colText: (toggled && !(altAction && expandedSize) && enabled) ? Appearance.colors.colOnPrimary : ColorUtils.transparentize(Appearance.colors.colOnLayer2, enabled ? 0 : 0.7)
-    property color colIcon: expandedSize ? ((root.toggled) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer3) : colText
+    // Cream-bright when ON (the LED carries the accent), dimmed paper when OFF/disabled.
+    property color colText: (toggled && enabled) ? DoorwayPalette.agedPaper
+        : ColorUtils.transparentize(Appearance.colors.colOnLayer2, enabled ? 0.15 : 0.7)
+    property color colIcon: colText
 
     onClicked: {
         if (root.expandedSize && root.altAction) root.altAction();
@@ -83,7 +81,8 @@ GroupButton {
             rightMargin: root.horizontalPadding
         }
 
-        // Icon
+        // Icon. When expanded *and* the body opens a menu, the icon is a separate hit target
+        // (mainAction), so it gets a recessed plastic sub-plate to read as its own button.
         MouseArea {
             id: iconMouseArea
             hoverEnabled: true
@@ -102,19 +101,16 @@ GroupButton {
                 id: iconBackground
                 anchors.fill: parent
                 implicitWidth: height
-                radius: root.radius - root.verticalPadding
-                color: {
-                    const baseColor = root.toggled ? Appearance.colors.colPrimary : Appearance.colors.colLayer3
-                    const transparentizeAmount = (root.altAction && root.expandedSize) ? 0 : 1
-                    return ColorUtils.transparentize(baseColor, transparentizeAmount)
+                radius: Math.max(2, root.radius - root.verticalPadding)
+                // Only the separate-hit-target case gets a visible recessed plate.
+                property bool subTarget: (root.altAction && root.expandedSize)
+                visible: subTarget  // when false the plate (and its gradient) simply don't render
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
+                    GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
                 }
-
-                Behavior on radius {
-                    animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
-                }
-                Behavior on color {
-                    animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-                }
+                border.width: subTarget ? 1 : 0
+                border.color: DoorwayPalette.plasticEdge
 
                 MaterialSymbol {
                     anchors.centerIn: parent
@@ -122,15 +118,19 @@ GroupButton {
                     iconSize: root.expandedSize ? 22 : 24
                     color: root.colIcon
                     text: root.buttonIcon
+
+                    Behavior on color {
+                        animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
+                    }
                 }
 
-                // State layer
+                // Press/hover state layer on the icon sub-plate.
                 Loader {
                     anchors.fill: parent
-                    active: (root.expandedSize && root.altAction)
+                    active: iconBackground.subTarget
                     sourceComponent: Rectangle {
                         radius: iconBackground.radius
-                        color: ColorUtils.transparentize(root.colIcon, iconMouseArea.containsPress ? 0.88 : iconMouseArea.containsMouse ? 0.95 : 1)
+                        color: ColorUtils.transparentize(DoorwayPalette.agedPaper, iconMouseArea.containsPress ? 0.85 : iconMouseArea.containsMouse ? 0.93 : 1)
                         Behavior on color {
                             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                         }

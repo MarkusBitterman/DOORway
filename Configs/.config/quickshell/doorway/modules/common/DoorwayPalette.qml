@@ -33,11 +33,19 @@ Singleton {
     readonly property color goldDim:        "#5A4A12"
 
     // --- Cartridge-faceplate plastic tones (central tuning for the whole UI) ---
-    readonly property color plasticShellTop:    "#2C2822" // bar/sidebar shell, top-lit
+    readonly property color plasticShellTop:    "#2C2822" // bar/sidebar shell, top-lit; also a *raised* key face
     readonly property color plasticShellBottom: "#191611"
-    readonly property color plasticPanelTop:    "#241F18" // recessed inner panels / cards
+    readonly property color plasticPanelTop:    "#241F18" // recessed inner panels / cards; also a *pressed* key face
     readonly property color plasticPanelBottom: "#16120E"
     readonly property color plasticEdge:        "#0C0906" // dark molded border
     readonly property color bevelHighlight:     Qt.rgba(1, 1, 1, 0.06)
     readonly property color bevelShadow:        Qt.rgba(0, 0, 0, 0.45)
+
+    // --- Hardware-control semantics (LED pips, lit faces) ---
+    // A raised key sits on shell tones and depresses into panel tones — the existing
+    // tokens already encode raised-vs-recessed, so no extra plastic colors are needed.
+    readonly property color ledGold:  powerGold     // default ON indicator
+    readonly property color ledGrass: grassBright   // success / "active" toggles
+    readonly property color ledRed:   redBright     // destructive / danger
+    readonly property color ledOff:   "#0A0805"     // unlit pip, sunk into the face
 }

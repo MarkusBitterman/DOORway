@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import QtQuick.Effects
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
@@ -33,7 +33,7 @@ Item {
         // XDG theme → local SVG → local PNG
         source: root._svgFailed ? root._localPng : root._primarySource
         // opacity:0 + layer.enabled keeps the item in the scene graph with a committed
-        // offscreen texture so MultiEffect can render from it. visible:false removes it
+        // offscreen texture so the effect can render from it. visible:false removes it
         // from the scene graph entirely, and opacity:0 alone lets the optimizer skip it.
         opacity: root.colorize ? 0 : 1
         layer.enabled: root.colorize
@@ -44,11 +44,14 @@ Item {
         }
     }
 
-    MultiEffect {
+    // Flat-tints the glyph's alpha mask with root.color. MultiEffect's colorization
+    // was wrong twice over: it preserves luminance (dark glyphs stay dark for any
+    // target color), and on a cold start with the sidebar still hidden its shader
+    // kept the first-paint color, ignoring later theme updates.
+    ColorOverlay {
         anchors.fill: iconImage
         visible: root.colorize
         source: iconImage
-        colorization: 1.0
-        colorizationColor: root.color
+        color: root.color
     }
 }

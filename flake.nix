@@ -1027,19 +1027,38 @@
                   (mkDoorwayService {
                     description = "DOORway QuickShell (QML-based UI shell)";
                     execStart = "${pkgs.quickshell}/bin/quickshell -c %h/.config/quickshell/doorway";
+                    # Every quickshell launch leaves a by-id/<id>/ log dir behind
+                    # and nothing ever reclaims them — a Restart=always crash loop
+                    # once piled up 5k+ dirs and filled the 587M tmpfs. Pruning
+                    # here (runs on every restart, including each crash-loop
+                    # cycle) bounds the pile to ~10 min of churn. A concurrent
+                    # nested dev instance (qs -p …) older than that loses its
+                    # logs/socket but keeps running — acceptable for a dev tool.
+                    execStartPre = "${pkgs.writeShellScript "qs-prune-stale" ''
+                      QS=/run/user/$(id -u)/quickshell
+                      [ -d "$QS/by-id" ] || exit 0
+                      find "$QS/by-id" -mindepth 1 -maxdepth 1 -type d -mmin +10 -exec rm -rf {} +
+                    ''}";
                   })
                   (
                     let
+                      # Resolve THIS instance's runtime dir from the fds it holds
+                      # open (log.log, instance.lock). "Newest socket wins" raced
+                      # against concurrent instances: a nested `qs -p` launched
+                      # around restart time could win, leaving the symlink on a
+                      # socket that dies with the dev instance.
                       qsIpcSymlink = pkgs.writeShellScript "qs-ipc-symlink" ''
                         QS=/run/user/$(id -u)/quickshell
                         for _ in $(seq 30); do
-                          sock=$(ls -t "$QS"/by-id/*/ipc.sock 2>/dev/null | head -1)
-                          if [ -n "$sock" ]; then
-                            ln -sfn "$sock" "$QS/by-id/ipc.sock"
+                          dir=$(readlink /proc/$MAINPID/fd/* 2>/dev/null | grep -m1 -o "$QS/by-id/[^/]*")
+                          if [ -n "$dir" ] && [ -S "$dir/ipc.sock" ]; then
+                            ln -sfn "$dir/ipc.sock" "$QS/by-id/ipc.sock"
                             exit 0
                           fi
                           sleep 0.5
                         done
+                        echo "qs-ipc-symlink: no ipc.sock for MAINPID=$MAINPID after 15s" >&2
+                        exit 1
                       '';
                     in
                     {

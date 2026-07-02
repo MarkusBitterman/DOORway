@@ -236,6 +236,68 @@ sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD
 **Always commit and push before rebuilding in HALLway.** `nix flake update`
 without a prior push will silently reuse the previous commit.
 
+### Three versions of the code exist at any moment
+
+Because DOORway deploys as a Home Manager module through HALLway's flake.lock,
+there are always three potentially-different versions in play:
+
+1. **Working tree** — what you just edited under `Configs/`
+2. **Pushed HEAD** — what `nix flake update doorway` will fetch
+3. **Deployed generation** — what the running session actually executes
+
+**Before interpreting any runtime symptom, establish which version produced it:**
+
+```bash
+diff ~/.config/quickshell/doorway/path/to/File.qml \
+     ~/Developments/DOORway/Configs/.config/quickshell/doorway/path/to/File.qml \
+  && echo "deployed == working tree"
+```
+
+A fix that "doesn't work" is usually a fix that isn't deployed yet — not a wrong
+fix. Do not debug the old code's behavior against the new code's expectations.
+
+Two practical consequences:
+- `sudo nixos-rebuild switch` needs the user's password — hand it off
+  (suggest they run `! sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD`).
+- After a switch, `systemctl --user restart doorway-quickshell.service` (and
+  similar user services) so they pick up the new store paths — HM does not
+  reliably restart them.
+
+### Services carry their environment — your shell does not
+
+HM-generated systemd user units inject Nix store paths via `Environment=` that
+exist nowhere else. Example: `doorway-quickshell.service` sets
+`QML_IMPORT_PATH=<qt5compat-store-path>/lib/qt-6/qml`; without it, any `qs`
+launched from a plain shell fails with `module "Qt5Compat.GraphicalEffects" is
+not installed` even though the deployed shell runs fine.
+
+**A program that works as a service but fails in your shell (or vice versa) is
+an environment problem, not a code problem.** Recover the service's exact env:
+
+```bash
+systemctl --user show doorway-quickshell.service -p ExecStart -p Environment
+```
+
+### Testing QuickShell repo sources without a rebuild
+
+Run a second instance directly against the working tree (borrow the env var
+from the service as above):
+
+```bash
+QML_IMPORT_PATH=<from-service> qs -p ~/Developments/DOORway/Configs/.config/quickshell/doorway
+```
+
+- The nested instance and the deployed one **overlap at identical screen
+  coordinates**. Before screenshotting (`grim -g "X,Y WxH" out.png`), stop the
+  deployed service so you know which instance you're looking at — then restart it.
+- Drive the nested instance's IPC with the same `-p` path:
+  `qs -p <repo path> ipc --any-display call sidebarRight open`
+- QuickShell hot-reloads QML file changes, but a hot reload initializes
+  differently than a cold start (theme colors already settled, windows already
+  created). **Bugs that only manifest on cold start — first-paint color capture,
+  race-dependent init — are masked by hot reload.** Always verify with a fresh
+  instance launch, not a reload.
+
 ### Testing Changes
 
 Configs in `Configs/.config/hypr/` use Hyprland 0.55+ lua format (`hl.config`, `hl.bind`, `hl.window_rule`). `hyprctl reload` works the same on lua configs as it did on hyprlang.
@@ -325,6 +387,52 @@ If Hyprland starts but shows only a cursor with no bar or wallpaper:
 5. **Nested Hyprland** (`start-hyprland` inside a Wayland compositor) — visual checks only.
    Keyboard is dead in nested mode: libseat's builtin backend cannot open `/dev/input/*`.
    This is expected, not a DOORway bug.
+
+### Working with logs
+
+The journal is the primary diagnostic instrument for the QuickShell surface —
+start there, not with code reading:
+
+```bash
+# The one command that surfaces most UX defects:
+journalctl --user -u doorway-quickshell.service -b --no-pager | grep -vE "DEBUG|INFO"
+```
+
+**Treat warnings as load-bearing, not noise.** Nearly every UX defect found in
+the 2600.7.2 review had been announcing itself in the journal for weeks:
+
+- `Could not load icon "name?fallback=file://..."` — an icon request whose
+  fallback never resolves; the on-screen result is a black/purple placeholder
+  that loads as `Image.Ready` (no error anywhere else).
+- `Ignoring unresolvable import "..."` (qmlscanner) — a dead import; the file
+  either shouldn't exist or is missing a dependency lost in a port.
+- `ReferenceError: X is not defined` — a QML component referencing a service
+  that was removed; the feature it feeds is silently dead.
+- `Read of <path> failed: File does not exist` (FileView) — a config/state file
+  the code expects but nothing generates.
+- `Process failed to start ... Command: QList("tool", ...)` — a runtime tool the
+  QML shells out to that isn't in the Nix closure; the feature falls back or dies.
+
+**Warnings double as version watermarks.** Warning text is emitted by specific
+code paths, so the journal tells you *which version is running*: e.g. seeing
+`?fallback=file://` warnings after the CustomIcon fix means the old code is
+still deployed (see "Three versions" above).
+
+**Per-instance QuickShell logs** live in `/run/user/$(id -u)/quickshell/by-id/<id>/log.log`.
+One dir per launch; `ExecStartPre` prunes dirs older than 10 minutes. Find the
+live instance's dir through its open fds, not by newest-mtime (races against
+nested test instances):
+
+```bash
+pid=$(systemctl --user show doorway-quickshell.service -p MainPID --value)
+ls -l /proc/$pid/fd | grep -o "by-id/[^/]*" | head -1
+```
+
+**QML failure modes are silent by design** — placeholder textures load
+"successfully", scanners "ignore" broken imports, `Connections` warn instead of
+erroring. The screen can look 90% fine while the journal lists every defect.
+Skim `journalctl --user -u doorway-quickshell -b -p warning` after any shell
+change, and diff the warning set before/after a deploy.
 
 ## Code Style
 

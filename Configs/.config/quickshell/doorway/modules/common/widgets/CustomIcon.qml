@@ -17,7 +17,10 @@ Item {
 
     property string _localSvg: iconFolder + "/" + source + ".svg"
     property string _localPng: iconFolder + "/" + source + ".png"
-    property string _primarySource: source !== "" ? Quickshell.iconPath(source, _localSvg) : ""
+    // iconPath's string-fallback overload treats the fallback as a theme icon NAME
+    // (QIcon::fromTheme), so a file URL can't go there — check=true returns "" when
+    // the icon is absent from the theme, letting us fall back to the local file.
+    property string _primarySource: source !== "" ? (Quickshell.iconPath(source, true) || _localSvg) : ""
     property bool _svgFailed: false
 
     // Reset fallback state when the requested icon name changes

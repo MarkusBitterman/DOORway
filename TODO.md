@@ -827,15 +827,21 @@ require("themes/colors")
 
 ### New findings — high (visible breakage)
 
-- [ ] **Calendar widget is broken** — `modules/ii/sidebarRight/calendar/CalendarWidget.qml:4`
-  imports `calendar_layout.js`, which does not exist in the repo (lost in the ii port). Its
-  property bindings (`CalendarLayout.getCalendarLayout(...)`) throw on load. Restore the file
-  from upstream end-4/dots-hyprland (GPLv3, attribution already preserved).
-- [ ] **Brightness control is dead on desktop monitors** — `services/Brightness.qml` probes
-  `ddcutil detect` at startup (journal: "Process failed to start... ddcutil") and falls back to
-  `brightnessctl`, which only drives laptop backlights. The flake ships brightnessctl but not
-  ddcutil. Fix: add `ddcutil` to `doorwayDeps` + enable `hardware.i2c` / i2c group membership in
-  `nixosModules.default`.
+- [x] **Calendar widget is broken** — `calendar_layout.js` was lost in the ii port; restored
+  verbatim from upstream end-4/dots-hyprland (`cdfbbc8d`). Verified cold-start in a nested
+  instance: full July 2026 grid, adjacent months dimmed, today key lit.
+- [x] **RippleButton backgrounds invisible shell-wide** *(found while verifying the calendar)* —
+  `MultiEffect`'s `maskSource` needs a texture provider; the inline Rectangle wasn't one, so the
+  mask sampled alpha 0 and erased every button background (hover states, toggled states, the
+  calendar's gold today key). Layering the mask source fixed hot reloads but still failed cold —
+  same hidden-window texture-commit disease as the CustomIcon bug. Fixed with Qt5Compat
+  `OpacityMask` (`103baa05`). **Project rule: prefer Qt5Compat effects (ColorOverlay,
+  OpacityMask) over MultiEffect wherever a texture/mask source is involved.**
+- [x] **Brightness control is dead on desktop monitors** — `ddcutil` added to `doorwayDeps`;
+  `nixosModules.default` now loads i2c-dev and grants the active logind seat user `/dev/i2c-*`
+  access via a uaccess udev tag — no per-user group config needed in hosts (`8a2b1fae`).
+  Verify after rebuild: journal shows a ddcutil bus list instead of "Process failed to start",
+  and the OSD brightness slider moves the ONN monitor's hardware backlight.
 
 ### New findings — medium (dead code, branding, deprecations)
 

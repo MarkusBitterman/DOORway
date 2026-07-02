@@ -842,6 +842,13 @@ require("themes/colors")
   access via a uaccess udev tag — no per-user group config needed in hosts (`8a2b1fae`).
   Verify after rebuild: journal shows a ddcutil bus list instead of "Process failed to start",
   and the OSD brightness slider moves the ONN monitor's hardware backlight.
+- [x] **Dolphin "Open With" empty for every file type** *(user-reported)* — KService builds its
+  application database (sycoca) from the XDG menu spec; outside Plasma nothing provides
+  `/etc/xdg/menus/applications.menu` and KF6 kservice dropped its fallback copy, so KDE apps
+  indexed zero applications. `nixosModules.default` now ships the minimal menu spec
+  (`d2f5e5bc`). Verified headless: `kbuildsycoca6 --menutest` 0 → 181 entries. Portals were
+  ruled out — `programs.hyprland` already wires xdph + `hyprland;gtk` routing correctly.
+  After rebuild: `rm -f ~/.cache/ksycoca6*` and relaunch Dolphin.
 
 ### New findings — medium (dead code, branding, deprecations)
 

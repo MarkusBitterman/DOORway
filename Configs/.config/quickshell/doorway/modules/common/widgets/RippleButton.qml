@@ -143,8 +143,12 @@ Button {
         }
 
         layer.enabled: true
-        layer.effect: MultiEffect {
-            maskEnabled: true
+        // OpacityMask, not MultiEffect: MultiEffect's maskSource needs a texture
+        // provider, and layered sources inside an initially-hidden window never
+        // commit a texture on cold start — the empty mask erased every button
+        // background (hover, toggled, the calendar's today key) shell-wide.
+        // Qt5Compat effects grab their maskSource item properly in all cases.
+        layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: buttonBackground.width
                 height: buttonBackground.height

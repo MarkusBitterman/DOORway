@@ -800,3 +800,83 @@ require("themes/colors")
 
 - `col.active_border` / `col.inactive_border` — matugen/wallbash owns these at runtime; Nix options would conflict.
 - GTK theme name — use HM's `gtk.theme.name` directly (DOORway sets a `lib.mkDefault`; users override with their own `gtk.*` declarations).
+
+---
+
+## State of the UX — DOORway 2600.7.2 "Fuji" (2026-07-02)
+
+> Full-codebase review after the icon/runtime-dir fix cycle. Named for the Atari
+> Fuji finally rendering in its true red. Sources: deployed-session journal,
+> QML scanner warnings, grep sweeps for the trap patterns we just learned about.
+
+### Fixed this cycle (symptoms clear after next rebuild)
+
+- [x] **Bar top-left icon never rendered** — `Quickshell.iconPath(icon, fallback)` treats a string
+  fallback as a theme icon *name*; we passed a file URL, both lookups failed, and the provider's
+  missing-texture placeholder loaded as `Image.Ready` so the SVG→PNG error chain never fired (`ed6f2979`).
+- [x] **Right-sidebar distro icon rendered as dark blob** — `MultiEffect.colorization` preserves
+  luminance (dark glyph stays dark for any tint) and froze its first-paint color on cold start;
+  replaced with `Qt5Compat` `ColorOverlay` alpha-mask tinting (`6c9c54b5`).
+- [x] **`/run/user` tmpfs filled to 100%** — 5,442 quickshell `by-id/` log dirs from a Jun 29
+  crash-restart storm; `ExecStartPre` now prunes >10 min-old dirs on every service start (`ec8a0e31`).
+- [x] **`qs ipc` keybindings dying after restarts** — `ExecStartPost` linked `ipc.sock` to the
+  *newest* socket by mtime, racing concurrent instances; now resolves this service's own instance
+  from `$MAINPID`'s open fds (`ec8a0e31`).
+- Journal watermark: the `Could not load icon "...?fallback=file://..."` warnings are the old
+  CustomIcon code — if they persist after rebuild, the fix didn't deploy.
+
+### New findings — high (visible breakage)
+
+- [ ] **Calendar widget is broken** — `modules/ii/sidebarRight/calendar/CalendarWidget.qml:4`
+  imports `calendar_layout.js`, which does not exist in the repo (lost in the ii port). Its
+  property bindings (`CalendarLayout.getCalendarLayout(...)`) throw on load. Restore the file
+  from upstream end-4/dots-hyprland (GPLv3, attribution already preserved).
+- [ ] **Brightness control is dead on desktop monitors** — `services/Brightness.qml` probes
+  `ddcutil detect` at startup (journal: "Process failed to start... ddcutil") and falls back to
+  `brightnessctl`, which only drives laptop backlights. The flake ships brightnessctl but not
+  ddcutil. Fix: add `ddcutil` to `doorwayDeps` + enable `hardware.i2c` / i2c group membership in
+  `nixosModules.default`.
+
+### New findings — medium (dead code, branding, deprecations)
+
+- [ ] **`LeftSidebarButton.qml` references removed services** — `Connections { target: Ai }` and
+  `target: Booru` (lines 32–46) throw `ReferenceError` on every start; no `Ai.qml`/`Booru.qml`
+  exists in `services/`. The `showPing` badge they feed is dead. Remove both blocks (and audit
+  `Config.options.policies.*` consumers while there).
+- [ ] **`modules/common/widgets/CalendarView.qml` is dead code** — zero references anywhere, and
+  its `import qs.modules.waffle.looks` points at a family that was never ported (scanner warning
+  on every start). Delete the file.
+- [ ] **Runtime shell config still lives at `~/.config/illogical-impulse/`** —
+  `modules/common/Directories.qml:33` (`shellConfig`). Rebranding gap with migration burden:
+  moving to `~/.config/doorway/` needs a one-shot copy of the existing `config.json` (could ride
+  an ExecStartPre). Also unblocks the `Translation.qml` warning about
+  `illogical-impulse/translations/` not existing.
+- [ ] **User-facing upstream branding in translation strings** — `translations/*.json` contain
+  "Illogical Impulse Welcome" etc.; check `FirstRunExperience.qml` and rebrand visible strings
+  to DOORway (keep upstream attribution in comments/README, per fork policy).
+- [ ] **Deprecated `PanelWindow` sizing** — `NotificationPopups.qml:25-26` and `Osd.qml:45` set
+  `width`/`height` directly; QuickShell warns to use `implicitWidth`/`implicitHeight`. Cheap fix
+  now, breakage later if QS enforces it.
+- [ ] **`MaterialThemeLoader` reads a file that never exists** —
+  `~/.local/state/quickshell/user/generated/colors.json` (journal warning every start). DOORway's
+  colors come from matugen's `Colors.qml`; decide whether the loader should point at matugen
+  output or be gated off. Note upstream's own `hacks.arbitraryRaceConditionDelay` option in this
+  file — the whole load path deserves scrutiny.
+
+### New findings — low / watchlist
+
+- [ ] **`Workspaces.qml:327` and `SysTrayItem.qml:87` use `MultiEffect.colorization`** — here the
+  luminance-preserving wash-out is *intentional* (90%-transparentized tint over app icons), but
+  they share CustomIcon's cold-start staleness exposure. Re-check both after the theme changes
+  on a fresh session start.
+- [ ] **`image-missing` icon absent from the tela icon theme** — journal: `Could not load icon
+  "image-missing?fallback=image-missing"`. The fallback-of-last-resort fails; ship an
+  `image-missing.svg` in `assets/icons/` (CustomIcon's local chain now actually works).
+- [ ] **UPower warnings on a desktop** — `Battery.qml` starts unconditionally; no battery, no
+  UPower service. Gate behind a config option or accept the two-line startup noise.
+- [ ] **`WARN: Model size of -2 is less than 0`** — unattributed, appears once per start.
+  Find the model (likely a ListView/Repeater fed before data arrives) when touching the bar next.
+- [ ] **Jun 29 crash-storm root cause unidentified** — something made quickshell die ~every 3s
+  for 5 hours (1,250 launches/hour, `Restart=always` + `RestartSec=1`). Stable since, and the
+  prune now bounds the damage, but if it recurs consider `StartLimitIntervalSec`/`Burst` — with
+  the trade-off that a hard stop means no shell at all.

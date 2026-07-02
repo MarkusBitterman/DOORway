@@ -1199,6 +1199,28 @@
           services.udev.extraRules = ''
             KERNEL=="i2c-[0-9]*", TAG+="uaccess"
           '';
+
+          # ── KDE application discovery (Dolphin "Open With") ─────────────────
+          # KService builds its application database (sycoca) by parsing the XDG
+          # menu spec, not by scanning share/applications directly. Plasma ships
+          # plasma-applications.menu; outside Plasma nothing provides
+          # /etc/xdg/menus/applications.menu, so KDE apps index zero
+          # applications — Dolphin's "Open With" comes up empty for every file
+          # type. KF6 kservice no longer ships a fallback menu, so provide the
+          # minimal spec: index every installed .desktop entry.
+          # (Portals are not involved in this path — programs.hyprland already
+          # wires xdg-desktop-portal-hyprland with hyprland;gtk routing.)
+          environment.etc."xdg/menus/applications.menu".text = ''
+            <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+            <Menu>
+                <Name>Applications</Name>
+                <DefaultAppDirs/>
+                <DefaultDirectoryDirs/>
+                <Include>
+                    <All/>
+                </Include>
+            </Menu>
+          '';
         };
 
       # Home Manager module (the main export)

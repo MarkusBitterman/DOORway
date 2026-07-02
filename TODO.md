@@ -803,7 +803,7 @@ require("themes/colors")
 
 ---
 
-## State of the UX — DOORway 2600.7.2 "Fuji" (2026-07-02)
+## State of the UX — DOORway 2600.7.2 "Fujiwara" (2026-07-02)
 
 > Full-codebase review after the icon/runtime-dir fix cycle. Named for the Atari
 > Fuji finally rendering in its true red. Sources: deployed-session journal,

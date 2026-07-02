@@ -47,6 +47,9 @@
 
           # System integration
           brightnessctl
+          ddcutil # DDC/CI brightness for external monitors — Brightness.qml probes
+          # `ddcutil detect` at shell start and falls back to brightnessctl (laptop
+          # backlights only) when absent. Requires i2c access from nixosModules.default.
           wlopm # zwlr_output_power_manager_v1 — used by hypridle DPMS listener
           playerctl
           pamixer
@@ -1187,6 +1190,15 @@
 
           # Unlock the GNOME keyring automatically on PAM login via greetd.
           security.pam.services.greetd.enableGnomeKeyring = true;
+
+          # ── DDC/CI monitor brightness ───────────────────────────────────────
+          # Loads i2c-dev so ddcutil (in doorwayDeps) can talk to external
+          # monitors. The uaccess tag grants the active logind seat user an ACL
+          # on /dev/i2c-* — no per-user i2c group membership needed in hosts.
+          hardware.i2c.enable = true;
+          services.udev.extraRules = ''
+            KERNEL=="i2c-[0-9]*", TAG+="uaccess"
+          '';
         };
 
       # Home Manager module (the main export)

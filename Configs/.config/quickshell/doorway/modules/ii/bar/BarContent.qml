@@ -34,36 +34,21 @@ Item { // Bar content region
             target: barBackground
         }
     }
-    // Background — beveled warm-plastic cartridge faceplate.
-    Rectangle {
+    // Background — Black Walnut veneer faceplate. The light/dark "wells" (BarGroup) that
+    // sit on top keep their own plasticPanel treatment; only the shell is woodgrain.
+    WalnutBackground {
         id: barBackground
         readonly property bool bg: Config.options.bar.showBackground
+        visible: bg
+        horizontal: true // grain runs along the bar's long axis
         anchors {
             fill: parent
             margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
         }
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        // Top-lit plastic sheen (cartridge shell — tones follow DoorwayPalette's mode).
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: barBackground.bg ? DoorwayPalette.plasticShellTop : "transparent" }
-            GradientStop { position: 1.0; color: barBackground.bg ? DoorwayPalette.plasticShellBottom : "transparent" }
-        }
-        border.width: barBackground.bg ? 1 : 0
-        border.color: DoorwayPalette.plasticEdge // molded outer edge
-
-        // Beveled raised-plastic edges: lit top, shadowed bottom.
-        Rectangle {
-            visible: barBackground.bg
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
-            height: 2
-            color: DoorwayPalette.bevelHighlight
-        }
-        Rectangle {
-            visible: barBackground.bg
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
-            height: 2
-            color: DoorwayPalette.bevelShadow
-        }
+        edgeColor: DoorwayPalette.plasticEdge // molded outer edge
+        borderWidth: bg ? 1 : 0
+        sheen: bg // top-lit lacquer gloss + settled bottom shadow
     }
 
     FocusedScrollMouseArea { // Left side | scroll to change brightness

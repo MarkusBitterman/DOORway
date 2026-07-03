@@ -190,6 +190,18 @@ one of:
 2. Migrate `flake.nix` from whole-dir to individual file links for that app
    (required when generated config files must live alongside source-controlled ones).
 
+**Migration trap (hit 2026-07-02):** converting a whole-dir link to individual
+links does NOT clean up by itself. HM's orphan cleanup keeps the old dir symlink
+(the path still exists in the new generation — as a real directory now), and link
+creation then fails with EROFS trying to back up files inside the stale read-only
+symlink, failing the entire activation. Pair the flake change with a transitional
+activation entry that `rm`s the old symlink, ordered
+`entryBetween [ "linkGeneration" ] [ "writeBoundary" ]` (see
+`home.activation.doorwayDirDelink`). Relatedly, any activation script that writes
+*inside* an HM-managed directory must be `entryAfter [ "writeBoundary"
+"linkGeneration" ]` — with only `writeBoundary`, the DAG tie-break can run it
+before the directory exists.
+
 ## Working with This Codebase
 
 ### Naming Conventions

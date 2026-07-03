@@ -1111,6 +1111,20 @@
               };
             };
 
+            # Transitional (2026-07): ~/.config/doorway used to be deployed as one
+            # whole-dir store symlink. HM's orphan cleanup keeps it (the path still
+            # exists in the new generation — now as a real directory), and link
+            # creation then fails with EROFS trying to back up files inside the
+            # stale read-only symlink. Delete the old symlink so linkGeneration can
+            # materialize the real dir. No-op once migrated; remove after soak.
+            home.activation.doorwayDirDelink = lib.mkIf cfg.enable (
+              lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
+                if [ -L "$HOME/.config/doorway" ]; then
+                  run rm "$HOME/.config/doorway"
+                fi
+              ''
+            );
+
             # Seed the QuickShell night-light schedule into config.json so Nix options
             # actually drive Hyprsunset.qml (which bypasses hyprsunset.conf entirely).
             # Runs at every nixos-rebuild switch; user UI edits reset on next rebuild.

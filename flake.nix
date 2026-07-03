@@ -1114,8 +1114,12 @@
             # Seed the QuickShell night-light schedule into config.json so Nix options
             # actually drive Hyprsunset.qml (which bypasses hyprsunset.conf entirely).
             # Runs at every nixos-rebuild switch; user UI edits reset on next rebuild.
+            # Must run after linkGeneration: that's the step that replaces the old
+            # whole-dir ~/.config/doorway store symlink with a real writable dir —
+            # both entries are after writeBoundary and the tie-break ran this first
+            # (EROFS on the 2026-07-02 switch).
             home.activation.doorwayJsonConfig = lib.mkIf cfg.enable (
-              lib.hm.dag.entryAfter [ "writeBoundary" ] (
+              lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] (
                 let
                   nightTime = cfg.blueLight.schedule.nightTime;
                   dayTime = cfg.blueLight.schedule.dayTime;

@@ -1,0 +1,23 @@
+// DOORway anyrun launcher configuration.
+// Phase 1 of the rofi → anyrun migration: anyrun owns the app-launcher role
+// (Super+A); rofi remains the dmenu-style picker backend until the picker
+// flows are migrated (see TODO.md, "rofi → anyrun migration").
+Config(
+    x: Fraction(0.5),
+    y: Fraction(0.3),
+    width: Absolute(680),
+    hide_icons: false,
+    ignore_exclusive_zones: false,
+    layer: Overlay,
+    hide_plugin_info: true,
+    close_on_click: true,
+    show_results_immediately: false,
+    max_entries: Some(10),
+    plugins: [
+        "libapplications.so",
+        "librink.so",
+        "libshell.so",
+        "libsymbols.so",
+        "libwebsearch.so",
+    ],
+)

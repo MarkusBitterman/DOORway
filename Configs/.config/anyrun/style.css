@@ -1,0 +1,61 @@
+/* DOORway anyrun theme — Nintendo-Power dark cartridge.
+ * Tokens mirror modules/common/DoorwayPalette.qml (gray NES cart set):
+ *   plasticShellTop #2C2822 · plasticPanelTop #241F18 · plasticEdge #0C0906
+ *   agedPaper #EFE3C5 · powerGold #FFC20E · powerRed #E60012 · skyHint #6FA3D9
+ */
+
+* {
+    all: unset;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 14px;
+}
+
+#window {
+    background: transparent;
+}
+
+box#main {
+    background-color: #2C2822;
+    border: 2px solid #0C0906;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+entry#entry {
+    background-color: #241F18;
+    color: #EFE3C5;
+    border: 1px solid #0C0906;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    caret-color: #FFC20E;
+}
+
+list#main {
+    background: transparent;
+}
+
+#match {
+    color: #EFE3C5;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+#match:selected {
+    background-color: #16120E;
+    border-left: 3px solid #FFC20E;
+}
+
+#match-title {
+    color: #EFE3C5;
+    font-weight: bold;
+}
+
+#match-desc {
+    color: #C9A46A;
+    font-size: 12px;
+}
+
+#plugin {
+    color: #6FA3D9;
+}

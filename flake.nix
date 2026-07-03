@@ -36,7 +36,8 @@
           hyprpaper
 
           # UI components
-          rofi
+          anyrun # app launcher (Super+A); replacing rofi — see TODO.md migration
+          rofi # dmenu-style picker backend for ~20 script flows until migrated
 
           # Utilities
           grim
@@ -744,6 +745,7 @@
               "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
               "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";
               "rofi".source = "${configDir}/.config/rofi";
+              "anyrun".source = "${configDir}/.config/anyrun";
               # Individual links (not a whole-dir symlink) so the QuickShell
               # runtime config.json can live alongside them — ~/.config/doorway
               # must be a real, writable directory.

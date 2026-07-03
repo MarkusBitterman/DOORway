@@ -85,7 +85,7 @@ hl.bind(mainMod .. " + B",         hl.dsp.exec_cmd(browser),                    
 hl.bind("CTRL + SHIFT + Escape",     hl.dsp.exec_cmd("doorway-shell system.monitor"),       { description = "[Launcher|Apps] system monitor" })
 
 -- [Launcher|Rofi menus]
-hl.bind(mainMod .. " + A",       hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " d"),   { description = "[Launcher|Rofi] application finder" })
+hl.bind(mainMod .. " + A",       hl.dsp.exec_cmd("pkill -x anyrun || anyrun"),                 { description = "[Launcher] application launcher (anyrun)" })
 hl.bind(mainMod .. " + TAB",     hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " w"),   { description = "[Launcher|Rofi] window switcher" })
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " f"),   { description = "[Launcher|Rofi] file finder" })
 hl.bind(mainMod .. " + slash",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell keybinds_hint c"),  { description = "[Launcher|Rofi] keybindings hint" })

@@ -915,3 +915,50 @@ Verified cold-start in a nested instance: both modes render, toggle repaints, mo
   for 5 hours (1,250 launches/hour, `Restart=always` + `RestartSec=1`). Stable since, and the
   prune now bounds the damage, but if it recurs consider `StartLimitIntervalSec`/`Burst` — with
   the trade-off that a hard stop means no shell at all.
+
+---
+
+## Initiative: rofi → anyrun full migration
+
+> **Goal**: Remove rofi entirely. anyrun owns the launcher; the ~20 dmenu-style
+> picker flows migrate to anyrun plugins or QuickShell surfaces.
+> **Decision** (2026-07-03): full replacement approved; phased so nothing breaks.
+
+### Phase 1 — launcher swap (done 2026-07-03)
+
+- [x] `anyrun` package + `Configs/.config/anyrun/` (config.ron, Nintendo-Power style.css)
+- [x] Super+A → `pkill -x anyrun || anyrun` (was `rofilaunch d`)
+- [x] rofi kept installed as picker backend, marked for removal in flake.nix
+
+### Phase 2 — picker-flow inventory & strategy
+
+Each rofi call site needs one of three destinations:
+**(a)** an anyrun plugin (only where a real plugin exists — anyrun has no
+general stdin/dmenu mode), **(b)** a QuickShell surface (preferred for
+DOORway-native UX; the ii port already has overview/search primitives), or
+**(c)** retire the flow.
+
+| Flow | Current script | Proposed destination |
+|---|---|---|
+| Window switcher (Super+TAB) | `rofilaunch.sh w` | QuickShell overview (ii port has window search) |
+| File finder (Super+Shift+E) | `rofilaunch.sh f` | anyrun fuzzy-file plugin or QS |
+| Emoji picker (Super+comma) | `emoji-picker.sh` | anyrun `libsymbols.so` (already loaded) |
+| Glyph picker (Super+period) | `glyph-picker` | anyrun `libsymbols.so` custom symbols |
+| Clipboard (Super+V / Shift+V) | `cliphist` | QuickShell sidebar surface (cliphist backend stays) |
+| Keybind hints (Super+slash) | `keybinds_hint` | QuickShell overlay (data already parsed by hint-hyprland.py) |
+| Wallpaper select (Super+Shift+W) | `wallpaper -SG` | QuickShell grid surface (thumbnails exist in swwwallcache) |
+| Animations select (Super+Shift+Y) | `animations.sh --select` | QuickShell list dialog |
+| Hyprlock layout (Super+Shift+U) | `hyprlock.sh --select` | QuickShell list dialog |
+| rofi style select (Super+Shift+A) | `rofiselect.sh` | retire with rofi |
+| Game launcher | `gamelauncher.sh` | QuickShell surface or retire |
+| Volume/misc menus | `volumecontrol.sh` etc. | QS OSD already covers most; audit remainder |
+| Web search | `rofi.websearch.sh` | anyrun `libwebsearch.so` (already loaded) |
+
+### Phase 3 — removal
+
+- [ ] All Phase 2 flows migrated and verified
+- [ ] Drop `rofi` from flake.nix deps + `"rofi".source` config link
+- [ ] Delete `rofilaunch.sh`, `rofiselect.sh`, `rofi.websearch.sh`, `Configs/.config/rofi/`
+- [ ] Sweep remaining `rofi` references (`grep -rl rofi Configs/`) — globalcontrol.sh,
+      fastfetch.sh, pm.py, quickapps.sh, workflows.sh, testrunner.sh, shaders.sh,
+      swwwallcache.sh, wallpaper/{core,help}.sh, pyutils/compositor.py, keybinds/hint-hyprland.py

@@ -736,7 +736,11 @@
               "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
               "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";
               "rofi".source = "${configDir}/.config/rofi";
-              "doorway".source = "${configDir}/.config/doorway";
+              # Individual links (not a whole-dir symlink) so the QuickShell
+              # runtime config.json can live alongside them — ~/.config/doorway
+              # must be a real, writable directory.
+              "doorway/config.toml".source = "${configDir}/.config/doorway/config.toml";
+              "doorway/wallbash".source = "${configDir}/.config/doorway/wallbash";
               "kitty".source = "${configDir}/.config/kitty";
 
               # Initiative II: QuickShell shell and matugen color theming.
@@ -1119,8 +1123,15 @@
                   topLeftIcon = cfg.bar.topLeftIcon;
                 in
                 ''
-                  config_file="$HOME/.config/illogical-impulse/config.json"
+                  config_file="$HOME/.config/doorway/config.json"
                   mkdir -p "$(dirname "$config_file")"
+                  # One-shot migration from the pre-rebrand ii path. The old
+                  # directory is left in place for rollback; remove it in a
+                  # later cleanup sweep.
+                  old_config="$HOME/.config/illogical-impulse/config.json"
+                  if [ ! -f "$config_file" ] && [ -f "$old_config" ]; then
+                    cp "$old_config" "$config_file"
+                  fi
                   [ -f "$config_file" ] || echo '{}' > "$config_file"
                   tmp="$(${pkgs.coreutils}/bin/mktemp)"
                   ${pkgs.jq}/bin/jq \

@@ -648,6 +648,11 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 
 - [ ] QuickShell lockscreen — replace hyprlock with a QML lockscreen surface (`WlrLayershell.layer: WlrLayer.Overlay`, `WlrKeyboardFocus.Exclusive`); hyprlock config stays as fallback
 - [ ] AI integration in left sidebar — deferred since Phase 14 planning; revisit once productivity tabs have had soak time
+- [ ] **Screen/app-sampled dynamic accent color** — user idea (2026-07-02): with no wallpaper
+  (tiled windows own the screen), sample the average color of the focused window or visible
+  screen (grim/screencopy) to feed an adaptive accent on top of the committed cartridge
+  schemes. Needs its own design pass: sampling cadence, performance, and how it composes with
+  DoorwayPalette without diluting the signature palette.
 - [ ] Theme variant switcher — `matugen` owns the base palette; a secondary accent override (Tokyo Night / Catppuccin tones) could be applied as a CSS filter or color matrix on top without abandoning Material You structure
 
 ### Infrastructure
@@ -850,31 +855,46 @@ require("themes/colors")
   ruled out — `programs.hyprland` already wires xdph + `hyprland;gtk` routing correctly.
   After rebuild: `rm -f ~/.cache/ksycoca6*` and relaunch Dolphin.
 
-### New findings — medium (dead code, branding, deprecations)
+### New findings — medium (dead code, branding, deprecations) — ALL CLOSED 2026-07-02
 
-- [ ] **`LeftSidebarButton.qml` references removed services** — `Connections { target: Ai }` and
-  `target: Booru` (lines 32–46) throw `ReferenceError` on every start; no `Ai.qml`/`Booru.qml`
-  exists in `services/`. The `showPing` badge they feed is dead. Remove both blocks (and audit
-  `Config.options.policies.*` consumers while there).
-- [ ] **`modules/common/widgets/CalendarView.qml` is dead code** — zero references anywhere, and
-  its `import qs.modules.waffle.looks` points at a family that was never ported (scanner warning
-  on every start). Delete the file.
-- [ ] **Runtime shell config still lives at `~/.config/illogical-impulse/`** —
-  `modules/common/Directories.qml:33` (`shellConfig`). Rebranding gap with migration burden:
-  moving to `~/.config/doorway/` needs a one-shot copy of the existing `config.json` (could ride
-  an ExecStartPre). Also unblocks the `Translation.qml` warning about
-  `illogical-impulse/translations/` not existing.
-- [ ] **User-facing upstream branding in translation strings** — `translations/*.json` contain
-  "Illogical Impulse Welcome" etc.; check `FirstRunExperience.qml` and rebrand visible strings
-  to DOORway (keep upstream attribution in comments/README, per fork policy).
-- [ ] **Deprecated `PanelWindow` sizing** — `NotificationPopups.qml:25-26` and `Osd.qml:45` set
-  `width`/`height` directly; QuickShell warns to use `implicitWidth`/`implicitHeight`. Cheap fix
-  now, breakage later if QS enforces it.
-- [ ] **`MaterialThemeLoader` reads a file that never exists** —
-  `~/.local/state/quickshell/user/generated/colors.json` (journal warning every start). DOORway's
-  colors come from matugen's `Colors.qml`; decide whether the loader should point at matugen
-  output or be gated off. Note upstream's own `hacks.arbitraryRaceConditionDelay` option in this
-  file — the whole load path deserves scrutiny.
+- [x] **`LeftSidebarButton.qml` references removed services** — Ai/Booru Connections, showPing
+  badge, and the unread aiChat/translator/anime enable properties removed; `policies` JsonObject
+  removed from Config.qml (those two properties were its only consumers) (`7b9f4576`).
+- [x] **`CalendarView.qml` dead code** — deleted. Bonus sweep: `KeyringStorage.qml` also had
+  zero consumers and was deleted; 10 orphaned booru/AI/latex path properties dropped from
+  `Directories.qml` (`7b9f4576`).
+- [x] **Runtime shell config moved to `~/.config/doorway/`** — flake.nix converts the dir from
+  whole-dir store symlink to individual links (config.toml, wallbash/) so config.json is
+  writable; activation script one-shot migrates the old `illogical-impulse/config.json` (old
+  dir left for rollback — remove in a later sweep) (`6616ad4b`). Generated-translations reader
+  now `printErrors: false` — absence is the normal case (`5e52c185`).
+- [x] **Translation branding** — outcome differed from the writeup: the remaining
+  `illogical-impulse` strings in `translations/*.json` are dead keys (no QML source uses them;
+  the ii welcome/settings screens weren't ported). Left as-is for upstream-sync friendliness.
+  The real leak was `KeyringStorage.qml` — deleted (`7b9f4576`, `6616ad4b`).
+- [x] **Deprecated `PanelWindow` sizing** — `implicitWidth`/`implicitHeight` in
+  NotificationPopups + Osd; tree sweep confirmed no other offenders (`4717e175`).
+- [x] **`MaterialThemeLoader`** — superseded rather than repointed: matugen's `Colors.qml`
+  output had zero consumers (stale CLAUDE.md claim), so the whole loader + template were
+  deleted and replaced with the committed two-scheme cartridge system (see below) (`3ba01577`).
+
+### Gold-cartridge light/dark mode (2026-07-02, replaces the MaterialThemeLoader plan)
+
+Light/dark was fully dead: 12 call sites shelled out to a never-ported
+`scripts/colors/switchwall.sh`. Now `appearance.palette.mode` (`"dark"` gray NES cart |
+`"gold"` gold LoZ cart, per the website's np-cart token sets) persists in
+`~/.config/doorway/config.json` and drives `DoorwayPalette.goldCart` →
+`Appearance.m3colors` (darkScheme/goldScheme) → every surface (`3ba01577`, `5e52c185`).
+Toggle via bar util button, sidebar quick toggle, launcher `dark`/`light`, or
+`qs -c doorway ipc --any-display call theme toggleLightDark` (`getMode` returns the current one).
+Verified cold-start in a nested instance: both modes render, toggle repaints, mode persists.
+
+- [ ] **Post-rebuild check**: `~/.config/doorway/` is a real dir; config.json migrated from the
+  old path; toggle works on the deployed instance; journal shows no UPower warnings.
+- [ ] **Gold-mode soak polish** — plastic tone values (`DoorwayPalette` gold variants,
+  `goldScheme` surfaces) were designed on-screen once; audit against real daily use.
+- [ ] **`Wallpapers.qml` / `FirstRunExperience.qml`** still reference the nonexistent
+  switchwall.sh (wallpaper-image paths, not mode) — clean up with the future wallpaper plan.
 
 ### New findings — low / watchlist
 
@@ -882,11 +902,13 @@ require("themes/colors")
   luminance-preserving wash-out is *intentional* (90%-transparentized tint over app icons), but
   they share CustomIcon's cold-start staleness exposure. Re-check both after the theme changes
   on a fresh session start.
-- [ ] **`image-missing` icon absent from the tela icon theme** — journal: `Could not load icon
-  "image-missing?fallback=image-missing"`. The fallback-of-last-resort fails; ship an
-  `image-missing.svg` in `assets/icons/` (CustomIcon's local chain now actually works).
-- [ ] **UPower warnings on a desktop** — `Battery.qml` starts unconditionally; no battery, no
-  UPower service. Gate behind a config option or accept the two-line startup noise.
+- [x] **`image-missing` icon absent from the tela icon theme** — `image-missing.svg` shipped in
+  `assets/icons/`; CustomIcon's local fallback chain now terminates (`0a35b5a9`). **Residual**:
+  one startup warning remains from a *theme-provider* lookup (`QSize(34,34)` requester, not
+  CustomIcon) — find that call site on a future bar pass.
+- [x] **UPower warnings on a desktop** — root cause was the missing UPower *daemon*, not
+  Battery.qml (which already gates on `Battery.available`): `services.upower.enable = true`
+  added to `nixosModules.default`; bonus peripheral-battery reporting (`0a35b5a9`).
 - [ ] **`WARN: Model size of -2 is less than 0`** — unattributed, appears once per start.
   Find the model (likely a ListView/Repeater fed before data arrives) when touching the bar next.
 - [ ] **Jun 29 crash-storm root cause unidentified** — something made quickshell die ~every 3s

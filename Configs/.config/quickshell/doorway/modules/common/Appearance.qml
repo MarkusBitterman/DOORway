@@ -34,10 +34,13 @@ Singleton {
     property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
     property real contentTransparency: Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
 
-    // DOORway committed signature scheme — a warm-dark Material palette seeded from the
-    // Nintendo-Power tokens in DoorwayPalette (the "gray cartridge" dark mode of the site).
-    // Gated against matugen overwrite in MaterialThemeLoader (committed palette).
-    m3colors: QtObject {
+    // DOORway committed signature schemes, seeded from the Nintendo-Power tokens in
+    // DoorwayPalette. Two Material mappings mirroring the website's cartridge modes:
+    // gray cart (dark) and gold LoZ cart (light). ThemeMode flips the config option
+    // that DoorwayPalette.goldCart reads; every consumer follows this one binding.
+    m3colors: DoorwayPalette.goldCart ? goldScheme : darkScheme
+
+    readonly property QtObject darkScheme: QtObject {
         property bool darkmode: true
         property bool transparent: false
         // Warm near-black surfaces (a hint of umber) with aged-paper text.
@@ -99,6 +102,89 @@ Singleton {
         property color m3successContainer: "#2E5A1C"
         property color m3onSuccessContainer: "#C8EFB1"
         // Terminal palette — warm Nintendo set.
+        property color term0: "#1C1C1C"
+        property color term1: "#E60012"
+        property color term2: "#5FAF3A"
+        property color term3: "#FFC20E"
+        property color term4: "#1F3C88"
+        property color term5: "#C46A2D"
+        property color term6: "#6FA3D9"
+        property color term7: "#EFE3C5"
+        property color term8: "#3A2A1E"
+        property color term9: "#FF5C4A"
+        property color term10: "#7FC95A"
+        property color term11: "#FFD453"
+        property color term12: "#6FA3D9"
+        property color term13: "#C9A46A"
+        property color term14: "#8FBCE0"
+        property color term15: "#FFF6E0"
+    }
+
+    // Gold LoZ cartridge — light mode. Paper surfaces from the site's np-gold-cart
+    // mixes (agedPaper toward white / parchmentSand), ink text, shared accent hues.
+    readonly property QtObject goldScheme: QtObject {
+        property bool darkmode: false
+        property bool transparent: false
+        // Aged-paper surfaces with ink text.
+        property color m3background: "#F1E8CE"
+        property color m3onBackground: DoorwayPalette.inkBlack
+        property color m3surface: "#F1E8CE"
+        property color m3surfaceDim: "#E4D1A9"
+        property color m3surfaceBright: "#F8F2E0"
+        property color m3surfaceContainerLowest: "#FBF6E8"
+        property color m3surfaceContainerLow: "#EDE2C2"
+        property color m3surfaceContainer: "#E6D8B4"
+        property color m3surfaceContainerHigh: "#DECDA3"
+        property color m3surfaceContainerHighest: "#D5C293"
+        property color m3onSurface: DoorwayPalette.inkBlack
+        property color m3surfaceVariant: "#E0D0A8"
+        property color m3onSurfaceVariant: "#4A3D2E"
+        property color m3inverseSurface: "#2B2620"
+        property color m3inverseOnSurface: DoorwayPalette.agedPaper
+        property color m3outline: "#6B5D3F"
+        property color m3outlineVariant: "#CBC0A6"
+        property color m3shadow: "#000000"
+        property color m3scrim: "#000000"
+        property color m3surfaceTint: DoorwayPalette.powerGold
+        // Primary = the gold signature warmth (ink on gold for contrast).
+        property color m3primary: DoorwayPalette.powerGold
+        property color m3onPrimary: DoorwayPalette.inkBlack
+        property color m3primaryContainer: "#EAD98F"
+        property color m3onPrimaryContainer: "#3A2E00"
+        property color m3inversePrimary: "#FFE08A"
+        // Secondary = hero blue (dark enough to carry text on paper).
+        property color m3secondary: DoorwayPalette.heroBlue
+        property color m3onSecondary: DoorwayPalette.agedPaper
+        property color m3secondaryContainer: "#CFE0F6"
+        property color m3onSecondaryContainer: "#0A2148"
+        // Tertiary = grassland green, deepened for light surfaces.
+        property color m3tertiary: "#3E7A24"
+        property color m3onTertiary: "#F1E8CE"
+        property color m3tertiaryContainer: "#C8EFB1"
+        property color m3onTertiaryContainer: "#123A05"
+        // Error = the power-red fire (full strength reads fine on paper).
+        property color m3error: DoorwayPalette.powerRed
+        property color m3onError: "#FFF6E0"
+        property color m3errorContainer: "#FFDAD5"
+        property color m3onErrorContainer: "#690005"
+        // Fixed roles are mode-invariant by Material definition.
+        property color m3primaryFixed: "#FFE08A"
+        property color m3primaryFixedDim: DoorwayPalette.powerGold
+        property color m3onPrimaryFixed: "#251A00"
+        property color m3onPrimaryFixedVariant: "#5A4A12"
+        property color m3secondaryFixed: "#CFE0F6"
+        property color m3secondaryFixedDim: DoorwayPalette.skyHint
+        property color m3onSecondaryFixed: "#06203F"
+        property color m3onSecondaryFixedVariant: "#1F3C88"
+        property color m3tertiaryFixed: "#C8EFB1"
+        property color m3tertiaryFixedDim: DoorwayPalette.grassBright
+        property color m3onTertiaryFixed: "#0E2A06"
+        property color m3onTertiaryFixedVariant: "#2E5A1C"
+        property color m3success: "#3E7A24"
+        property color m3onSuccess: "#F1E8CE"
+        property color m3successContainer: "#C8EFB1"
+        property color m3onSuccessContainer: "#123A05"
+        // Terminal palette — identical in both modes (terminals stay dark-tuned).
         property color term0: "#1C1C1C"
         property color term1: "#E60012"
         property color term2: "#5FAF3A"

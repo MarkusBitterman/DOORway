@@ -132,9 +132,9 @@ Singleton {
                 property JsonObject palette: JsonObject {
                     property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
                     property string accentColor: ""
-                    // DOORway committed signature palette (Nintendo-Power, fixed). When true,
-                    // MaterialThemeLoader ignores the wallpaper-derived matugen scheme.
-                    property bool committed: true
+                    // DOORway cartridge scheme: "dark" = gray NES cart, "gold" = gold LoZ cart
+                    // (mirrors the website's np-gray-cart / np-gold-cart token sets).
+                    property string mode: "dark"
                 }
             }
 

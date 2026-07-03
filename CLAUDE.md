@@ -24,7 +24,7 @@ DOORway/
 │   ├── .config/
 │   │   ├── hypr/              # Hyprland config (main entry point)
 │   │   ├── quickshell/        # QuickShell shell (bar, sidebars, OSD, notifications, session)
-│   │   ├── matugen/           # Color template engine (Material You from wallpaper)
+│   │   ├── matugen/           # Hyprland border colors from wallpaper (template engine)
 │   │   ├── rofi/              # App launcher
 │   │   ├── doorway/         # DOORway-specific settings
 │   │   └── kitty/             # Terminal
@@ -54,14 +54,20 @@ DOORway's shell surface (Initiative II, Phases 12–16) is a single QuickShell p
 
 All surfaces are loaded by `panelFamilies/IllogicalImpulseFamily.qml` via `PanelLoader`.
 
-### Color theming (matugen)
+### Color theming
 
-`doorway-matugen-watcher.service` calls `matugen image <wallpaper>` whenever the wallpaper changes (inotifywait). Matugen renders two templates:
+QuickShell colors are **committed, not wallpaper-derived**: `modules/common/DoorwayPalette.qml`
+is the single source of truth (Nintendo-Power tokens), with two cartridge modes mirroring the
+user's website — `dark` (gray NES cart) and `gold` (gold LoZ cart / light). The mode is
+persisted at `appearance.palette.mode` in `~/.config/doorway/config.json` and switched by the
+`ThemeMode` service (`qs ipc call theme toggleLightDark`, the bar's dark-mode util button,
+sidebar quick toggle, or launcher `dark`/`light` actions). `Appearance.qml` maps each mode to
+a full Material scheme (`darkScheme`/`goldScheme`).
 
-- `~/.local/share/matugen/colors/hyprland-colors.lua` — Hyprland border accent colors (dofile'd by hyprland.lua)
-- `~/.local/share/matugen/colors/Colors.qml` — QuickShell `Colors` singleton with all Material You tokens
-
-`Colors.qml` is watched by QuickShell via `FileView`; changes trigger a live theme reload with no restart.
+matugen still runs for one output only: `doorway-matugen-watcher.service` calls
+`matugen image <wallpaper>` on wallpaper change (inotifywait) and renders
+`~/.local/share/matugen/hyprland-colors.lua` — Hyprland border accent colors
+(pcall(dofile)'d by dynamic.lua). The shell does not consume matugen output.
 
 ### IPC keybindings
 
@@ -72,7 +78,10 @@ Sidebar/session toggles use `qs ipc`. Two workarounds are required for QS 0.3.0:
 
 ### Runtime writes
 
-QuickShell itself never writes files. All runtime output goes through matugen's template engine to `~/.local/share/matugen/colors/` (writable, not Nix-managed).
+QuickShell's only runtime-written file is its config at `~/.config/doorway/config.json`
+(JsonAdapter writeback; the parent dir is real+writable because flake.nix links
+`doorway/config.toml` and `doorway/wallbash` individually, not the whole dir).
+matugen writes its rendered template to `~/.local/share/matugen/` (writable, not Nix-managed).
 
 ## Key Files
 

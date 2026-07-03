@@ -6,7 +6,7 @@ import qs.modules.common.functions
 /**
  * Cyberpunk neon glow — a colorized sibling of StyledRectangularShadow.
  *
- * Glows in `glowColor` (matugen primary by default, so it tracks the wallpaper) rather
+ * Glows in `glowColor` (palette primary by default, so it follows the cartridge mode) rather
  * than the shadow color, with blur/spread/alpha scaled by `intensity` (0..1). `cached`
  * because it only re-renders when the palette or geometry changes — no per-frame cost,
  * which is what makes the "bold" look affordable on a daily-driver bar.

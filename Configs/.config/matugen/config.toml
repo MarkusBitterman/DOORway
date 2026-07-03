@@ -18,13 +18,9 @@
 reload_apps = false
 
 # Hyprland border colors — loaded via pcall(dofile, ...) in dynamic.lua.
+# (The QuickShell shell does NOT consume matugen: it uses the committed
+# DoorwayPalette cartridge schemes — see modules/common/DoorwayPalette.qml.)
 [templates.hyprland-colors]
 input_path  = "~/.config/matugen/templates/hyprland-colors.lua"
 output_path = "~/.local/share/matugen/hyprland-colors.lua"
-mode = "Dark"
-
-# QuickShell color singleton — imported by the QML shell in Phase 12+.
-[templates.quickshell-colors]
-input_path  = "~/.config/matugen/templates/Colors.qml"
-output_path = "~/.local/share/matugen/Colors.qml"
 mode = "Dark"

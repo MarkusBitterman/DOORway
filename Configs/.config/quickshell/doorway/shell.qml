@@ -18,10 +18,6 @@ import qs.services
 ShellRoot {
     id: root
 
-    Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme()
-    }
-
     // Phase 12: bar only. IllogicalImpulseFamily is bar-only until Phase 13.
     Loader {
         active: Config.ready

@@ -54,8 +54,8 @@ Scope {
         anchors { bottom: true }
         margins { bottom: Appearance.sizes.hyprlandGapsOut * 2 + 8 }
 
-        width: 280
-        height: 64
+        implicitWidth: 280
+        implicitHeight: 64
 
         readonly property real brightnessValue: Brightness.monitors[0]?.brightness ?? 0
         readonly property real volumeValue: Audio.value ?? 0

@@ -22,8 +22,8 @@ Scope {
             right: Appearance.sizes.hyprlandGapsOut
         }
 
-        width: 420
-        height: 600
+        implicitWidth: 420
+        implicitHeight: 600
 
         NotificationListView {
             popup: true

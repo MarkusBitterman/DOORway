@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # source variables
 confDir="${confDir:-$HOME/.config}"

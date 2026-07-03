@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1090
 cpuinfo_file="${XDG_RUNTIME_DIR:-/tmp}/doorway-$UID-processors"
 

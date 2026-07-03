@@ -1,4 +1,4 @@
-#! /bin/env bash
+#!/usr/bin/env bash
 if ! source "$(which doorway-shell)"; then
     echo "[$0] :: Error: doorway-shell not found."
     echo "[$0] :: Is DOORway installed?"

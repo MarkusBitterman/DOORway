@@ -135,6 +135,9 @@ Singleton {
                     // DOORway cartridge scheme: "dark" = gray NES cart, "gold" = gold LoZ cart
                     // (mirrors the website's np-gray-cart / np-gold-cart token sets).
                     property string mode: "dark"
+                    // Follow the blue-light filter's sunset/sunrise window: gold by day,
+                    // dark by night. Manual toggles override until the next boundary.
+                    property bool autoMode: true
                 }
             }
 

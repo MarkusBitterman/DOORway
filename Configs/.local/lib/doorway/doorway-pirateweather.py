@@ -17,10 +17,29 @@ Environment variables:
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
+
+
+def get_with_retry(url: str, *, attempts: int = 3, backoff: int = 20, **kwargs) -> requests.Response:
+    """requests.get with linear-backoff retries.
+
+    The systemd unit is a oneshot on a 15-minute timer, so a transient DNS or
+    network blip would otherwise silently cost a whole cycle (observed as
+    hours-stale weather across outages).
+    """
+    for attempt in range(attempts):
+        try:
+            resp = requests.get(url, **kwargs)
+            resp.raise_for_status()
+            return resp
+        except requests.RequestException:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(backoff * (attempt + 1))
 
 ICON_MAP: dict[str, str] = {
     "clear-day": "clear_day",
@@ -79,8 +98,7 @@ def geocode(zip_code: str, country: str, cache_path: Path) -> tuple[float, float
     url = "https://nominatim.openstreetmap.org/search"
     params = {"postalcode": zip_code, "country": country, "format": "json", "limit": 1}
     headers = {"User-Agent": "DOORway/1.0 (https://github.com/MarkusBitterman/DOORway)"}
-    resp = requests.get(url, params=params, headers=headers, timeout=10)
-    resp.raise_for_status()
+    resp = get_with_retry(url, params=params, headers=headers, timeout=10)
     results = resp.json()
     if not results:
         raise ValueError(f"Nominatim returned no results for ZIP {zip_code!r}, country {country!r}")
@@ -128,8 +146,7 @@ def main() -> None:
 
     url = f"https://api.pirateweather.net/forecast/{api_key}/{lat},{lon}"
     params = {"units": units, "extend": "hourly"}
-    resp = requests.get(url, params=params, timeout=15)
-    resp.raise_for_status()
+    resp = get_with_retry(url, params=params, timeout=15)
     forecast = resp.json()
 
     cur = forecast.get("currently", {})

@@ -135,6 +135,8 @@
               description,
               execStart,
               execStartPre ? null,
+              execCondition ? null,
+              conditionPathExistsGlob ? null,
               documentation ? null,
             }:
             {
@@ -145,6 +147,9 @@
               }
               // lib.optionalAttrs (documentation != null) {
                 Documentation = documentation;
+              }
+              // lib.optionalAttrs (conditionPathExistsGlob != null) {
+                ConditionPathExistsGlob = conditionPathExistsGlob;
               };
               Service = {
                 Type = "exec";
@@ -156,6 +161,9 @@
               }
               // lib.optionalAttrs (execStartPre != null) {
                 ExecStartPre = execStartPre;
+              }
+              // lib.optionalAttrs (execCondition != null) {
+                ExecCondition = execCondition;
               };
               Install = {
                 WantedBy = [ "graphical-session.target" ];
@@ -699,7 +707,7 @@
                 ${lib.optionalString (cfg.idle.timeouts.suspend != null) ''
                   listener {
                       timeout = ${toString cfg.idle.timeouts.suspend}
-                      on-timeout = systemctl suspend
+                      on-timeout = systemctl suspend-then-hibernate
                   }
                 ''}
 
@@ -971,6 +979,9 @@
               doorway-battery-notify = mkDoorwayService {
                 description = "DOORway low-battery notification watcher";
                 execStart = "%h/.local/lib/doorway/batterynotify.sh";
+                # Desktops have no battery; without this the watcher crash-loops
+                # into start-limit-hit at every session start.
+                conditionPathExistsGlob = "/sys/class/power_supply/BAT*";
               };
 
               # wallpaper.sh bootstraps via `eval $(doorway-shell init)` — needs
@@ -996,11 +1007,18 @@
               doorway-polkit-auth = mkDoorwayService {
                 description = "DOORway polkit authentication agent (polkit-gnome)";
                 execStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+                # A graphical-session restart can leave the previous agent alive;
+                # a second registration fails hard ("agent already exists") and the
+                # unit crash-loops. Skip cleanly when an agent is already serving.
+                execCondition = "${pkgs.bash}/bin/bash -c '! ${pkgs.procps}/bin/pgrep -x polkit-gnome-au >/dev/null'";
               };
 
               doorway-config-bootstrap = mkDoorwayOneshot {
                 description = "DOORway config initialization (oneshot at session start)";
-                execStart = "%h/.local/lib/doorway/doorway-config --no-startup";
+                # The doorway-config Go binary still defaults its input to the
+                # upstream $XDG_CONFIG_HOME/hyde/config.toml path; point it at the
+                # DOORway TOML explicitly until the binary is rebuilt.
+                execStart = "%h/.local/lib/doorway/doorway-config --no-startup -input %h/.config/doorway/config.toml";
               };
 
               # Watches ~/.cache/doorway/wall.set for changes and runs matugen

@@ -27,7 +27,6 @@ Singleton {
     property int defaultColorTemperature: 6000
     property int gamma: 100
     property bool shouldBeOn
-    property bool firstEvaluation: true
     property bool temperatureActive: false
 
     property int fromHour: Number(from.split(":")[0])
@@ -45,7 +44,6 @@ Singleton {
     onClockMinuteChanged: reEvaluate()
     onAutomaticChanged: {
         root.manualActive = undefined;
-        root.firstEvaluation = true;
         reEvaluate();
     }
 
@@ -68,10 +66,11 @@ Singleton {
             root.manualActive = undefined;
         }
         root.shouldBeOn = inBetween(t, from, to);
-        if (firstEvaluation) {
-            firstEvaluation = false;
-            root.ensureState();
-        }
+        // Reconcile every tick, not just on shouldBeOn edges: the hyprctl call in
+        // ensureState() can race the hyprsunset daemon on cold start (IPC not yet
+        // registered), and a missed one-shot would otherwise stick until the next
+        // sunrise/sunset boundary.
+        root.ensureState();
     }
 
     onShouldBeOnChanged: ensureState()
@@ -92,7 +91,7 @@ Singleton {
 
     function load() {
         root.startHyprsunset();
-        root.ensureState();
+        root.reEvaluate();
     }
 
     Timer {

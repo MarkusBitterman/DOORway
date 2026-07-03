@@ -1166,6 +1166,12 @@
             package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
           };
 
+          # UPower backs the shell's Battery service (Quickshell.Services.UPower).
+          # Without the daemon the QML module logs D-Bus warnings on every start;
+          # with it, desktops simply report no laptop battery (widget stays hidden)
+          # and peripheral batteries (mouse/keyboard) become visible as a bonus.
+          services.upower.enable = true;
+
           # ── Display manager: greetd + regreet ───────────────────────────────
           # cage: minimal Wayland compositor that hosts only the greeter.
           # regreet: GTK4 greeter — user list, password entry, session picker.

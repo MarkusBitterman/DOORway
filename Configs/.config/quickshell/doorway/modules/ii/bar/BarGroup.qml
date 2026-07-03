@@ -21,25 +21,25 @@ Item {
             rightMargin: root.vertical ? 4 : 0
         }
         radius: Appearance.rounding.verysmall // squarer molded block
-        // Recessed plastic panel inset into the faceplate.
+        // Recessed plastic panel inset into the faceplate (tones follow DoorwayPalette's mode).
         gradient: Gradient {
-            GradientStop { position: 0.0; color: background.plastic ? "#241F18" : "transparent" }
-            GradientStop { position: 1.0; color: background.plastic ? "#16120E" : "transparent" }
+            GradientStop { position: 0.0; color: background.plastic ? DoorwayPalette.plasticPanelTop : "transparent" }
+            GradientStop { position: 1.0; color: background.plastic ? DoorwayPalette.plasticPanelBottom : "transparent" }
         }
         border.width: background.plastic ? 1 : 0
-        border.color: "#0B0805"
+        border.color: DoorwayPalette.plasticEdge
         // Bevel: lit top, shadowed bottom.
         Rectangle {
             visible: background.plastic
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
             height: 1
-            color: Qt.rgba(1, 1, 1, 0.05)
+            color: DoorwayPalette.bevelHighlight
         }
         Rectangle {
             visible: background.plastic
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
             height: 1
-            color: Qt.rgba(0, 0, 0, 0.4)
+            color: DoorwayPalette.bevelShadow
         }
     }
 

@@ -17,6 +17,10 @@ Singleton {
 
     readonly property bool goldCart: DoorwayPalette.goldCart
 
+    // No-op: singletons are lazily instantiated, and the IpcHandler/GlobalShortcut
+    // below only register once the singleton exists. shell.qml calls this at startup.
+    function load() {}
+
     function setMode(mode) {
         // Accept the generic light/dark vocabulary used by upstream call sites.
         if (mode === "light") mode = "gold";
@@ -46,6 +50,10 @@ Singleton {
 
         function setMode(mode: string): void {
             root.setMode(mode);
+        }
+
+        function getMode(): string {
+            return Config.options?.appearance?.palette?.mode ?? "unset";
         }
     }
 }

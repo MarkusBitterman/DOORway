@@ -43,26 +43,26 @@ Item { // Bar content region
             margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
         }
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
-        // Top-lit plastic sheen (the "gray cartridge" shell).
+        // Top-lit plastic sheen (cartridge shell — tones follow DoorwayPalette's mode).
         gradient: Gradient {
-            GradientStop { position: 0.0; color: barBackground.bg ? "#2C2822" : "transparent" }
-            GradientStop { position: 1.0; color: barBackground.bg ? "#191611" : "transparent" }
+            GradientStop { position: 0.0; color: barBackground.bg ? DoorwayPalette.plasticShellTop : "transparent" }
+            GradientStop { position: 1.0; color: barBackground.bg ? DoorwayPalette.plasticShellBottom : "transparent" }
         }
         border.width: barBackground.bg ? 1 : 0
-        border.color: "#0D0A07" // dark molded outer edge
+        border.color: DoorwayPalette.plasticEdge // molded outer edge
 
         // Beveled raised-plastic edges: lit top, shadowed bottom.
         Rectangle {
             visible: barBackground.bg
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
             height: 2
-            color: Qt.rgba(1, 1, 1, 0.06)
+            color: DoorwayPalette.bevelHighlight
         }
         Rectangle {
             visible: barBackground.bg
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
             height: 2
-            color: Qt.rgba(0, 0, 0, 0.45)
+            color: DoorwayPalette.bevelShadow
         }
     }
 

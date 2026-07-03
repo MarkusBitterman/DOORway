@@ -69,6 +69,9 @@ Singleton {
         id: generatedTranslationFileView
         translationsDir: root.generatedTranslationsDir
         languageCode: root.languageCode
+        // Generated translations are optional add-ons; absence is the normal case
+        // (onLoadFailed already falls back to {}) — don't warn about it every start.
+        printErrors: false
         onContentLoaded: (data) => {
             root.generatedTranslations = data;
             root.isLoading = false;

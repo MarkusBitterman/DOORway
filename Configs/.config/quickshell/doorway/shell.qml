@@ -18,6 +18,10 @@ import qs.services
 ShellRoot {
     id: root
 
+    Component.onCompleted: {
+        ThemeMode.load() // eager-load so the theme IPC target + shortcut register
+    }
+
     // Phase 12: bar only. IllogicalImpulseFamily is bar-only until Phase 13.
     Loader {
         active: Config.ready

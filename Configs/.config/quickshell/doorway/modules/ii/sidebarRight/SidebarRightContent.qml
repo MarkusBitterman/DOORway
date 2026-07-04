@@ -53,24 +53,14 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
-            GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
-        }
-        border.width: 1
-        border.color: DoorwayPalette.plasticEdge
+        color: "transparent"
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
-        // Beveled raised-plastic edges.
-        Rectangle {
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 3 }
-            height: 2
-            color: DoorwayPalette.bevelHighlight
-        }
-        Rectangle {
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 3 }
-            height: 2
-            color: DoorwayPalette.bevelShadow
+        // Black Walnut shell (vertical grain). The inner cards keep their light/dark wells.
+        WalnutBackground {
+            anchors.fill: parent
+            horizontal: false
+            radius: sidebarRightBackground.radius
         }
 
         ColumnLayout {

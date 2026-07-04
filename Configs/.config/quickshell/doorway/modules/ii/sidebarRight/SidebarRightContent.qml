@@ -282,12 +282,12 @@ Item {
             QuickToggleButton {
                 toggled: false
                 buttonIcon: "restart_alt"
-                onClicked: {
-                    Quickshell.execDetached(["hyprctl", "reload"])
-                    Quickshell.reload(true);
-                }
+                // Full service restart (not Quickshell.reload) — after a nixos-rebuild the
+                // config symlink points at a new /nix/store path, and only re-exec'ing the
+                // process picks it up. execDetached keeps the restart alive past our death.
+                onClicked: Quickshell.execDetached(["doorway-restart-shell"])
                 StyledToolTip {
-                    text: Translation.tr("Reload Hyprland & Quickshell")
+                    text: Translation.tr("Restart Hyprland & Quickshell")
                 }
             }
             QuickToggleButton {

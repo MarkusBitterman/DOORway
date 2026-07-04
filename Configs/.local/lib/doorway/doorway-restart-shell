@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# doorway-restart-shell — apply a DOORway rebuild in the running session.
+#
+# After a `nixos-rebuild switch`, the ~/.config/quickshell/doorway symlink points at a
+# new /nix/store path, but the running doorway-quickshell.service still executes the
+# previous generation until the process is re-exec'd. The sidebar's in-process
+# `Quickshell.reload()` re-parses QML from the path the process already holds, so it
+# CANNOT show a rebuild's changes — only a full service restart re-resolves the symlink.
+#
+# This reloads Hyprland's config and hard-restarts the shell. Bound to Super+Shift+R,
+# wired to the right-sidebar restart button, and available on PATH in the dev shell.
+set -euo pipefail
+
+# Re-read Hyprland's Lua config (harmless if Hyprland isn't reachable, e.g. dev shell).
+hyprctl reload >/dev/null 2>&1 || true
+
+# Breadcrumb so the restart is visible (the shell is about to die, so use Hyprland's
+# own notifier rather than the QuickShell notification daemon we're restarting).
+hyprctl notify -1 2000 "rgb(6f4623)" "Restarting DOORway shell…" >/dev/null 2>&1 || true
+
+# Hard-restart the shell so it picks up the current generation's store paths.
+systemctl --user restart doorway-quickshell.service

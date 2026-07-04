@@ -1006,13 +1006,14 @@ DOORway-native UX; the ii port already has overview/search primitives), or
 - [ ] Network + Bluetooth: prefer symbolic glyphs (evaluate dropping nm-applet/blueman
       tray items in favor of the existing symbolic indicators — needs decision)
 
-## Batch 3 — quick-toggles regression (bug)
+## Batch 3 — quick-toggles regression (bug) ✅
 
-- [ ] 3rd toggle "Keep system awake" (was coffee cup) renders blank
-- [ ] 4th toggle "Audio input…" (mic) renders blank
-- [ ] 7th toggle "Anti-flashbang" (new) renders blank
-- [ ] Root-cause the missing icons (bad MaterialSymbol name / CustomIcon fallback)
-      in `sidebarRight/quickToggles/` and fix
+- [x] Root cause: in `AndroidQuickToggleButton.qml` the icon `MaterialSymbol` was a
+      *child* of `iconBackground`, whose `visible: subTarget` (= expanded && hasMenu).
+      So every size-1 / menu-less toggle hid its icon along with the plate — NOT a font
+      issue (glyphs verified rendering; confirmed via grim screenshot of the real shell).
+- [x] Fix: lifted the icon to be a sibling of the plate (always visible). Verified with
+      a nested `qs -p` + grim capture — coffee/mic/flash now render.
 
 ## Batch 4 — active-window well (icon-tinted label) + IconColor service
 

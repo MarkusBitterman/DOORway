@@ -112,18 +112,6 @@ PlasticKey {
                 border.width: subTarget ? 1 : 0
                 border.color: DoorwayPalette.plasticEdge
 
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    fill: root.toggled ? 1 : 0
-                    iconSize: root.expandedSize ? 22 : 24
-                    color: root.colIcon
-                    text: root.buttonIcon
-
-                    Behavior on color {
-                        animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-                    }
-                }
-
                 // Press/hover state layer on the icon sub-plate.
                 Loader {
                     anchors.fill: parent
@@ -135,6 +123,21 @@ PlasticKey {
                             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                         }
                     }
+                }
+            }
+
+            // Icon — a SIBLING of the plate, not a child: iconBackground is only visible for
+            // the expanded sub-target case, so nesting the icon inside it hid the glyph on
+            // every size-1 / menu-less toggle (coffee, mic, anti-flashbang, …). Always shown.
+            MaterialSymbol {
+                anchors.centerIn: parent
+                fill: root.toggled ? 1 : 0
+                iconSize: root.expandedSize ? 22 : 24
+                color: root.colIcon
+                text: root.buttonIcon
+
+                Behavior on color {
+                    animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                 }
             }
         }

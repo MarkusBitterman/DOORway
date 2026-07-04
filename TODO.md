@@ -962,3 +962,84 @@ DOORway-native UX; the ii port already has overview/search primitives), or
 - [ ] Sweep remaining `rofi` references (`grep -rl rofi Configs/`) — globalcontrol.sh,
       fastfetch.sh, pm.py, quickapps.sh, workflows.sh, testrunner.sh, shaders.sh,
       swwwallcache.sh, wallpaper/{core,help}.sh, pyutils/compositor.py, keybinds/hint-hyprland.py
+
+---
+
+# Black Walnut UI Overhaul
+
+> **Goal**: Re-skin the QuickShell surface after the Atari VCS 800 "Black Walnut"
+> computer system — a walnut-veneer *shell* with light/dark plastic *wells* on top,
+> Jarvis/HUD resource dials, an icon-tinted active-window label, and two contrasting
+> sidebars (right = walnut + wells, left = glossy magazine page).
+
+> **Design law**: The woodgrain is the *shell* (bar/right-sidebar background) and is
+> mode-independent (walnut in both light & dark). The *wells* (BarGroup, sidebar cards)
+> keep the DoorwayPalette light/dark plastic. Only wells flip with the day/night theme.
+
+## Batch 0 — foundation ✅ (committed f19f5663)
+
+- [x] `assets/textures/gen-walnut.sh` — deterministic procedural walnut generator
+- [x] `assets/textures/walnut-{h,v}.png` — first-pass textures (too small — see Batch 1)
+- [x] `WalnutBackground.qml` — reusable masked-woodgrain + lacquer-sheen shell surface
+- [x] Bar faceplate → `WalnutBackground`
+- [x] `Resource.qml` — Jarvis gauge v1 (rings + flickering core) — *redesign in Batch 1*
+- [x] `imagemagick` added to `doorwayDeps` (flake.nix) — **uncommitted**, ships with Batch 4
+
+## Batch 1 — bar polish (no new deps)
+
+- [ ] **Inset wells**: invert `BarGroup.qml` bevels (shadow on top, highlight on bottom)
+      so plastic panels read as recessed *into* the wood, not raised off it
+- [ ] **Texture resize**: regenerate walnut-h at ≥1920×~64 (bar is 40–50px tall),
+      seamlessly tileable horizontally (`-virtual-pixel tile`); keep the v3 grain spec
+- [ ] **Texture resize**: regenerate walnut-v full-height (~2160 for 4K), indexed PNG
+- [ ] **fillMode logic** in `WalnutBackground`: zoom-to-fit (`PreserveAspectCrop`) at
+      ≤ native size, `Tile` when the surface exceeds native on the grain's long axis
+- [ ] **Jarvis dial redesign** (`Resource.qml`): two overlapping rings + icon —
+      - outer (larger) ring: arc *fills* with usage, spins clockwise
+      - inner ring: full ring with a *gap* sized by usage, spins counter-clockwise
+      - keep the flickering/pulsing/brightness icon core; shrink overall diameter
+- [ ] **Datetime width**: shrink `ClockWidget` horizontal padding (too wide both sides)
+- [ ] **Date font**: bump `DateTime.longDateOrdinal` to match the time's `large` size
+- [ ] **Media width**: shrink the media-title column
+
+## Batch 2 — tray & right-cluster indicators
+
+- [ ] Remove the blue "pill" toggled background on the right sidebar button
+      (`colBackgroundToggled` in `BarContent.qml`)
+- [ ] Indicators (volume/mic/xkb/network/bluetooth glyphs): embossed symbolic
+      *inset black* look; light up **red** (LED) when `sidebarRightOpen`
+- [ ] `SysTrayItem`: embossed inset treatment for tray icons
+- [ ] Network + Bluetooth: prefer symbolic glyphs (evaluate dropping nm-applet/blueman
+      tray items in favor of the existing symbolic indicators — needs decision)
+
+## Batch 3 — quick-toggles regression (bug)
+
+- [ ] 3rd toggle "Keep system awake" (was coffee cup) renders blank
+- [ ] 4th toggle "Audio input…" (mic) renders blank
+- [ ] 7th toggle "Anti-flashbang" (new) renders blank
+- [ ] Root-cause the missing icons (bad MaterialSymbol name / CustomIcon fallback)
+      in `sidebarRight/quickToggles/` and fix
+
+## Batch 4 — active-window well (icon-tinted label) + IconColor service
+
+- [x] `doorway-icon-color` helper (resolve icon → magick dominant color, cached) — **uncommitted**
+- [ ] `IconColor.qml` service: appId → color (in-memory cache over the helper)
+- [ ] `ActiveWindow.qml`: label-on-wood — icon-derived background, bottom-corner
+      radius only, border on sides+bottom (no top), contrasting app/title text by
+      luminance; pure styling, no gfx
+- [ ] Commit with the flake.nix `imagemagick` dep
+
+## Batch 5 — sidebars
+
+- [ ] Right sidebar: `SidebarRightContent` shell → `WalnutBackground` (vertical grain);
+      inner cards keep light/dark wells
+- [ ] Left sidebar magazine: bright glossy paper page, editorial masthead + serif type
+- [ ] Left sidebar: bottom-edge **booklet crest** — page warped up off the surface like
+      an open magazine's spine resting on a table (a bend/crest, not a page curl);
+      likely an ImageMagick displacement asset + shadow
+
+## Separate bug — night light (redlight)
+
+- [ ] At sundown Hyprsunset turns on then flips back off ~1 min later; theme dark-mode
+      is unaffected (so it's Hyprsunset restart, not ThemeMode). Investigate
+      `services/Hyprsunset.qml` + the night-light restart path (recent commit 79a46d34)

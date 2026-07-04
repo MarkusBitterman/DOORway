@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# doorway-icon-color — print the dominant "brand" color (#RRGGBB) of an app icon.
+#
+# Usage: doorway-icon-color <icon-name-or-path>
+#
+# Resolves an XDG icon name (as guessed by AppSearch) to an actual icon file, then
+# uses ImageMagick to pick the most prominent saturated color — skipping transparent
+# pixels and the near-black/near-white of outlines and monochrome glyphs. Used by the
+# QuickShell IconColor service to tint the active-window "well" from its app icon.
+#
+# Results are cached under $XDG_CACHE_HOME/doorway/iconcolors/ so magick runs at most
+# once per icon. Prints nothing (exit 1) when no icon file can be found — callers fall
+# back to a default tone.
+set -euo pipefail
+
+name="${1:-}"
+[[ -z "$name" ]] && { echo "usage: doorway-icon-color <name-or-path>" >&2; exit 2; }
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/doorway/iconcolors"
+# Sanitize the name into a cache key (keep it filesystem-safe).
+key="${name//\//_}"
+cache_file="$cache_dir/$key"
+if [[ -s "$cache_file" ]]; then
+    cat "$cache_file"
+    exit 0
+fi
+
+resolve_icon() {
+    local n="$1"
+    # Already a real file path?
+    if [[ "$n" = /* && -f "$n" ]]; then printf '%s\n' "$n"; return 0; fi
+
+    local -a roots=() pixmaps=()
+    [[ -n "${XDG_DATA_HOME:-}" ]] && roots+=("$XDG_DATA_HOME/icons")
+    roots+=("$HOME/.local/share/icons" "$HOME/.icons")
+    local IFS=:
+    local -a datadirs
+    read -ra datadirs <<< "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    unset IFS
+    local d
+    for d in "${datadirs[@]}"; do roots+=("$d/icons"); pixmaps+=("$d/pixmaps"); done
+    roots+=("/run/current-system/sw/share/icons")
+    pixmaps+=("/run/current-system/sw/share/pixmaps")
+
+    # Preferred raster sizes first (fast path: hicolor/<size>/apps/<name>).
+    local -a sizes=(256x256 192x192 128x128 96x96 64x64 512x512 48x48 scalable)
+    local root sz f
+    for root in "${roots[@]}"; do
+        [[ -d "$root" ]] || continue
+        for sz in "${sizes[@]}"; do
+            for f in "$root"/*/"$sz"/*/"$n".png "$root"/*/"$sz"/*/"$n".svg; do
+                [[ -f "$f" ]] && { printf '%s\n' "$f"; return 0; }
+            done
+        done
+    done
+    # Fallback: any match anywhere under the icon roots.
+    for root in "${roots[@]}"; do
+        [[ -d "$root" ]] || continue
+        f=$(find -L "$root" -maxdepth 6 -type f \
+            \( -iname "$n.png" -o -iname "$n.svg" \) 2>/dev/null | head -1)
+        [[ -n "$f" ]] && { printf '%s\n' "$f"; return 0; }
+    done
+    # Loose pixmaps.
+    for root in "${pixmaps[@]}"; do
+        for f in "$root/$n".png "$root/$n".svg "$root/$n".xpm; do
+            [[ -f "$f" ]] && { printf '%s\n' "$f"; return 0; }
+        done
+    done
+    return 1
+}
+
+icon_file="$(resolve_icon "$name")" || exit 1
+
+# Quantize to 16 colors and read the histogram; each line is:
+#   <count>: (r,g,b,a) #RRGGBBAA srgba(...)
+hist="$(magick "$icon_file" -background none -resize 96x96 -alpha on \
+        -colors 16 -format '%c' histogram:info: 2>/dev/null)" || exit 1
+
+best_w=0
+best_hex=""
+while IFS= read -r line; do
+    [[ "$line" =~ ([0-9]+):[[:space:]]*\(([0-9]+),([0-9]+),([0-9]+)(,([0-9]+))?\) ]] || continue
+    count="${BASH_REMATCH[1]}"
+    r="${BASH_REMATCH[2]}"; g="${BASH_REMATCH[3]}"; b="${BASH_REMATCH[4]}"
+    a="${BASH_REMATCH[6]:-255}"
+    (( a < 40 )) && continue                      # transparent
+
+    mx=$r; (( g > mx )) && mx=$g; (( b > mx )) && mx=$b
+    mn=$r; (( g < mn )) && mn=$g; (( b < mn )) && mn=$b
+    val=$(( mx * 100 / 255 ))                      # brightness 0..100
+    sat=0; (( mx > 0 )) && sat=$(( (mx - mn) * 100 / mx ))   # saturation 0..100
+    (( val > 93 && sat < 12 )) && continue        # near-white neutral
+    (( val < 12 )) && continue                    # near-black
+    # Weight by frequency, rewarding saturation so brand colors beat neutral fills.
+    w=$(( count * (25 + sat) ))
+    if (( w > best_w )); then
+        best_w=$w
+        best_hex="$(printf '#%02X%02X%02X' "$r" "$g" "$b")"
+    fi
+done <<< "$hist"
+
+# If everything was neutral (a monochrome icon), fall back to the flat average color.
+if [[ -z "$best_hex" ]]; then
+    best_hex="$(magick "$icon_file" -background none -resize 1x1 -alpha off \
+                -format '#%[hex:p{0,0}]' info: 2>/dev/null | sed -E 's/^(#[0-9A-Fa-f]{6}).*/\1/')"
+fi
+[[ -z "$best_hex" ]] && exit 1
+
+mkdir -p "$cache_dir"
+printf '%s' "$best_hex" > "$cache_file"
+printf '%s\n' "$best_hex"

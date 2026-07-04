@@ -86,21 +86,6 @@ Item { // Bar content region
             anchors.fill: parent
             spacing: 0
 
-            // Cartridge left edge — molded grip ridges + the gold/red Power end-label.
-            GripRidges {
-                Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: 7
-                Layout.preferredHeight: Appearance.sizes.baseBarHeight - 18
-                ridges: 4
-            }
-            RetroStripe {
-                vertical: true
-                Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: 5
-                Layout.preferredWidth: 5
-                Layout.preferredHeight: Appearance.sizes.baseBarHeight - 16
-            }
-
             LeftSidebarButton { // Left sidebar button
                 id: leftSidebarButton
                 Layout.alignment: Qt.AlignVCenter
@@ -109,6 +94,8 @@ Item { // Bar content region
             }
 
             ActiveWindow {
+                // Fill the whole gap between the left icon and the centre gauges — a fixed-width
+                // label plate (not content-hugging), so it doesn't grow/shrink per app.
                 Layout.leftMargin: 10 + (leftSidebarButton.visible ? 0 : Appearance.rounding.screenRounding)
                 Layout.rightMargin: Appearance.rounding.screenRounding
                 Layout.fillWidth: true

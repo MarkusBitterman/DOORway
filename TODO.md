@@ -1017,14 +1017,16 @@ DOORway-native UX; the ii port already has overview/search primitives), or
 - [x] Fix: lifted the icon to be a sibling of the plate (always visible). Verified with
       a nested `qs -p` + grim capture — coffee/mic/flash now render.
 
-## Batch 4 — active-window well (icon-tinted label) + IconColor service
+## Batch 4 — active-window well (icon-tinted label) + IconColor service ✅
 
-- [x] `doorway-icon-color` helper (resolve icon → magick dominant color, cached) — **uncommitted**
-- [ ] `IconColor.qml` service: appId → color (in-memory cache over the helper)
-- [ ] `ActiveWindow.qml`: label-on-wood — icon-derived background, bottom-corner
-      radius only, border on sides+bottom (no top), contrasting app/title text by
-      luminance; pure styling, no gfx
-- [ ] Commit with the flake.nix `imagemagick` dep
+- [x] `doorway-icon-color` helper (resolve icon → magick dominant color, disk-cached)
+- [x] `IconColor.qml` service: appId → color, in-memory cache over the helper (queued Process)
+- [x] `ActiveWindow.qml`: label-on-wood — icon-derived background, bottom-corner radius only,
+      3-sided border (no top), app/title text auto-contrasted by `ColorUtils.isDark`; soft
+      shadow so the plate lifts off the wood even when the tint ≈ wood
+- [x] Label now FILLS the space between the left icon and the gauges (fixed width, not
+      content-hugging); removed the GripRidges + RetroStripe left-edge trim
+- [x] imagemagick dep already in flake.nix (shipped with the restart-shell commit)
 
 ## Batch 5 — sidebars
 

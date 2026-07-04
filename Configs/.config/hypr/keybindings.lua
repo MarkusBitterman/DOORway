@@ -39,7 +39,7 @@ hl.bind(mainMod .. " + L",       hl.dsp.exec_cmd("lockscreen.sh"),              
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("doorway-shell window.pin"),        { description = "[Window Management] toggle pin on focused window" })
 hl.bind("CTRL + ALT + Delete",     hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sessionScreen open"), { description = "[Session] open session screen (lock/suspend/logout/shutdown)" })
 hl.bind(mainMod .. " + F5",      hl.dsp.exec_cmd("hyprctl reload"),                    { description = "[Window Management] reload Hyprland config" })
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("doorway-restart-shell"),           { description = "[QuickShell] restart shell (apply a rebuild)" })
+hl.bind(mainMod .. " + ALT + R", hl.dsp.exec_cmd("doorway-restart-shell"),             { description = "[QuickShell] restart shell (apply a rebuild)" })
 
 -- [Window Management|Group Navigation]
 hl.bind(mainMod .. " + CTRL + H", hl.dsp.group.prev(), { description = "[Window Management|Group Navigation] change active group backwards" })

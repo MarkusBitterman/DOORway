@@ -33,9 +33,12 @@ Item {
     readonly property real litLevel: 0.34 + percentage * 0.66
     // Outer fills with usage; inner is a full ring minus a usage-sized gap (≥25° so the
     // counter-rotation always reads).
-    readonly property real outerSweep: percentage * 360
+    // Writable (not readonly) so the Behaviors below can ease their transitions — the
+    // bindings set the target, the Behavior animates the change. A Behavior on a
+    // readonly property fails to load and takes the whole shell down.
+    property real outerSweep: percentage * 360
     readonly property real innerGap: 25 + percentage * 200
-    readonly property real innerSweep: 360 - innerGap
+    property real innerSweep: 360 - innerGap
 
     // Per-frame driven state (rotation + organic flicker).
     property real angle: 0

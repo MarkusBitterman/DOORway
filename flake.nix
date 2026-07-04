@@ -1316,7 +1316,7 @@
               echo "Testing Hyprland:"
               echo "  hyprctl reload             - Live-reload config (inside any Hyprland session)"
               echo "  doorway-restart-shell      - Apply a rebuild: hyprctl reload + restart the shell"
-              echo "                               (Super+Shift+R, or the sidebar restart button)"
+              echo "                               (Super+Alt+R, or the sidebar restart button)"
               echo "  start-hyprland             - Start nested Hyprland (WAYLAND SESSION ONLY)"
               echo "    NOTE: Requires a running Wayland compositor (e.g. XFCE Wayland session)."
               echo "    Keyboard is dead in nested mode (libseat cannot open /dev/input)."

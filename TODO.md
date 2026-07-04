@@ -1043,8 +1043,15 @@ DOORway-native UX; the ii port already has overview/search primitives), or
       pill); full serif/ink content would need per-component edits (skipped to avoid breaking
       the shared Todo/Pomodoro).
 
-## Separate bug — night light (redlight)
+## Separate bug — night light (redlight) ✅
 
-- [ ] At sundown Hyprsunset turns on then flips back off ~1 min later; theme dark-mode
-      is unaffected (so it's Hyprsunset restart, not ThemeMode). Investigate
-      `services/Hyprsunset.qml` + the night-light restart path (recent commit 79a46d34)
+- [x] Root cause: the hyprsunset DAEMON ran with scheduled profiles (day=identity/off at
+      fixed dayTime, night=warm at fixed nightTime="21:00"), while the QuickShell service
+      drives temperature on WEATHER sunset (~20:30). At weather-sunset QuickShell turns it
+      warm, but the daemon — still in its day profile until 21:00 — re-asserts identity and
+      reverts it ~a minute later. Dark mode is unaffected (driven purely by QuickShell).
+- [x] Fix (flake.nix): made the generated `hyprsunset.conf` scheduleless (no profiles), so
+      the daemon idles at identity and QuickShell is the sole driver — matching the
+      documented intent. Also seeded `blueLight.temperature` into config.json so the Nix
+      option still drives QuickShell's colorTemperature (was orphaned + mismatched at 3500
+      vs QuickShell's 5000 default).

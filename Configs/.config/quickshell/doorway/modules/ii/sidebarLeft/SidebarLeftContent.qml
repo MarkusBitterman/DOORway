@@ -15,37 +15,22 @@ import Quickshell
 Item {
     id: root
     property int sidebarPadding: 10
+    // Editorial identity — always dark ink on the bright page (not theme-driven).
+    readonly property string serifFont: "Georgia"
+    readonly property color ink: "#2A2018"
+    readonly property color inkMuted: "#6B5A48"
 
     implicitHeight: bg.implicitHeight
     implicitWidth: bg.implicitWidth
 
     StyledRectangularShadow { target: bg }
 
-    Rectangle {
+    MagazinePaper {
         id: bg
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: Appearance.sizes.sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: DoorwayPalette.plasticShellTop }
-            GradientStop { position: 1.0; color: DoorwayPalette.plasticShellBottom }
-        }
-        border.width: 1
-        border.color: DoorwayPalette.plasticEdge
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
-        clip: true
-
-        // Beveled raised-plastic edges.
-        Rectangle {
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 3 }
-            height: 2
-            color: DoorwayPalette.bevelHighlight
-        }
-        Rectangle {
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 3 }
-            height: 2
-            color: DoorwayPalette.bevelShadow
-        }
 
         ColumnLayout {
             anchors {
@@ -53,6 +38,33 @@ Item {
                 margins: sidebarPadding
             }
             spacing: sidebarPadding
+
+            // --- Masthead ---
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 2
+                spacing: 0
+
+                StyledText {
+                    text: "DOORWAY"
+                    font.family: root.serifFont
+                    font.weight: Font.Bold
+                    font.pixelSize: 24
+                    font.letterSpacing: 4
+                    color: root.ink
+                }
+                StyledText {
+                    Layout.bottomMargin: 4
+                    text: `The Desk Edition · ${tabBar.tabButtonList[tabBar.currentIndex]?.name ?? ""}`
+                    font.family: root.serifFont
+                    font.italic: true
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: root.inkMuted
+                }
+                Rectangle { Layout.fillWidth: true; implicitHeight: 2; color: root.ink }
+                Item { implicitHeight: 2 }
+                Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: root.ink; opacity: 0.45 }
+            }
 
             ToolbarTabBar {
                 id: tabBar
@@ -73,27 +85,41 @@ Item {
                 }
             }
 
-            StackLayout {
+            // Article well — a themed inset so the (theme-coloured) content stays readable
+            // on the bright page. Reads like a column block pasted onto the magazine spread.
+            Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                currentIndex: tabBar.currentIndex
+                color: Appearance.colors.colLayer0
+                radius: Appearance.rounding.small
+                border.width: 1
+                border.color: root.inkMuted
 
-                Notes {}
+                StackLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    currentIndex: tabBar.currentIndex
 
-                Overview {}
+                    Notes {}
 
-                // Tasks tab — shares state with the right sidebar's todo/pomodoro widgets
-                ColumnLayout {
-                    spacing: sidebarPadding
-                    TodoWidget   { Layout.fillWidth: true }
-                    PomodoroWidget {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignHCenter
+                    Overview {}
+
+                    // Tasks tab — shares state with the right sidebar's todo/pomodoro widgets
+                    ColumnLayout {
+                        spacing: sidebarPadding
+                        TodoWidget   { Layout.fillWidth: true }
+                        PomodoroWidget {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignHCenter
+                        }
                     }
-                }
 
-                Scratchpads {}
+                    Scratchpads {}
+                }
             }
+
+            // Clear the booklet crest at the very bottom.
+            Item { Layout.fillWidth: true; implicitHeight: bg.crestHeight - sidebarPadding + 2 }
         }
     }
 }

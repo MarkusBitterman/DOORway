@@ -1028,14 +1028,20 @@ DOORway-native UX; the ii port already has overview/search primitives), or
       content-hugging); removed the GripRidges + RetroStripe left-edge trim
 - [x] imagemagick dep already in flake.nix (shipped with the restart-shell commit)
 
-## Batch 5 — sidebars
+## Batch 5 — sidebars ✅ (crest needs an on-hardware tune)
 
-- [ ] Right sidebar: `SidebarRightContent` shell → `WalnutBackground` (vertical grain);
-      inner cards keep light/dark wells
-- [ ] Left sidebar magazine: bright glossy paper page, editorial masthead + serif type
-- [ ] Left sidebar: bottom-edge **booklet crest** — page warped up off the surface like
-      an open magazine's spine resting on a table (a bend/crest, not a page curl);
-      likely an ImageMagick displacement asset + shadow
+- [x] Right sidebar: `SidebarRightContent` shell → `WalnutBackground` (vertical grain)
+- [x] Left sidebar magazine: new `MagazinePaper` widget (cream coated stock + diagonal gloss
+      sweep + booklet crest). `SidebarLeftContent` restyled with a serif "DOORWAY" masthead,
+      italic "Desk Edition · <tab>" kicker, double rule.
+- [x] Content readability: the (theme-coloured) content lives in a `colLayer0` "article well"
+      so it stays legible on the bright page in either mode. (The Tasks tab is shared with the
+      right sidebar, so its colours can't be forced to ink — hence the well.)
+- [x] Booklet crest: `Canvas` bowed page-edges (light lip + shadow crease) + a filled lift
+      shadow. FOLLOWUP: verify/tune contrast on real hardware (nested-capture was flaky).
+- [ ] FOLLOWUP (optional): editorial tab styling (the shared ToolbarTabBar keeps its Material
+      pill); full serif/ink content would need per-component edits (skipped to avoid breaking
+      the shared Todo/Pomodoro).
 
 ## Separate bug — night light (redlight)
 

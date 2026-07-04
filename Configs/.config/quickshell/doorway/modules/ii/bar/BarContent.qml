@@ -257,11 +257,12 @@ Item { // Bar content region
                 colBackground: barRightSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
                 colBackgroundHover: Appearance.colors.colLayer1Hover
                 colRipple: Appearance.colors.colLayer1Active
-                colBackgroundToggled: Appearance.colors.colSecondaryContainer
-                colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-                colRippleToggled: Appearance.colors.colSecondaryContainerActive
+                // No blue "pill" when open — the indicator glyphs themselves light red (LED).
+                colBackgroundToggled: ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
+                colBackgroundToggledHover: Appearance.colors.colLayer1Hover
+                colRippleToggled: Appearance.colors.colLayer1Active
                 toggled: GlobalStates.sidebarRightOpen
-                property color colText: toggled ? Appearance.m3colors.m3onSecondaryContainer : Appearance.colors.colOnLayer0
+                property color colText: toggled ? DoorwayPalette.ledRed : Appearance.colors.colOnLayer0
 
                 Behavior on colText {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -284,10 +285,10 @@ Item { // Bar content region
                         Behavior on Layout.rightMargin {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
-                        MaterialSymbol {
+                        InsetSymbol {
                             text: "volume_off"
                             iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
+                            lit: rightSidebarButton.toggled
                         }
                     }
                     Revealer {
@@ -297,10 +298,10 @@ Item { // Bar content region
                         Behavior on Layout.rightMargin {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
-                        MaterialSymbol {
+                        InsetSymbol {
                             text: "mic_off"
                             iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
+                            lit: rightSidebarButton.toggled
                         }
                     }
                     HyprlandXkbIndicator {
@@ -321,17 +322,17 @@ Item { // Bar content region
                             id: notificationUnreadCount
                         }
                     }
-                    MaterialSymbol {
+                    InsetSymbol {
                         text: Network.materialSymbol
                         iconSize: Appearance.font.pixelSize.larger
-                        color: rightSidebarButton.colText
+                        lit: rightSidebarButton.toggled
                     }
-                    MaterialSymbol {
+                    InsetSymbol {
                         Layout.leftMargin: indicatorsRowLayout.realSpacing
                         visible: BluetoothStatus.available
                         text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
                         iconSize: Appearance.font.pixelSize.larger
-                        color: rightSidebarButton.colText
+                        lit: rightSidebarButton.toggled
                     }
                 }
             }

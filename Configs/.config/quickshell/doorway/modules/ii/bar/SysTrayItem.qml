@@ -79,13 +79,27 @@ MouseArea {
         height: parent.height
     }
 
-    MultiEffect {
+    // Symbolic tray icons, engraved into the wood: a light catch-light on the lower-right
+    // lip under a dark symbolic face — matches the bar's InsetSymbol. Also flattens colourful
+    // applets (nm-applet, blueman, …) into clean monochrome glyphs.
+    MultiEffect { // lower-right catch light
+        visible: Config.options.tray.monochromeIcons
+        source: trayIcon
+        width: trayIcon.width
+        height: trayIcon.height
+        x: trayIcon.x + 1
+        y: trayIcon.y + 1
+        saturation: -1.0
+        colorization: 1.0
+        colorizationColor: Qt.rgba(1, 1, 1, 0.32)
+    }
+    MultiEffect { // dark symbolic face
         anchors.fill: trayIcon
         visible: Config.options.tray.monochromeIcons
         source: trayIcon
-        saturation: -0.8
+        saturation: -1.0
         colorization: 1.0
-        colorizationColor: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
+        colorizationColor: DoorwayPalette.inkBlack
     }
 
     PopupToolTip {

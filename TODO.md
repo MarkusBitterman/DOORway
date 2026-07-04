@@ -996,15 +996,17 @@ DOORway-native UX; the ii port already has overview/search primitives), or
 - [x] **Datetime + media width**: `barCenterSideModuleWidth` 440 → 360 (shrinks both groups)
 - [x] **Date font**: bumped date + separator to `large` to match the time
 
-## Batch 2 — tray & right-cluster indicators
+## Batch 2 — tray & right-cluster indicators ✅
 
-- [ ] Remove the blue "pill" toggled background on the right sidebar button
-      (`colBackgroundToggled` in `BarContent.qml`)
-- [ ] Indicators (volume/mic/xkb/network/bluetooth glyphs): embossed symbolic
-      *inset black* look; light up **red** (LED) when `sidebarRightOpen`
-- [ ] `SysTrayItem`: embossed inset treatment for tray icons
-- [ ] Network + Bluetooth: prefer symbolic glyphs (evaluate dropping nm-applet/blueman
-      tray items in favor of the existing symbolic indicators — needs decision)
+- [x] Removed the blue "pill" toggled background on the right sidebar button
+- [x] New `InsetSymbol` widget: engraved dark face + lower catch-light; glyphs read as
+      cut into the wood, flip to red LED (`DoorwayPalette.ledRed`) when `sidebarRightOpen`
+- [x] Bar indicators (volume/mic/network/bluetooth) → `InsetSymbol`
+- [x] `SysTrayItem`: reworked the monochrome path into an engraved pair (full desaturate +
+      solid dark face + catch-light). Also renders nm-applet/blueman as symbolic monochrome,
+      so no need to drop them.
+- [ ] FOLLOWUP: dark-on-dark is intentionally subtle — revisit tone if too low-contrast
+      once seen on real hardware
 
 ## Batch 3 — quick-toggles regression (bug) ✅
 

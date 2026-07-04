@@ -22,7 +22,15 @@ Item {
     property bool sheen: true               // top-lit gloss + bottom shadow (lacquered furniture look)
     property color edgeColor: DoorwayPalette.plasticEdge
     property real borderWidth: 1
-    property int fillMode: Image.PreserveAspectCrop
+
+    // Native texture sizes (see gen-walnut.sh). Zoom-to-fit at or below native; tile
+    // seamlessly only once the surface outgrows the texture on the grain's long axis
+    // (ultrawide/4K width for the bar, >4K height for the sidebar).
+    readonly property int nativeWidth: horizontal ? 1920 : 512
+    readonly property int nativeHeight: horizontal ? 96 : 2160
+    property int fillMode: horizontal
+        ? (width > nativeWidth ? Image.Tile : Image.PreserveAspectCrop)
+        : (height > nativeHeight ? Image.Tile : Image.PreserveAspectCrop)
 
     // Woodgrain + lacquer sheen, rendered into an offscreen layer so it can be masked.
     Item {

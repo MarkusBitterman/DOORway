@@ -5,13 +5,14 @@ import QtQuick
 import QtQuick.Shapes
 
 /**
- * A single resource gauge — a Jarvis/HUD ring: the resource icon sits in a bright
- * softly-flickering core, ringed by segmented arcs that swirl around it. Load drives
- * both motion and light: heavier usage spins the arcs faster and burns everything
- * brighter and steadier; an idle gauge drifts slowly and flickers dull.
+ * A single resource gauge — a Jarvis/HUD dial: the resource icon sits in a bright
+ * softly-flickering core, ringed by two overlapping arcs that spin in opposition.
+ *   - Outer arc  fills clockwise with usage (empty → full), spinning CW.
+ *   - Inner ring is a near-full ring whose missing segment grows with usage, spinning CCW.
+ * Load also drives light: heavier usage burns everything brighter and steadier; an idle
+ * gauge drifts slowly and flickers dull.
  *
- * Public API is unchanged from the former LED-meter version so BarContent/Resources
- * wiring is untouched: iconName, percentage (0..1), accentColor, warningThreshold, shown.
+ * Public API is unchanged: iconName, percentage (0..1), accentColor, warningThreshold, shown.
  */
 Item {
     id: root
@@ -24,13 +25,17 @@ Item {
     readonly property bool warning: percentage * 100 >= warningThreshold
     readonly property color activeColor: warning ? Appearance.colors.colError : accentColor
 
-    property int diameter: Math.min(Appearance.sizes.barHeight - 4, 30)
+    // Shrunk so the dial sits comfortably in the bar.
+    property int diameter: Math.min(Appearance.sizes.barHeight - 8, 26)
 
-    // --- Load → motion & light mappings ---
-    // Spin: idle drifts (~22°/s), full load races (~200°/s). Inner ring counter-rotates.
-    readonly property real spinSpeed: 22 + percentage * 178
-    // Light: idle is dim (0.32), full load is solid (1.0).
-    readonly property real litLevel: 0.32 + percentage * 0.68
+    // --- Load → motion & light ---
+    readonly property real spinSpeed: 20 + percentage * 150   // deg/s, CW outer
+    readonly property real litLevel: 0.34 + percentage * 0.66
+    // Outer fills with usage; inner is a full ring minus a usage-sized gap (≥25° so the
+    // counter-rotation always reads).
+    readonly property real outerSweep: percentage * 360
+    readonly property real innerGap: 25 + percentage * 200
+    readonly property real innerSweep: 360 - innerGap
 
     // Per-frame driven state (rotation + organic flicker).
     property real angle: 0
@@ -49,6 +54,8 @@ Item {
             easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
         }
     }
+    Behavior on outerSweep { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+    Behavior on innerSweep { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
 
     FrameAnimation {
         running: root.visible
@@ -71,49 +78,57 @@ Item {
 
         readonly property real cx: width / 2
         readonly property real cy: height / 2
+        readonly property real outerR: root.diameter / 2 - 1.5
+        readonly property real innerR: root.diameter / 2 - 4
 
-        // --- Outer segmented ring (spins one way) ---
+        // --- Outer arc: fills with usage, spins clockwise ---
         Shape {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
             transformOrigin: Item.Center
             rotation: root.angle
             opacity: root.litLevel
+            // Faint full-ring track so an idle (near-empty) dial still reads as a ring.
             ShapePath {
-                strokeColor: root.activeColor
-                strokeWidth: 2
+                strokeColor: ColorUtils.transparentize(root.activeColor, 0.82)
+                strokeWidth: 2.5
                 fillColor: "transparent"
                 capStyle: ShapePath.FlatCap
-                strokeStyle: ShapePath.DashLine
-                dashPattern: [1.6, 2.2] // short arc segments
                 PathAngleArc {
                     centerX: gauge.cx; centerY: gauge.cy
-                    radiusX: root.diameter / 2 - 1.5
-                    radiusY: root.diameter / 2 - 1.5
-                    startAngle: 0; sweepAngle: 359.9
+                    radiusX: gauge.outerR; radiusY: gauge.outerR
+                    startAngle: -90; sweepAngle: 359.9
+                }
+            }
+            ShapePath {
+                strokeColor: root.activeColor
+                strokeWidth: 2.5
+                fillColor: "transparent"
+                capStyle: ShapePath.RoundCap
+                PathAngleArc {
+                    centerX: gauge.cx; centerY: gauge.cy
+                    radiusX: gauge.outerR; radiusY: gauge.outerR
+                    startAngle: -90; sweepAngle: root.outerSweep
                 }
             }
         }
 
-        // --- Inner segmented ring (counter-rotates, finer dashes) ---
+        // --- Inner ring: full ring minus a usage-sized gap, spins counter-clockwise ---
         Shape {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
             transformOrigin: Item.Center
-            rotation: -root.angle * 1.35
-            opacity: root.litLevel * 0.85
+            rotation: -root.angle * 1.25
+            opacity: root.litLevel * 0.9
             ShapePath {
                 strokeColor: root.activeColor
-                strokeWidth: 1.5
+                strokeWidth: 2
                 fillColor: "transparent"
-                capStyle: ShapePath.FlatCap
-                strokeStyle: ShapePath.DashLine
-                dashPattern: [1, 3]
+                capStyle: ShapePath.RoundCap
                 PathAngleArc {
                     centerX: gauge.cx; centerY: gauge.cy
-                    radiusX: root.diameter / 2 - 6
-                    radiusY: root.diameter / 2 - 6
-                    startAngle: 0; sweepAngle: 359.9
+                    radiusX: gauge.innerR; radiusY: gauge.innerR
+                    startAngle: -90; sweepAngle: root.innerSweep
                 }
             }
         }
@@ -124,7 +139,7 @@ Item {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
             opacity: root.coreGlow
-            readonly property real r: root.diameter * 0.30
+            readonly property real r: root.diameter * 0.26
             ShapePath {
                 strokeColor: "transparent"
                 fillColor: "transparent"
@@ -149,7 +164,7 @@ Item {
         MaterialSymbol {
             anchors.centerIn: parent
             text: root.iconName
-            iconSize: Appearance.font.pixelSize.normal
+            iconSize: Appearance.font.pixelSize.small
             fill: 1
             font.weight: Font.DemiBold
             color: Appearance.colors.colOnLayer1

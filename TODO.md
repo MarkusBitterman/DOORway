@@ -985,22 +985,16 @@ DOORway-native UX; the ii port already has overview/search primitives), or
 - [x] `Resource.qml` — Jarvis gauge v1 (rings + flickering core) — *redesign in Batch 1*
 - [x] `imagemagick` added to `doorwayDeps` (flake.nix) — **uncommitted**, ships with Batch 4
 
-## Batch 1 — bar polish (no new deps)
+## Batch 1 — bar polish (no new deps) ✅
 
-- [ ] **Inset wells**: invert `BarGroup.qml` bevels (shadow on top, highlight on bottom)
-      so plastic panels read as recessed *into* the wood, not raised off it
-- [ ] **Texture resize**: regenerate walnut-h at ≥1920×~64 (bar is 40–50px tall),
-      seamlessly tileable horizontally (`-virtual-pixel tile`); keep the v3 grain spec
-- [ ] **Texture resize**: regenerate walnut-v full-height (~2160 for 4K), indexed PNG
-- [ ] **fillMode logic** in `WalnutBackground`: zoom-to-fit (`PreserveAspectCrop`) at
-      ≤ native size, `Tile` when the surface exceeds native on the grain's long axis
-- [ ] **Jarvis dial redesign** (`Resource.qml`): two overlapping rings + icon —
-      - outer (larger) ring: arc *fills* with usage, spins clockwise
-      - inner ring: full ring with a *gap* sized by usage, spins counter-clockwise
-      - keep the flickering/pulsing/brightness icon core; shrink overall diameter
-- [ ] **Datetime width**: shrink `ClockWidget` horizontal padding (too wide both sides)
-- [ ] **Date font**: bump `DateTime.longDateOrdinal` to match the time's `large` size
-- [ ] **Media width**: shrink the media-title column
+- [x] **Inset wells**: inverted `BarGroup.qml` bevels (shadow top / highlight bottom)
+- [x] **Texture resize**: walnut-h 1920×96, seamlessly tileable, indexed PNG8
+- [x] **Texture resize**: walnut-v 512×2160, tileable, indexed PNG8
+- [x] **fillMode logic** in `WalnutBackground`: zoom-to-fit ≤ native, `Tile` beyond
+- [x] **Jarvis dial redesign** (`Resource.qml`): outer arc fills CW, inner ring erodes CCW,
+      flickering icon core, shrunk to Ø26
+- [x] **Datetime + media width**: `barCenterSideModuleWidth` 440 → 360 (shrinks both groups)
+- [x] **Date font**: bumped date + separator to `large` to match the time
 
 ## Batch 2 — tray & right-cluster indicators
 

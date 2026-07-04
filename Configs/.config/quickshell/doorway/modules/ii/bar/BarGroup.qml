@@ -28,18 +28,19 @@ Item {
         }
         border.width: background.plastic ? 1 : 0
         border.color: DoorwayPalette.plasticEdge
-        // Bevel: lit top, shadowed bottom.
+        // Bevel INVERTED for an inset look — the well is recessed into the wood, so the
+        // top inner edge is shadowed and the bottom inner edge catches light.
         Rectangle {
             visible: background.plastic
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
             height: 1
-            color: DoorwayPalette.bevelHighlight
+            color: DoorwayPalette.bevelShadow
         }
         Rectangle {
             visible: background.plastic
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
             height: 1
-            color: DoorwayPalette.bevelShadow
+            color: DoorwayPalette.bevelHighlight
         }
     }
 

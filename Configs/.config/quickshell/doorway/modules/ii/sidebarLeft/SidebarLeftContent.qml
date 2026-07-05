@@ -2,9 +2,7 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.ii.sidebarLeft.notes
 import qs.modules.ii.sidebarLeft.overview
-import qs.modules.ii.sidebarLeft.scratchpads
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -14,11 +12,15 @@ Item {
     id: root
     property int sidebarPadding: 10
 
-    // Editorial identity lives in the Editorial singleton (ink on the always-light page).
+    // "The Desk Edition" — an informational daily broadsheet (the walnut right sidebar
+    // is the interactive control deck; this magazine page is for reading at a glance).
     readonly property var tabs: [
-        { name: qsTr("Notes") },
-        { name: qsTr("Overview") },
-        { name: qsTr("Scratchpads") }
+        { name: qsTr("On View") },     // open windows — the session's contents page
+        { name: qsTr("Almanac") },     // weather: today + weekly forecast
+        { name: qsTr("Numbers") },     // system vitals
+        { name: qsTr("Index") },       // keybinding cheat-sheet
+        { name: qsTr("Clippings") },   // clipboard history
+        { name: qsTr("Notes") }        // field notes + scratchpad windows
     ]
     property int currentTab: 0
 
@@ -78,11 +80,11 @@ Item {
                 Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Editorial.ink; opacity: 0.45 }
             }
 
-            // --- Editorial section tabs (no Material pills; active = ink underline) ---
-            RowLayout {
+            // --- Editorial section rail (wraps like a magazine contents strip) ---
+            Flow {
                 Layout.fillWidth: true
                 Layout.topMargin: 2
-                spacing: 18
+                spacing: 16
 
                 Repeater {
                     model: root.tabs
@@ -118,18 +120,20 @@ Item {
                         }
                     }
                 }
-                Item { Layout.fillWidth: true } // push tabs left, magazine-style
             }
 
-            // --- Article well: content typeset directly on the page (no card) ---
+            // --- The article well: content typeset directly on the page (no card) ---
             StackLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 currentIndex: root.currentTab
 
-                Notes {}
                 Overview {}
-                Scratchpads {}
+                Almanac {}
+                Vitals {}
+                Cheatsheet {}
+                Clippings {}
+                FieldNotes {}
             }
 
             // --- Bottom folio ---
@@ -153,7 +157,7 @@ Item {
         }
     }
 
-    // Persist the active tab, clamped in case a stored index predates dropping Tasks.
+    // Persist the active tab, clamped in case a stored index is out of range.
     Component.onCompleted: {
         if (Persistent.ready)
             root.currentTab = Math.min(Persistent.states.sidebar.leftTab ?? 0, root.tabs.length - 1);

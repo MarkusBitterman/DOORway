@@ -171,6 +171,20 @@ def main() -> None:
         for h in future
     ]
 
+    # Daily: the coming week (PirateWeather daily.data). The widget renders this as the
+    # "weekly forecast" almanac; previously only daily[0] was used (for sunrise/sunset).
+    daily_raw = forecast.get("daily", {}).get("data", [])[:7]
+    daily = [
+        {
+            "day": fmt_local_time(d["time"], "%a"),
+            "icon": ICON_MAP.get(d.get("icon", ""), "cloud"),
+            "high": fmt_temp(d.get("temperatureHigh", d.get("temperatureMax", 0)), units),
+            "low": fmt_temp(d.get("temperatureLow", d.get("temperatureMin", 0)), units),
+            "precip": fmt_precip(d.get("precipProbability", 0)),
+        }
+        for d in daily_raw
+    ]
+
     output = {
         "icon": icon,
         "temp": fmt_temp(cur.get("temperature", 0), units),
@@ -190,6 +204,7 @@ def main() -> None:
         "summary": cur.get("summary", ""),
         "lastRefresh": datetime.now().strftime("%-I:%M %p"),
         "hourly": hourly,
+        "daily": daily,
     }
 
     with open(output_path, "w") as f:

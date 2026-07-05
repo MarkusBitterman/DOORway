@@ -37,7 +37,8 @@ Singleton {
         sunsetHHMM: "19:00",
         summary: "",
         lastRefresh: "--",
-        hourly: []
+        hourly: [],
+        daily: []
     })
 
     function getData() {

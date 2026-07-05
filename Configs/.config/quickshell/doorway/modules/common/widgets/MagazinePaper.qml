@@ -154,12 +154,21 @@ Item {
         }
     }
 
-    // Warm paper edge.
-    Rectangle {
-        anchors.fill: parent
-        radius: root.radius
-        color: "transparent"
-        border.width: 1
-        border.color: root.paperEdge
+    // Warm cut-paper edges — only on the three OUTER sides. The LEFT is the bound spine
+    // (no cut edge), so it stays borderless and melts into the gutter shadow.
+    Rectangle { // top
+        anchors { top: parent.top; left: parent.left; right: parent.right }
+        height: 1
+        color: root.paperEdge
+    }
+    Rectangle { // right
+        anchors { top: parent.top; right: parent.right; bottom: parent.bottom }
+        width: 1
+        color: root.paperEdge
+    }
+    Rectangle { // bottom
+        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+        height: 1
+        color: root.paperEdge
     }
 }

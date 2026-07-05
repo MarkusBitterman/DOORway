@@ -50,6 +50,7 @@ Scope {
             anchors {
                 fill: parent
                 margins: Appearance.sizes.hyprlandGapsOut
+                leftMargin: 0   // spine binds flush into the left screen edge (the bezel)
                 rightMargin: Appearance.sizes.elevationMargin
             }
             focus: GlobalStates.sidebarLeftOpen

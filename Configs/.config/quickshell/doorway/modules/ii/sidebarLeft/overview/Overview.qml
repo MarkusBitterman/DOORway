@@ -1,3 +1,4 @@
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -12,16 +13,12 @@ Item {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
-    // Refresh when the sidebar opens or the active window changes.
+    // Refresh the window list whenever the sidebar opens.
     Connections {
         target: GlobalStates
         function onSidebarLeftOpenChanged() {
             if (GlobalStates.sidebarLeftOpen) HyprlandData.updateWindowList();
         }
-    }
-    Connections {
-        target: Hyprland
-        function onActiveWindowChanged() { HyprlandData.updateWindowList(); }
     }
 
     readonly property var openWindows: HyprlandData.windowList.filter(
@@ -30,31 +27,36 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 6
 
+        // --- Section head ---
         RowLayout {
             Layout.fillWidth: true
             StyledText {
                 text: qsTr("Open Windows")
+                font.family: Editorial.serifFont
+                font.capitalization: Font.SmallCaps
+                font.letterSpacing: 1
                 font.pixelSize: Appearance.font.pixelSize.normal
-                color: Appearance.colors.colOnLayer0
+                color: Editorial.ink
                 Layout.fillWidth: true
             }
-            ToolbarButton {
-                icon.name: "refresh"
-                implicitWidth: 32; implicitHeight: 32
+            EditorialIconButton {
+                symbol: "refresh"
+                tooltip: qsTr("Refresh")
                 onClicked: HyprlandData.updateWindowList()
-                StyledToolTip { text: qsTr("Refresh") }
             }
         }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Editorial.rule }
 
         FadeLoader {
             shown: root.openWindows.length === 0
             Layout.fillWidth: true
             sourceComponent: StyledText {
                 text: qsTr("No open windows")
-                opacity: 0.5
-                color: Appearance.colors.colOnLayer0
+                font.family: Editorial.serifFont
+                font.italic: true
+                color: Editorial.inkMuted
                 font.pixelSize: Appearance.font.pixelSize.small
             }
         }
@@ -63,52 +65,71 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            ScrollBar.vertical: StyledScrollBar {}
+            ScrollBar.vertical: EditorialScrollBar {}
 
             ListView {
                 id: winList
                 model: root.openWindows
-                spacing: 2
 
-                delegate: ItemDelegate {
+                delegate: Item {
                     required property var modelData
                     width: winList.width
-                    height: 52
-                    padding: 8
-                    background: Rectangle {
-                        color: parent.hovered
-                            ? Appearance.colors.colLayer1Hover : "transparent"
-                        radius: Appearance.rounding.small
+                    height: 46
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: rowMa.containsMouse ? Editorial.tint : "transparent"
                     }
-                    contentItem: RowLayout {
-                        spacing: 8
-                        CustomIcon {
-                            implicitWidth: 24; implicitHeight: 24
-                            source: modelData.class?.toLowerCase() ?? ""
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 3
+                        anchors.rightMargin: 3
+                        spacing: 10
+
+                        Rectangle { // ink bullet — a printed list mark
+                            implicitWidth: 7; implicitHeight: 7
+                            color: Editorial.ink
+                            Layout.alignment: Qt.AlignVCenter
                         }
                         ColumnLayout {
-                            spacing: 2
+                            Layout.fillWidth: true
+                            spacing: 1
                             StyledText {
                                 text: modelData.title ?? ""
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                                 font.pixelSize: Appearance.font.pixelSize.small
-                                color: Appearance.colors.colOnLayer0
+                                color: Editorial.ink
                             }
                             StyledText {
                                 text: (modelData.class ?? "") + "  ·  ws " + (modelData.workspace?.id ?? "")
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
-                                font.pixelSize: Appearance.font.pixelSize.tiny
-                                color: Appearance.colors.colOnLayer0
-                                opacity: 0.6
+                                font.family: Editorial.bodyFont
+                                font.pixelSize: Appearance.font.pixelSize.smaller
+                                color: Editorial.inkMuted
                             }
                         }
                     }
-                    onClicked: {
-                        Quickshell.execDetached(["hyprctl", "dispatch",
-                            "focuswindow", "address:" + modelData.address]);
-                        GlobalStates.sidebarLeftOpen = false;
+
+                    Rectangle { // hairline column rule between entries
+                        anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                        height: 1
+                        color: Editorial.rule
+                        opacity: 0.55
+                    }
+
+                    MouseArea {
+                        id: rowMa
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Quickshell.execDetached(["hyprctl", "dispatch",
+                                "focuswindow", "address:" + modelData.address]);
+                            GlobalStates.sidebarLeftOpen = false;
+                        }
                     }
                 }
             }

@@ -5,8 +5,6 @@ import qs.modules.common.widgets
 import qs.modules.ii.sidebarLeft.notes
 import qs.modules.ii.sidebarLeft.overview
 import qs.modules.ii.sidebarLeft.scratchpads
-import qs.modules.ii.sidebarRight.todo
-import qs.modules.ii.sidebarRight.pomodoro
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -15,15 +13,21 @@ import Quickshell
 Item {
     id: root
     property int sidebarPadding: 10
-    // Editorial identity — always dark ink on the bright page (not theme-driven).
-    readonly property string serifFont: "Georgia"
-    readonly property color ink: "#2A2018"
-    readonly property color inkMuted: "#6B5A48"
+
+    // Editorial identity lives in the Editorial singleton (ink on the always-light page).
+    readonly property var tabs: [
+        { name: qsTr("Notes") },
+        { name: qsTr("Overview") },
+        { name: qsTr("Scratchpads") }
+    ]
+    property int currentTab: 0
 
     implicitHeight: bg.implicitHeight
     implicitWidth: bg.implicitWidth
 
-    StyledRectangularShadow { target: bg }
+    // Bias the drop shadow toward the bottom-right so the page reads as lifting off the
+    // desk on its outer edges (the spine side stays pinned to the bezel).
+    StyledRectangularShadow { target: bg; offset: Qt.vector2d(1.5, 2.5) }
 
     MagazinePaper {
         id: bg
@@ -33,93 +37,129 @@ Item {
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
         ColumnLayout {
-            anchors {
-                fill: parent
-                margins: sidebarPadding
-            }
-            spacing: sidebarPadding
+            anchors.fill: parent
+            anchors.leftMargin: 18                 // clear the spine gutter
+            anchors.rightMargin: 14                // clear the right page-edge lift
+            anchors.topMargin: 12
+            anchors.bottomMargin: bg.liftSize      // clear the bottom page-edge lift
+            spacing: root.sidebarPadding
 
             // --- Masthead ---
             ColumnLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: 2
                 spacing: 0
 
+                // The Nintendo-Power band — the one spot of colour, tying this magazine
+                // to DOORway's own identity rather than a generic cream-and-serif template.
+                Rectangle {
+                    implicitWidth: 44
+                    implicitHeight: 3
+                    Layout.bottomMargin: 5
+                    color: Editorial.folioAccent
+                }
                 StyledText {
                     text: "DOORWAY"
-                    font.family: root.serifFont
+                    font.family: Editorial.serifFont
                     font.weight: Font.Bold
                     font.pixelSize: 24
                     font.letterSpacing: 4
-                    color: root.ink
+                    color: Editorial.ink
                 }
                 StyledText {
                     Layout.bottomMargin: 4
-                    text: `The Desk Edition · ${tabBar.tabButtonList[tabBar.currentIndex]?.name ?? ""}`
-                    font.family: root.serifFont
+                    text: `The Desk Edition · ${root.tabs[root.currentTab]?.name ?? ""}`
+                    font.family: Editorial.serifFont
                     font.italic: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: root.inkMuted
+                    color: Editorial.inkMuted
                 }
-                Rectangle { Layout.fillWidth: true; implicitHeight: 2; color: root.ink }
+                Rectangle { Layout.fillWidth: true; implicitHeight: 2; color: Editorial.ink }
                 Item { implicitHeight: 2 }
-                Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: root.ink; opacity: 0.45 }
+                Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Editorial.ink; opacity: 0.45 }
             }
 
-            ToolbarTabBar {
-                id: tabBar
-                Layout.alignment: Qt.AlignHCenter
-                tabButtonList: [
-                    { name: qsTr("Notes"),       icon: "edit_note" },
-                    { name: qsTr("Overview"),    icon: "grid_view" },
-                    { name: qsTr("Tasks"),       icon: "checklist" },
-                    { name: qsTr("Scratchpads"), icon: "layers" }
-                ]
-                Component.onCompleted: {
-                    if (Persistent.ready)
-                        setCurrentIndex(Persistent.states.sidebar.leftTab ?? 0);
-                }
-                onCurrentIndexChanged: {
-                    if (Persistent.ready)
-                        Persistent.states.sidebar.leftTab = currentIndex;
-                }
-            }
-
-            // Article well — a themed inset so the (theme-coloured) content stays readable
-            // on the bright page. Reads like a column block pasted onto the magazine spread.
-            Rectangle {
+            // --- Editorial section tabs (no Material pills; active = ink underline) ---
+            RowLayout {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: Appearance.colors.colLayer0
-                radius: Appearance.rounding.small
-                border.width: 1
-                border.color: root.inkMuted
+                Layout.topMargin: 2
+                spacing: 18
 
-                StackLayout {
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    currentIndex: tabBar.currentIndex
+                Repeater {
+                    model: root.tabs
+                    delegate: MouseArea {
+                        id: tab
+                        required property int index
+                        required property var modelData
+                        readonly property bool active: root.currentTab === index
+                        implicitWidth: tabCol.implicitWidth
+                        implicitHeight: tabCol.implicitHeight
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.currentTab = tab.index
 
-                    Notes {}
-
-                    Overview {}
-
-                    // Tasks tab — shares state with the right sidebar's todo/pomodoro widgets
-                    ColumnLayout {
-                        spacing: sidebarPadding
-                        TodoWidget   { Layout.fillWidth: true }
-                        PomodoroWidget {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignHCenter
+                        ColumnLayout {
+                            id: tabCol
+                            spacing: 3
+                            StyledText {
+                                text: tab.modelData.name
+                                font.family: Editorial.serifFont
+                                font.capitalization: Font.SmallCaps
+                                font.letterSpacing: 1.5
+                                font.pixelSize: Appearance.font.pixelSize.small
+                                font.weight: tab.active ? Font.Bold : Font.Normal
+                                color: tab.active ? Editorial.ink : Editorial.inkMuted
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: 2
+                                color: Editorial.ink
+                                opacity: tab.active ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 120 } }
+                            }
                         }
                     }
-
-                    Scratchpads {}
                 }
+                Item { Layout.fillWidth: true } // push tabs left, magazine-style
             }
 
-            // Clear the booklet crest at the very bottom.
-            Item { Layout.fillWidth: true; implicitHeight: bg.crestHeight - sidebarPadding + 2 }
+            // --- Article well: content typeset directly on the page (no card) ---
+            StackLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                currentIndex: root.currentTab
+
+                Notes {}
+                Overview {}
+                Scratchpads {}
+            }
+
+            // --- Bottom folio ---
+            RowLayout {
+                Layout.fillWidth: true
+                StyledText {
+                    text: "DOORway"
+                    font.family: Editorial.serifFont
+                    font.italic: true
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    color: Editorial.inkMuted
+                }
+                Item { Layout.fillWidth: true }
+                StyledText {
+                    text: `№ ${root.currentTab + 1} / ${root.tabs.length}`
+                    font.family: Editorial.serifFont
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    color: Editorial.inkMuted
+                }
+            }
         }
+    }
+
+    // Persist the active tab, clamped in case a stored index predates dropping Tasks.
+    Component.onCompleted: {
+        if (Persistent.ready)
+            root.currentTab = Math.min(Persistent.states.sidebar.leftTab ?? 0, root.tabs.length - 1);
+    }
+    onCurrentTabChanged: {
+        if (Persistent.ready)
+            Persistent.states.sidebar.leftTab = root.currentTab;
     }
 }

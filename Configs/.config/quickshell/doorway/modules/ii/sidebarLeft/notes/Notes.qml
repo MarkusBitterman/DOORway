@@ -41,45 +41,52 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 6
 
+        // --- Section head ---
         RowLayout {
             Layout.fillWidth: true
-            spacing: 4
-
             StyledText {
                 text: qsTr("Notes")
+                font.family: Editorial.serifFont
+                font.capitalization: Font.SmallCaps
+                font.letterSpacing: 1
                 font.pixelSize: Appearance.font.pixelSize.normal
-                color: Appearance.colors.colOnLayer0
+                color: Editorial.ink
                 Layout.fillWidth: true
             }
-
-            ToolbarButton {
-                icon.name: "save"
-                implicitWidth: 32
-                implicitHeight: 32
+            EditorialIconButton {
+                symbol: "save"
+                tooltip: qsTr("Save timestamped copy")
                 onClicked: {
                     const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
                     Quickshell.execDetached(["bash", "-c",
                         `mkdir -p '${root.notesDir}' && cp '${root.notesFile}' '${root.notesDir}/${ts}.md' 2>/dev/null || true`
                     ]);
                 }
-                StyledToolTip { text: qsTr("Save timestamped copy") }
             }
         }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Editorial.rule }
 
         ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            ScrollBar.vertical: StyledScrollBar {}
+            ScrollBar.vertical: EditorialScrollBar {}
 
+            // Typed manuscript — mono ink straight on the page (paper shows through).
             StyledTextArea {
                 id: editor
                 width: parent.width
                 wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
                 placeholderText: qsTr("Write markdown notes here…")
                 background: null
+                color: Editorial.ink
+                selectedTextColor: Editorial.ink
+                selectionColor: Qt.rgba(0.42, 0.35, 0.28, 0.30)
+                placeholderTextColor: Editorial.inkMuted
+                font.family: Editorial.monoFont
+                font.pixelSize: Appearance.font.pixelSize.small
                 onTextChanged: saveTimer.restart()
             }
         }

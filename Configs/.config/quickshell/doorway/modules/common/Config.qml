@@ -386,21 +386,22 @@ Singleton {
                 }
             }
 
+            // DOORway Lock (WlSessionLock shader screensaver). Replaces the
+            // vestigial end-4 hyprlock-companion schema, which had no consumer.
             property JsonObject lock: JsonObject {
-                property bool useHyprlock: false
-                property bool launchOnStartup: false
-                property JsonObject blur: JsonObject {
+                property JsonObject screensaver: JsonObject {
+                    property string shader: "random" // a shader name pins it; "random" re-rolls per lock
+                    property int cycleIntervalSeconds: 300 // 0 = never rotate mid-lock
+                    property list<string> disableOnScreens: ["HEADLESS-1"] // flat ink instead of GPU burn
+                    property real pixelScale: 0.35 // render scale — fat RF-adapter pixels, matches the website
+                }
+                property JsonObject intro: JsonObject {
                     property bool enable: true
-                    property real radius: 100
-                    property real extraZoom: 1.1
+                    property int durationMs: 2200
                 }
-                property bool centerClock: true
-                property bool showLockedText: true
-                property JsonObject security: JsonObject {
-                    property bool unlockKeyring: true
-                    property bool requirePasswordToPower: false
+                property JsonObject prompt: JsonObject {
+                    property int returnToScreensaverSeconds: 30
                 }
-                property bool materialShapeChars: true
             }
 
             property JsonObject media: JsonObject {

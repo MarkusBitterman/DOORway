@@ -21,6 +21,7 @@ ShellRoot {
     Component.onCompleted: {
         ThemeMode.load() // eager-load so the theme IPC target + shortcut register
         Hyprsunset.load() // eager-load so the night-light window applies without waiting for UI to touch it
+        DoorwayLock.load() // eager-load so the lock IPC target registers before any surface exists
     }
 
     // Phase 12: bar only. IllogicalImpulseFamily is bar-only until Phase 13.

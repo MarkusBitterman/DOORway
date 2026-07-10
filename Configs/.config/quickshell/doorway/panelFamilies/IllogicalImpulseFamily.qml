@@ -10,6 +10,7 @@ import qs.modules.ii.osd
 import qs.modules.ii.notifications
 import qs.modules.ii.session
 import qs.modules.ii.mediaControls
+import qs.modules.ii.lock
 
 Scope {
     PanelLoader { extraCondition: !Config.options.bar.vertical; component: Bar {} }
@@ -19,4 +20,5 @@ Scope {
     PanelLoader { component: NotificationPopups {} }
     PanelLoader { component: SessionScreen {} }
     PanelLoader { component: MediaControls {} }
+    PanelLoader { component: Lock {} }
 }

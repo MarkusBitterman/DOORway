@@ -23,6 +23,20 @@ FloatingWindow {
         screenName: ""
     }
 
+    CutoutIntro {
+        id: intro
+        anchors.fill: parent
+        visible: DoorwayLock.state === DoorwayLock.stateIntro
+        onFinished: DoorwayLock.introFinished()
+    }
+
+    Connections {
+        target: DoorwayLock
+        function onStateChanged() {
+            if (DoorwayLock.state === DoorwayLock.stateIntro) intro.start();
+        }
+    }
+
     // shader name chip, dev aid only — not part of the lock UI
     Rectangle {
         anchors.top: parent.top

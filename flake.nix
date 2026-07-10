@@ -110,6 +110,9 @@
           git
           direnv
 
+          # QuickShell lock-screen shaders (DOORway Lock)
+          qt6.qtshadertools # qsb — bakes GLSL → .qsb for Qt6 ShaderEffect
+
           # MCP server runtimes (Claude Code)
           nodejs # provides npx for @modelcontextprotocol/server-github
           uv # provides uvx for mcp-server-git

@@ -340,8 +340,16 @@
                 };
                 suspend = lib.mkOption {
                   type = lib.types.nullOr lib.types.ints.positive;
-                  default = 500;
-                  description = "Seconds of idle before suspending. Set to null to disable suspend entirely.";
+                  default = null;
+                  description = ''
+                    Seconds of idle before running systemctl suspend-then-hibernate,
+                    or null (default) to end the idle chain at DPMS off — the
+                    desktop-DE convention, and the only state that preserves the
+                    session on hardware without working sleep. Opt in per host
+                    only after verifying the firmware actually stays suspended
+                    (test: systemctl suspend, then check `journalctl -k` for an
+                    immediate "PM: suspend exit").
+                  '';
                 };
               };
             };

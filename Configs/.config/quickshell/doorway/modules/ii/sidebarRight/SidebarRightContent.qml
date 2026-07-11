@@ -56,17 +56,25 @@ Item {
         color: "transparent"
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
-        // Black Walnut shell (vertical grain). The inner cards keep their light/dark wells.
-        WalnutBackground {
+        // ENCOM boardroom screen — a live neon data-flow shader that the inner
+        // HudPanel wells float over. Its traces surge with real net/CPU load,
+        // and the clock only runs while the sidebar is open (VCS APU budget).
+        EncomBackground {
             anchors.fill: parent
-            horizontal: false
             radius: sidebarRightBackground.radius
+            active: GlobalStates.sidebarRightOpen
+            activity: Math.max(ResourceUsage.netDownPercentage, ResourceUsage.cpuUsage)
         }
 
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: sidebarPadding
             spacing: sidebarPadding
+
+            VitalsHud {
+                Layout.fillWidth: true
+                Layout.topMargin: 5
+            }
 
             SystemButtonRow {
                 Layout.fillHeight: false
@@ -104,6 +112,10 @@ Item {
             CenterWidgetGroup {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: true
+                Layout.fillWidth: true
+            }
+
+            LiteratureClockWidget {
                 Layout.fillWidth: true
             }
 
@@ -213,42 +225,7 @@ Item {
     }
 
     component SystemButtonRow: Item {
-        implicitHeight: Math.max(uptimeContainer.implicitHeight, systemButtonsRow.implicitHeight)
-
-        Rectangle {
-            id: uptimeContainer
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                left: parent.left
-            }
-            color: Appearance.colors.colLayer1
-            radius: height / 2
-            implicitWidth: uptimeRow.implicitWidth + 24
-            implicitHeight: uptimeRow.implicitHeight + 8
-            
-            Row {
-                id: uptimeRow
-                anchors.centerIn: parent
-                spacing: 8
-                CustomIcon {
-                    id: distroIcon
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 25
-                    height: 25
-                    source: SystemInfo.distroIcon
-                    colorize: true
-                    color: Appearance.colors.colOnLayer0
-                }
-                StyledText {
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pixelSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnLayer0
-                    text: Translation.tr("Up %1").arg(DateTime.uptime)
-                    textFormat: Text.MarkdownText
-                }
-            }
-        }
+        implicitHeight: systemButtonsRow.implicitHeight
 
         ButtonGroup {
             id: systemButtonsRow
@@ -257,7 +234,7 @@ Item {
                 bottom: parent.bottom
                 right: parent.right
             }
-            color: Appearance.colors.colLayer1
+            color: Qt.rgba(DoorwayPalette.inkBlack.r, DoorwayPalette.inkBlack.g, DoorwayPalette.inkBlack.b, 0.55)
             padding: 4
 
             QuickToggleButton {

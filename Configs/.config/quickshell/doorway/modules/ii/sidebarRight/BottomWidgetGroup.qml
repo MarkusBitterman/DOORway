@@ -8,15 +8,8 @@ import qs.modules.ii.sidebarRight.pomodoro
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+HudPanel {
     id: root
-    radius: Appearance.rounding.verysmall
-    gradient: Gradient {
-        GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
-        GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
-    }
-    border.width: 1
-    border.color: DoorwayPalette.plasticEdge
     clip: true
     implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
     property int selectedTab: Persistent.states.sidebar.bottomGroup.tab

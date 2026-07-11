@@ -75,7 +75,16 @@ Singleton {
         if (locked) return;
         rollShader();
         Quickshell.execDetached(["sh", "-c", 'mkdir -p "${0%/*}" && touch "$0"', markerPath]);
+        setLockedHint(true);
         state = Config.options.lock.intro.enable ? stateIntro : stateScreensaver;
+    }
+
+    // logind's LockedHint lets loginctl/other tooling see the lock state;
+    // hyprlock sets it too, so we match. "auto" = the caller's own session.
+    function setLockedHint(locked) {
+        Quickshell.execDetached(["busctl", "call", "org.freedesktop.login1",
+            "/org/freedesktop/login1/session/auto", "org.freedesktop.login1.Session",
+            "SetLockedHint", "b", locked ? "true" : "false"]);
     }
 
     // intro finished playing (or was skipped by a keypress)
@@ -87,6 +96,7 @@ Singleton {
     function wake() {
         if (state === stateIntro) introFinished();
         else if (state === stateScreensaver) state = statePrompt;
+        else if (state === statePrompt) promptIdle.restart();
     }
 
     // prompt idle timeout — drop back into the show, forget the buffer
@@ -101,6 +111,7 @@ Singleton {
         passwordBuffer = "";
         authFailed = false;
         Quickshell.execDetached(["rm", "-f", markerPath]);
+        setLockedHint(false);
         state = stateInactive;
     }
 
@@ -182,6 +193,17 @@ Singleton {
         interval: Config.options.lock.prompt.returnToScreensaverSeconds * 1000
         running: root.state === root.statePrompt
         onTriggered: root.sleep()
+    }
+
+    // Controllers bypass Wayland, so the lock surface never sees them; this
+    // watcher reads the joystick device directly while locked and emits
+    // "wake" lines. An Atari console should wake to a joystick wiggle.
+    Process {
+        running: root.locked
+        command: [Quickshell.env("HOME") + "/.local/lib/doorway/doorway-lock-controller-watch.sh"]
+        stdout: SplitParser {
+            onRead: root.wake()
+        }
     }
 
     // ── Shader schedule (shared so every monitor shows the same frame) ──

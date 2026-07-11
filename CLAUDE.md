@@ -69,6 +69,30 @@ matugen still runs for one output only: `doorway-matugen-watcher.service` calls
 `~/.local/share/matugen/hyprland-colors.lua` — Hyprland border accent colors
 (pcall(dofile)'d by dynamic.lua). The shell does not consume matugen output.
 
+### DOORway Lock (shader-screensaver lock screen)
+
+The lock screen is a QuickShell `WlSessionLock` module (`modules/ii/lock/`,
+state machine in `services/DoorwayLock.qml`): signal-cutout intro → rotating
+retro-CRT GLSL shaders (ported from the user's website) → NP-styled password
+panel over the shader on any key/mouse/controller input → PAM (`login`).
+Selected per host via `doorway.lock.backend = "doorway-lock"`; the
+`doorway-lock.sh` wrapper **falls back to hyprlock** whenever the shell is
+down, and `unlock_cmd` is an IPC call (never pkill — that kills the shell).
+
+- **Shaders**: sources in `assets/shaders/lock/src/`, baked `.qsb` committed.
+  After editing GLSL: `nix develop -c ./build.sh` in `assets/shaders/lock/`
+  (Qt6 ShaderEffect only loads precompiled `.qsb`; uniforms iTime/iResolution
+  [+ progress for signal_cutout] surface as QML properties by name).
+- **Testing**: `DOORWAY_LOCK_TEST=1 qs -p <repo config>` opens a floating
+  harness window (Ctrl+L lock, Ctrl+N shader, Ctrl+U unlock; real PAM, zero
+  lockout risk). A nested instance's WlSessionLock locks the REAL session —
+  export `DOORWAY_LOCK_AUTOUNLOCK_SECS=20` for integration tests.
+- **Crash recovery**: marker at `$XDG_RUNTIME_DIR/doorway/locked` re-asserts
+  the lock when the shell restarts (Restart=always). If the screen is stuck
+  locked: TTY2 → `systemctl --user restart doorway-quickshell`, or last
+  resort run `hyprlock` with the session env (a new client may acquire the
+  compositor's held lock).
+
 ### IPC keybindings
 
 Sidebar/session toggles use `qs ipc`. Two workarounds are required for QS 0.3.0:

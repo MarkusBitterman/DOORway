@@ -100,12 +100,17 @@ down, and `unlock_cmd` is an IPC call (never pkill — that kills the shell).
   Switch back with Ctrl+Alt+F1. If that TTY can't reach the user bus, prefix
   with `export XDG_RUNTIME_DIR=/run/user/$(id -u)`.
 
-  **`ExitType=cgroup` gotcha (fixed 2026-07-11):** doorway-quickshell restarts
-  only when its *cgroup* empties, so any child that outlives a crash (the
-  controller-wake watcher was a `while` loop that slept through the parent's
-  death) wedges `Restart=always` — the service sits `active` with `MainPID=0`
-  forever. Every long-lived child DoorwayLock spawns MUST poll parent liveness
-  and exit (`kill -0 $PPID`), e.g. `doorway-lock-controller-watch.sh`.
+  **`ExitType` gotcha (fixed 2026-07-11):** mkDoorwayService now uses
+  `ExitType=main`, not `cgroup`. With `cgroup`, `Restart=always` fires only
+  when the whole cgroup empties, so any persistent child that outlives a crash
+  wedges recovery — the unit sits `active` with `MainPID=0` forever. This isn't
+  just DOORway code: quickshell spawns `nmcli monitor`, which is unremovable,
+  so you can't fix it child-by-child — track the main process instead. If a
+  wedged unit ever recurs, read
+  `/sys/fs/cgroup$(systemctl --user show doorway-quickshell.service -p ControlGroup --value)/cgroup.procs`
+  and map PIDs via `/proc/PID/cmdline` to find the orphan. DoorwayLock's own
+  long-lived children still self-exit on parent death (defensive), e.g.
+  `doorway-lock-controller-watch.sh` polls `kill -0 $PPID`.
 
 ### IPC keybindings
 

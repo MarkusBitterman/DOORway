@@ -159,7 +159,16 @@
               };
               Service = {
                 Type = "exec";
-                ExitType = "cgroup";
+                # ExitType=main (systemd default), NOT cgroup: with cgroup,
+                # Restart=always only fires once the WHOLE cgroup is empty, so a
+                # persistent child that outlives a crash (quickshell spawns
+                # `nmcli monitor`; DoorwayLock spawns the controller watcher)
+                # wedges recovery — the unit sits active with MainPID=0 forever
+                # (found crash-testing DOORway Lock, 2026-07-11). Tracking the
+                # main process instead restarts the shell as soon as it dies;
+                # KillMode=control-group (default) sweeps the leftover children
+                # during the restart.
+                ExitType = "main";
                 Slice = "app-graphical.slice";
                 Restart = "always";
                 RestartSec = 1;

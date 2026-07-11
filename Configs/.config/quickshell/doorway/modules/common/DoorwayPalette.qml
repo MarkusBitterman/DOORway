@@ -35,6 +35,9 @@ Singleton {
     readonly property color grassBright:   goldCart ? "#4A8C2C" : "#7FC95A"
     readonly property color redBright:     goldCart ? powerRed  : "#FF5C4A"
     readonly property color goldDim:       goldCart ? "#EAD98F" : "#5A4A12"
+    // Network gauge accent. On the gold (daytime) bar the old light blue washed out, so
+    // gold uses the bold deep-navy heroBlue; dark keeps the legible lighter skyHint.
+    readonly property color netAccent:     goldCart ? heroBlue  : skyHint
 
     // --- Cartridge-faceplate plastic tones (central tuning for the whole UI) ---
     // Dark: gray NES cart (warm near-black). Gold: LoZ cart golden plastic, top-lit.

@@ -45,30 +45,24 @@ StyledPopup {
         }
 
         Column {
-            visible: ResourceUsage.swapTotal > 0
             anchors.top: parent.top
             spacing: 8
 
             StyledPopupHeaderRow {
                 icon: "swap_horiz"
-                label: "Swap"
+                label: "Network"
             }
             Column {
                 spacing: 4
                 StyledPopupValueRow {
-                    icon: "clock_loader_60"
-                    label: Translation.tr("Used:")
-                    value: root.formatKB(ResourceUsage.swapUsed)
+                    icon: "download"
+                    label: Translation.tr("Down:")
+                    value: ResourceUsage.bytesPerSecString(ResourceUsage.netDownBytesPerSec)
                 }
                 StyledPopupValueRow {
-                    icon: "check_circle"
-                    label: Translation.tr("Free:")
-                    value: root.formatKB(ResourceUsage.swapFree)
-                }
-                StyledPopupValueRow {
-                    icon: "empty_dashboard"
-                    label: Translation.tr("Total:")
-                    value: root.formatKB(ResourceUsage.swapTotal)
+                    icon: "upload"
+                    label: Translation.tr("Up:")
+                    value: ResourceUsage.bytesPerSecString(ResourceUsage.netUpBytesPerSec)
                 }
             }
         }

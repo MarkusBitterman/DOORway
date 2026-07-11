@@ -12,12 +12,17 @@ import QtQuick.Shapes
  * Load also drives light: heavier usage burns everything brighter and steadier; an idle
  * gauge drifts slowly and flickers dull.
  *
- * Public API is unchanged: iconName, percentage (0..1), accentColor, warningThreshold, shown.
+ * Public API: iconName, percentage (0..1), accentColor, warningThreshold, shown.
+ * Optional: innerPercentage decouples the inner ring from the outer arc (default: track
+ * percentage, so single-signal gauges are unchanged); activity drives motion/light when
+ * "load" isn't just the outer value (e.g. the network gauge lights on down OR up).
  */
 Item {
     id: root
     required property string iconName
     required property double percentage
+    property real innerPercentage: percentage
+    property real activity: percentage
     property color accentColor: Appearance.colors.colOnSecondaryContainer
     property int warningThreshold: 100
     property bool shown: true
@@ -28,16 +33,16 @@ Item {
     // Shrunk so the dial sits comfortably in the bar.
     property int diameter: Math.min(Appearance.sizes.barHeight - 8, 26)
 
-    // --- Load → motion & light ---
-    readonly property real spinSpeed: 20 + percentage * 150   // deg/s, CW outer
-    readonly property real litLevel: 0.34 + percentage * 0.66
-    // Outer fills with usage; inner is a full ring minus a usage-sized gap (≥25° so the
-    // counter-rotation always reads).
+    // --- Load → motion & light (keyed on `activity`, which defaults to percentage) ---
+    readonly property real spinSpeed: 20 + activity * 150   // deg/s, CW outer
+    readonly property real litLevel: 0.34 + activity * 0.66
+    // Outer fills with `percentage`; inner is a full ring minus an `innerPercentage`-sized
+    // gap (≥25° so the counter-rotation always reads).
     // Writable (not readonly) so the Behaviors below can ease their transitions — the
     // bindings set the target, the Behavior animates the change. A Behavior on a
     // readonly property fails to load and takes the whole shell down.
     property real outerSweep: percentage * 360
-    readonly property real innerGap: 25 + percentage * 200
+    readonly property real innerGap: 25 + innerPercentage * 200
     property real innerSweep: 360 - innerGap
 
     // Per-frame driven state (rotation + organic flicker).
@@ -68,7 +73,7 @@ Item {
             // Organic shimmer from two detuned sines; amplitude grows as load drops so
             // an idle core visibly flickers while a busy one holds bright and steady.
             const shimmer = (Math.sin(root.flickerPhase * 7.3) + Math.sin(root.flickerPhase * 12.9)) * 0.5
-            const jitter = (1.0 - root.percentage) * 0.22
+            const jitter = (1.0 - root.activity) * 0.22
             root.coreGlow = Math.max(0.14, Math.min(1.0, root.litLevel + shimmer * jitter))
         }
     }

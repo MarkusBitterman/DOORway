@@ -26,15 +26,18 @@ MouseArea {
             warningThreshold: Config.options.bar.resources.memoryWarningThreshold
         }
 
+        // Network gauge: outer ring = downlink, inner ring = uplink — the two rates spin
+        // in opposition, mirroring the memory/CPU dials while carrying both directions.
         Resource {
             iconName: "swap_horiz"
-            percentage: ResourceUsage.swapUsedPercentage
-            accentColor: DoorwayPalette.skyHint
-            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) ||
-                (MprisController.activePlayer?.trackTitle == null) ||
+            percentage: ResourceUsage.netDownPercentage
+            innerPercentage: ResourceUsage.netUpPercentage
+            activity: Math.max(ResourceUsage.netDownPercentage, ResourceUsage.netUpPercentage)
+            accentColor: DoorwayPalette.netAccent
+            shown: Config.options.bar.resources.alwaysShowNetwork ||
+                !(MprisController.activePlayer?.trackTitle?.length > 0) ||
                 root.alwaysShowAllResources
             Layout.leftMargin: shown ? 6 : 0
-            warningThreshold: Config.options.bar.resources.swapWarningThreshold
         }
 
         Resource {

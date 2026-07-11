@@ -25,7 +25,40 @@ Singleton {
 
     // Eager-touched from shell.qml — without this the IpcHandler of a lazy
     // singleton never registers (see ThemeMode/Hyprsunset).
-    function load() {}
+    function load() {
+        relockCheck.running = true;
+    }
+
+    // ── Crash recovery ──
+    // A marker in XDG_RUNTIME_DIR survives a shell crash (Restart=always
+    // brings us back in ~1s); if it exists at startup, the previous instance
+    // died while locked — re-assert the lock before anyone sees the desktop.
+    // (The compositor held the dead client's lock the whole time; this puts
+    // a live surface back on it.)
+    readonly property string markerPath: Quickshell.env("XDG_RUNTIME_DIR") + "/doorway/locked"
+
+    Process {
+        id: relockCheck
+        command: ["test", "-f", root.markerPath]
+        onExited: exitCode => {
+            if (exitCode === 0) {
+                console.log("[DoorwayLock] relock marker found — re-asserting lock after restart");
+                root.lock();
+            }
+        }
+    }
+
+    // integration-test escape hatch: DOORWAY_LOCK_AUTOUNLOCK_SECS=N force-
+    // unlocks N seconds after locking. Unset in production, so inert.
+    Timer {
+        id: autoUnlock
+        interval: (parseInt(Quickshell.env("DOORWAY_LOCK_AUTOUNLOCK_SECS") ?? "") || 0) * 1000
+        running: root.locked && interval > 0
+        onTriggered: {
+            console.log("[DoorwayLock] auto-unlock escape hatch fired");
+            root.unlock();
+        }
+    }
 
     // ── State machine ──
     readonly property int stateInactive: 0
@@ -41,6 +74,7 @@ Singleton {
     function lock() {
         if (locked) return;
         rollShader();
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "${0%/*}" && touch "$0"', markerPath]);
         state = Config.options.lock.intro.enable ? stateIntro : stateScreensaver;
     }
 
@@ -66,6 +100,7 @@ Singleton {
     function unlock() {
         passwordBuffer = "";
         authFailed = false;
+        Quickshell.execDetached(["rm", "-f", markerPath]);
         state = stateInactive;
     }
 

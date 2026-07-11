@@ -1,12 +1,21 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
+import qs.services
 
 /**
- * DOORway Lock surface root. The real WlSessionLock binding lands in Phase 5;
- * until then this hosts only the dev harness — a normal floating window with
- * the same component stack, so visuals and PAM iterate with zero lockout risk.
+ * DOORway Lock root: binds the DoorwayLock service's state to the
+ * ext-session-lock protocol. WlSessionLock instantiates one LockSurface
+ * per screen while locked; on unlock the compositor tears them down.
+ * The floating harness (DOORWAY_LOCK_TEST=1) coexists for development.
  */
 Scope {
+    WlSessionLock {
+        id: sessionLock
+        locked: DoorwayLock.locked
+        surface: LockSurface {}
+    }
+
     Loader {
         active: Quickshell.env("DOORWAY_LOCK_TEST") === "1"
         sourceComponent: LockTestHarness {}

@@ -1,5 +1,6 @@
 module qs.modules.ii.lock
 Lock 0.1 Lock.qml
+LockSurface 0.1 LockSurface.qml
 LockTestHarness 0.1 LockTestHarness.qml
 ScreensaverView 0.1 ScreensaverView.qml
 CutoutIntro 0.1 CutoutIntro.qml

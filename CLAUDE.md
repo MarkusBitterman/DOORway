@@ -87,11 +87,25 @@ down, and `unlock_cmd` is an IPC call (never pkill — that kills the shell).
   harness window (Ctrl+L lock, Ctrl+N shader, Ctrl+U unlock; real PAM, zero
   lockout risk). A nested instance's WlSessionLock locks the REAL session —
   export `DOORWAY_LOCK_AUTOUNLOCK_SECS=20` for integration tests.
-- **Crash recovery**: marker at `$XDG_RUNTIME_DIR/doorway/locked` re-asserts
-  the lock when the shell restarts (Restart=always). If the screen is stuck
-  locked: TTY2 → `systemctl --user restart doorway-quickshell`, or last
-  resort run `hyprlock` with the session env (a new client may acquire the
-  compositor's held lock).
+- **Crash recovery**: when the lock client dies the compositor keeps the
+  session locked+blank (secure — the desktop is never exposed). A marker at
+  `$XDG_RUNTIME_DIR/doorway/locked` makes the restarted shell re-assert the
+  lock (Restart=always) so a password prompt returns. **Recovery from TTY**
+  (Ctrl+Alt+F2, log in) is a single command:
+
+  ```
+  systemctl --user restart doorway-quickshell.service
+  ```
+
+  Switch back with Ctrl+Alt+F1. If that TTY can't reach the user bus, prefix
+  with `export XDG_RUNTIME_DIR=/run/user/$(id -u)`.
+
+  **`ExitType=cgroup` gotcha (fixed 2026-07-11):** doorway-quickshell restarts
+  only when its *cgroup* empties, so any child that outlives a crash (the
+  controller-wake watcher was a `while` loop that slept through the parent's
+  death) wedges `Restart=always` — the service sits `active` with `MainPID=0`
+  forever. Every long-lived child DoorwayLock spawns MUST poll parent liveness
+  and exit (`kill -0 $PPID`), e.g. `doorway-lock-controller-watch.sh`.
 
 ### IPC keybindings
 

@@ -9,7 +9,8 @@ import qs.modules.common
  * on the real thing means locking the real session — so everything visual
  * and the PAM flow get exercised here first.
  *
- * Keys: Space = next shader · L = run lock state machine · Esc = force unlock
+ * Dev keys are Ctrl-chorded so plain typing reaches the password buffer:
+ * Ctrl+L = lock · Ctrl+N = next shader · Ctrl+U = force unlock (dev escape)
  */
 FloatingWindow {
     id: win
@@ -21,6 +22,10 @@ FloatingWindow {
     ScreensaverView {
         anchors.fill: parent
         screenName: ""
+    }
+
+    PasswordPanel {
+        anchors.fill: parent
     }
 
     CutoutIntro {
@@ -60,10 +65,21 @@ FloatingWindow {
     Item {
         anchors.fill: parent
         focus: true
+        // The same routing LockSurface uses on the real lock (Phase 5):
+        // printable keys wake AND type; Enter submits; Esc naps the prompt.
         Keys.onPressed: event => {
-            if (event.key === Qt.Key_Space) DoorwayLock.rollShader();
-            else if (event.key === Qt.Key_L) DoorwayLock.lock();
-            else if (event.key === Qt.Key_Escape) DoorwayLock.unlock();
+            if (event.modifiers & Qt.ControlModifier) {
+                if (event.key === Qt.Key_N) DoorwayLock.rollShader();
+                else if (event.key === Qt.Key_L) DoorwayLock.lock();
+                else if (event.key === Qt.Key_U) DoorwayLock.unlock(); // dev escape hatch
+                return;
+            }
+            if (!DoorwayLock.locked) return;
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) DoorwayLock.submit();
+            else if (event.key === Qt.Key_Backspace) DoorwayLock.backspace();
+            else if (event.key === Qt.Key_Escape) DoorwayLock.sleep();
+            else if (event.text.length > 0 && event.text.charCodeAt(0) >= 0x20) DoorwayLock.typeText(event.text);
+            else DoorwayLock.wake(); // modifiers and nav keys still wake the prompt
         }
     }
 }

@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Pam
 
 import qs
 import qs.modules.common
@@ -56,11 +57,96 @@ Singleton {
 
     // prompt idle timeout — drop back into the show, forget the buffer
     function sleep() {
-        if (state === statePrompt) state = stateScreensaver;
+        if (state === statePrompt) {
+            passwordBuffer = "";
+            state = stateScreensaver;
+        }
     }
 
     function unlock() {
+        passwordBuffer = "";
+        authFailed = false;
         state = stateInactive;
+    }
+
+    // ── Password buffer + PAM ──
+    // The buffer lives here (not in a TextInput) so every monitor's panel
+    // mirrors it and the surfaces stay display-only.
+    property string passwordBuffer: ""
+    property bool authFailed: false
+    property string failMessage: ""
+
+    onPasswordBufferChanged: {
+        GlobalStates.screenLockContainsCharacters = passwordBuffer.length > 0;
+        if (passwordBuffer.length > 0) promptIdle.restart();
+    }
+
+    // key routing from the surfaces: printable chars wake AND type
+    function typeText(text) {
+        if (!locked || text.length === 0) return;
+        if (state === stateIntro) {
+            introFinished();
+            return;
+        }
+        if (state === stateScreensaver) state = statePrompt;
+        if (state === statePrompt) {
+            authFailed = false;
+            passwordBuffer += text;
+        }
+    }
+
+    function backspace() {
+        if (state === statePrompt)
+            passwordBuffer = passwordBuffer.slice(0, -1);
+    }
+
+    function submit() {
+        if (state !== statePrompt || passwordBuffer.length === 0) return;
+        state = stateAuthenticating;
+        if (!pam.start()) {
+            failMessage = "PAM UNAVAILABLE";
+            authFail();
+        }
+    }
+
+    function authFail() {
+        GlobalStates.screenUnlockFailed = true;
+        passwordBuffer = "";
+        authFailed = true;
+        if (locked) state = statePrompt;
+    }
+
+    PamContext {
+        id: pam
+        config: "login" // NixOS ships /etc/pam.d/login; there is no hyprlock entry
+        user: Quickshell.env("USER")
+
+        onPamMessage: {
+            // the password prompt: answer with the buffer, never echo it
+            if (this.responseRequired) this.respond(root.passwordBuffer);
+        }
+        onCompleted: result => {
+            if (result === PamResult.Success) {
+                GlobalStates.screenUnlockFailed = false;
+                root.failMessage = "";
+                root.unlock();
+            } else {
+                root.failMessage = result === PamResult.MaxTries
+                    ? "TOO MANY TRIES" : "WRONG — TRY AGAIN";
+                root.authFail();
+            }
+        }
+        onError: () => {
+            root.failMessage = "AUTH ERROR";
+            root.authFail();
+        }
+    }
+
+    Timer {
+        id: promptIdle
+        interval: Config.options.lock.prompt.returnToScreensaverSeconds * 1000
+        running: root.state === root.statePrompt
+        onTriggered: root.sleep()
     }
 
     // ── Shader schedule (shared so every monitor shows the same frame) ──
@@ -108,11 +194,25 @@ Singleton {
         function unlock(): void {
             root.unlock();
         }
+        // side-channel wake — this is what the controller watcher (evdev
+        // events never reach the Wayland lock surface) calls on any input
+        function wake(): void {
+            root.wake();
+        }
         function nextShader(): void {
             root.rollShader();
         }
         function status(): string {
             return ["inactive", "intro", "screensaver", "prompt", "authenticating"][root.state];
+        }
+
+        // dev-only (inert unless the instance runs as the test harness):
+        // lets the harness be driven end-to-end from the CLI, PAM included
+        function devType(text: string): void {
+            if (Quickshell.env("DOORWAY_LOCK_TEST") === "1") root.typeText(text);
+        }
+        function devSubmit(): void {
+            if (Quickshell.env("DOORWAY_LOCK_TEST") === "1") root.submit();
         }
     }
 }

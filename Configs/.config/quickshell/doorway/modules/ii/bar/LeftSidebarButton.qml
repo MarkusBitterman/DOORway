@@ -30,9 +30,9 @@ RippleButton {
         width: 19.5
         height: 19.5
         source: Config.options.bar.topLeftIcon == 'distro' ? SystemInfo.distroIcon : `${Config.options.bar.topLeftIcon}-symbolic`
-        // The Atari Fuji is a colored brand mark — show its true red. Monochrome symbolic
-        // icons (distro logos, etc.) still get themed to the bar color.
-        colorize: Config.options.bar.topLeftIcon !== 'atari'
+        // The HALLway mark is monochrome-symbolic by design, so it themes to the
+        // bar color like any other icon — no colored-brand exemption needed.
+        colorize: true
         color: Appearance.colors.colOnLayer0
     }
 }

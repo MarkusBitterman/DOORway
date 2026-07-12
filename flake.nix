@@ -973,6 +973,7 @@
             # ~/.local/share/icons/default/index.theme, and syncs gtk.cursorTheme.
             # Replaces the manual Xresources + icon-symlink writes in theme.switch.sh.
             home.pointerCursor = {
+              enable = true;
               name = cfg.cursor.name;
               size = cfg.cursor.size;
               package = cfg.cursor.package;

@@ -36,8 +36,7 @@
           hyprpaper
 
           # UI components
-          anyrun # app launcher (Super+A); replacing rofi — see TODO.md migration
-          rofi # dmenu-style picker backend for ~20 script flows until migrated
+          anyrun # launcher (Super+A) + all picker flows via anyrun-dmenu.sh (stdin plugin)
 
           # Utilities
           grim
@@ -45,6 +44,7 @@
           satty
           cliphist
           awww
+          fd # file-finder.sh (Super+Shift+E) listing pipe
           imagemagick # doorway-icon-color: dominant-color extraction from app icons (ActiveWindow well)
 
           # System integration
@@ -398,7 +398,7 @@
               interface = lib.mkOption {
                 type = lib.types.str;
                 default = "JetBrainsMono Nerd Font";
-                description = "Font for the bar, rofi menus, and Hyprland groupbar. Maps to BAR_FONT, MENU_FONT, GROUPBAR_FONT in variables.lua.";
+                description = "Font for the bar, menus, and Hyprland groupbar. Maps to BAR_FONT, MENU_FONT, GROUPBAR_FONT in variables.lua.";
               };
               sidebar = lib.mkOption {
                 type = lib.types.str;
@@ -518,7 +518,7 @@
                 enabled = lib.mkOption {
                   type = lib.types.bool;
                   default = true;
-                  description = "Enable background blur behind transparent windows and layers (waybar, rofi, etc.).";
+                  description = "Enable background blur behind transparent windows and layers (bar, anyrun, etc.).";
                 };
                 size = lib.mkOption {
                   type = lib.types.ints.positive;
@@ -787,7 +787,6 @@
               "hypr/themes".source = "${configDir}/.config/hypr/themes";
               "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
               "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";
-              "rofi".source = "${configDir}/.config/rofi";
               "anyrun".source = "${configDir}/.config/anyrun";
               # Individual links (not a whole-dir symlink) so the QuickShell
               # runtime config.json can live alongside them — ~/.config/doorway
@@ -1018,6 +1017,16 @@
                 description = "DOORway Bluetooth tray applet (blueman)";
                 execStart = "${pkgs.blueman}/bin/blueman-applet";
               });
+
+              # The daemon keeps launcher/picker startup instant and provides
+              # the `anyrun close` IPC that keybinds use as a toggle (`anyrun
+              # close || <picker>`). Without it anyrun still works standalone,
+              # just slower and without close-on-rebind.
+              doorway-anyrun = mkDoorwayService {
+                description = "DOORway anyrun launcher daemon";
+                documentation = "https://github.com/anyrun-org/anyrun";
+                execStart = "${pkgs.anyrun}/bin/anyrun daemon";
+              };
 
               # doorway-notifications (dunst) removed in Phase 15 — QuickShell's
               # NotificationServer (Notifications.qml) registers on org.freedesktop.Notifications.

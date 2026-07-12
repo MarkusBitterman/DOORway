@@ -25,6 +25,6 @@ hl.window_rule({
 
 hl.layer_rule({
     name = "workflows_editing",
-    match = { namespace = "^(rofi|quickshell:notificationPopups|swaync-(notification-window|control-center)|quickshell:session|quickshell:bar)$" },
+    match = { namespace = "^(anyrun|quickshell:notificationPopups|swaync-(notification-window|control-center)|quickshell:session|quickshell:bar)$" },
     blur = true,
 })

@@ -80,15 +80,6 @@ fn_wallcache_force() {
 	fi
 }
 
-fn_envar_cache() {
-	if command -v rofi &> /dev/null; then
-		if [[ ! $XDG_DATA_DIRS =~ share/doorway ]]; then
-			mkdir -p "$XDG_DATA_HOME/rofi/themes"
-			ln -snf "$XDG_DATA_HOME/doorway/rofi/themes"/* "$XDG_DATA_HOME/rofi/themes/"
-		fi
-	fi
-}
-
 wallpaper_cache_commence() {
 	local mode=""
 	local option
@@ -143,14 +134,13 @@ wallpaper_cache_commence() {
 		esac
 	done
 
-	fn_envar_cache
-	wallPathArray=("$cacheIn")
+		wallPathArray=("$cacheIn")
 	wallPathArray+=("${WALLPAPER_CUSTOM_PATHS[@]}")
 	get_hashmap "${wallPathArray[@]}" --no-notify
 	parallel --bar --link "fn_wallcache$mode" ::: "${wallHash[@]}" ::: "${wallList[@]}"
 }
 
-export -f fn_wallcache fn_wallcache_force fn_envar_cache wallpaper_cache_bootstrap wallpaper_cache_init wallpaper_cache_commence extract_thumbnail
+export -f fn_wallcache fn_wallcache_force wallpaper_cache_bootstrap wallpaper_cache_init wallpaper_cache_commence extract_thumbnail
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 	subcommand="$1"

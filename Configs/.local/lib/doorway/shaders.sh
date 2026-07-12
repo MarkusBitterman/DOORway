@@ -42,24 +42,8 @@ fn_select() {
         send_notifs -i "preferences-desktop-display" "Error" "No .frag files found in $shaders_dir"
         exit 1
     fi
-    font_scale="$ROFI_SHADER_SCALE"
-    [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
-    font_name=${ROFI_SHADER_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
-    font_name=${font_name:-$(get_hyprConf "FONT")}
-    font_override="* {font: \"${font_name:-\"JetBrainsMono Nerd Font\"} $font_scale\";}"
-    hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
-    wind_border=$((hypr_border * 3 / 2))
-    elem_border=$((hypr_border == 0 ? 5 : hypr_border))
-    hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
-    r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;} wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
-    selected_shader=$(echo -e "$shader_items" | rofi -dmenu -i -select "$HYPR_SHADER" \
-        -p "Select shader" \
-        -theme-str 'entry { placeholder: "🎨 Select shader..."; }' \
-        -theme-str "$font_override" \
-        -theme-str "$r_override" \
-        -theme-str "$(get_rofi_pos)" \
-        -theme "clipboard")
+    selected_shader=$(echo -e "$shader_items" \
+        | "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "🎨 Select shader...")
     if [ -z "$selected_shader" ]; then
         exit 0
     fi

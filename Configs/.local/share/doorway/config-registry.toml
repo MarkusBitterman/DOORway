@@ -113,18 +113,14 @@ description = "Waybar theme colors"
 path = "${XDG_CONFIG_HOME:-$HOME/.config}/waybar/theme.css"
 
 
-[rofi]
-description = "Rofi Application Launcher"
+[anyrun]
+description = "anyrun Application Launcher"
 icon = "🚀"
 
-[rofi.files.config]
-description = "Rofi Configuration"
-path = "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/config.rasi"
-pre_hook = ["bash", "-c", "echo 'Editing Rofi config...'"]
-post_hook = ["bash", "-c", "echo 'Rofi config updated.'"]
+[anyrun.files.config]
+description = "anyrun Configuration"
+path = "${XDG_CONFIG_HOME:-$HOME/.config}/anyrun/config.ron"
 
-[rofi.files.theme]
-description = "Rofi Theme"
-path = "${XDG_CONFIG_HOME:-$HOME/.config}/rofi/themes/current.rasi"
-pre_hook = ["bash", "-c", "mkdir -p ${XDG_CONFIG_HOME:-$HOME/.config}/rofi/themes"]
-post_hook = ["bash", "-c", "echo 'Rofi theme updated.'"]
+[anyrun.files.style]
+description = "anyrun Style"
+path = "${XDG_CONFIG_HOME:-$HOME/.config}/anyrun/style.css"

@@ -196,11 +196,11 @@ hl.window_rule({
 
 --------------------------------------------------------------------------------
 -- Layer Rules
--- For rofi, notifications, etc.
+-- For anyrun, notifications, etc.
 --------------------------------------------------------------------------------
 
 hl.layer_rule({
-    match = { namespace = "rofi" },
+    match = { namespace = "anyrun" },
     blur = true,
     ignore_alpha = 0,
 })

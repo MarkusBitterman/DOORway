@@ -231,16 +231,6 @@ WALLBASH_DIRS=(
     "/usr/share/doorway/wallbash")
 wallbashDirs=("${WALLBASH_DIRS[@]}")
 export DOORWAY_THEME DOORWAY_THEME_DIR WALLBASH_DIRS wallbashDirs enableWallDcol
-# Rofi's default theme search path includes $XDG_DATA_HOME/rofi/themes/ but
-# not $XDG_DATA_HOME/doorway/rofi/themes/, so `-theme style_1` fails to
-# resolve until the upstream wallpaper-cache run mirrors the symlinks. Bridge
-# them on every shell init so rofi works from a clean install.
-if command -v rofi &>/dev/null; then
-    if [[ ! $XDG_DATA_DIRS =~ share/doorway ]]; then
-        mkdir -p "$XDG_DATA_HOME/rofi/themes"
-        ln -snf "$XDG_DATA_HOME/doorway/rofi/themes"/* "$XDG_DATA_HOME/rofi/themes/"
-    fi
-fi
 if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     hypr_border="$(hyprctl -j getoption decoration:rounding | jq '.int')"
     hypr_width="$(hyprctl -j getoption general:border_size | jq '.int')"
@@ -354,35 +344,6 @@ get_hyprConf() {
         echo "$gsVal"
     fi
 }
-get_rofi_pos() {
-    [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] || return 1
-    readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
-    eval "$(hyprctl -j monitors | jq -r '.[] | select(.focused==true) |
-        "monRes=(\(.width) \(.height) \(.scale) \(.x) \(.y)) offRes=(\(.reserved | join(" ")))"')"
-    monRes[2]="${monRes[2]//./}"
-    monRes[0]=$((monRes[0] * 100 / monRes[2]))
-    monRes[1]=$((monRes[1] * 100 / monRes[2]))
-    curPos[0]=$((curPos[0] - monRes[3]))
-    curPos[1]=$((curPos[1] - monRes[4]))
-    offRes=("${offRes// / }")
-    if [ "${curPos[0]}" -ge "$((monRes[0] / 2))" ]; then
-        local x_pos="east"
-        local x_off="-$((monRes[0] - curPos[0] - offRes[2]))"
-    else
-        local x_pos="west"
-        local x_off="$((curPos[0] - offRes[0]))"
-    fi
-    if [ "${curPos[1]}" -ge "$((monRes[1] / 2))" ]; then
-        local y_pos="south"
-        local y_off="-$((monRes[1] - curPos[1] - offRes[3]))"
-    else
-        local y_pos="north"
-        local y_off="$((curPos[1] - offRes[1]))"
-    fi
-    local coordinates="window{location:$x_pos $y_pos;anchor:$x_pos $y_pos;x-offset:${x_off}px;y-offset:${y_off}px;}"
-    echo "$coordinates"
-
-}
 paste_string() {
     if ! command -v wtype >/dev/null; then exit 0; fi
     if [ -t 1 ]; then return 0; fi
@@ -458,4 +419,4 @@ dconf_write() {
         print_log -sec "dconf" -warn "failed to set" "$key"
     fi
 }
-export -f get_hyprConf get_rofi_pos is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_doorway_config
+export -f get_hyprConf is_hovered toml_write get_hashmap get_aurhlpr set_conf set_hash check_package get_themes print_log pkg_installed paste_string extract_thumbnail accepted_mime_types dconf_write send_notifs export_doorway_config

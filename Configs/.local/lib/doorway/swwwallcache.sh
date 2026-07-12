@@ -60,14 +60,6 @@ fn_wallcache_force() {
         rm -f "$temp_image"
     fi
 }
-fn_envar_cache() {
-    if command -v rofi &> /dev/null; then
-        if [[ ! $XDG_DATA_DIRS =~ share/doorway ]]; then
-            mkdir -p "$XDG_DATA_HOME/rofi/themes"
-            ln -snf "$XDG_DATA_HOME/doorway/rofi/themes"/* "$XDG_DATA_HOME/rofi/themes/"
-        fi
-    fi
-}
 export -f fn_wallcache fn_wallcache_force extract_thumbnail
 while getopts "w:t:f" option; do
     case $option in
@@ -99,7 +91,6 @@ while getopts "w:t:f" option; do
             ;;
     esac
 done
-fn_envar_cache
 wallPathArray=("$cacheIn")
 wallPathArray+=("${WALLPAPER_CUSTOM_PATHS[@]}")
 get_hashmap "${wallPathArray[@]}" --no-notify

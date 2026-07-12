@@ -26,25 +26,8 @@ fn_select() {
         workflow_icon=${workflow_icon:0:1}
         workflow_list="$workflow_list\n$workflow_icon\t $workflow_name"
     done < <(find -L "$workflows_dir" -type f -name "*.conf" 2>/dev/null)
-    font_scale="$ROFI_WORKFLOW_SCALE"
-    [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
-    font_name=${ROFI_WORKFLOW_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
-    font_name=${font_name:-$(get_hyprConf "FONT")}
-    font_override="* {font: \"${font_name:-\"JetBrainsMono Nerd Font\"} $font_scale\";}"
-    hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
-    wind_border=$((hypr_border * 3 / 2))
-    elem_border=$((hypr_border == 0 ? 5 : hypr_border))
-    hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
-    r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;} wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
-    rofi_select="${HYPR_WORKFLOW/default/default}"
-    selected_workflow=$(echo -e "$workflow_list" | rofi -dmenu -i -select "$rofi_select" \
-        -p "Select workflow" \
-        -theme-str 'entry { placeholder: "💼 Select workflow..."; }' \
-        -theme-str "$font_override" \
-        -theme-str "$r_override" \
-        -theme-str "$(get_rofi_pos)" \
-        -theme "clipboard")
+    selected_workflow=$(echo -e "$workflow_list" \
+        | "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "💼 Select workflow...")
     if [ -z "$selected_workflow" ]; then
         exit 0
     fi

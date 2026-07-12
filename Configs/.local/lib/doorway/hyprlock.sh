@@ -108,17 +108,6 @@ find_filepath() {
     find "${search_dirs[@]}" -type f -name "$filename*" 2>/dev/null | head -n 1
 }
 fn_select() {
-    font_scale="$ROFI_HYPRLOCK_SCALE"
-    [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
-    font_name=${ROFI_HYPRLOCK_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
-    font_name=${font_name:-$(get_hyprConf "FONT")}
-    font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} $font_scale\";}"
-    hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
-    wind_border=$((hypr_border * 3 / 2))
-    elem_border=$((hypr_border == 0 ? 5 : hypr_border))
-    hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
-    r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;} wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
     layout_dir="$confDir/hypr/hyprlock"
     layout_items=$(find -L "$layout_dir" -name "*.conf" ! -name "theme.conf" 2>/dev/null | sed 's/\.conf$//')
     if [ -z "$layout_items" ]; then
@@ -127,14 +116,10 @@ fn_select() {
     fi
     layout_items="Theme Preference
 $layout_items"
-    selected_layout=$(awk -F/ '{print $NF}' <<<"$layout_items" | rofi -dmenu -i -select "$HYPRLOCK_LAYOUT" \
-        -p "Select hyprlock layout" \
-        -theme-str 'entry { placeholder: "🔒 Hyprlock Layout..."; }' \
-        -theme-str "$font_override" \
-        -theme-str "$r_override" \
-        -theme-str "$(get_rofi_pos)" \
-        -on-selection-changed 'doorway-shell hyprlock.sh --test-preview  "{entry}"' \
-        -theme "${ROFI_HYPRLOCK_STYLE:-clipboard}")
+    # NOTE: rofi's -on-selection-changed live layout preview has no anyrun
+    # equivalent; use `doorway-shell hyprlock.sh --test-preview <layout>`.
+    selected_layout=$(awk -F/ '{print $NF}' <<<"$layout_items" \
+        | "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "🔒 Hyprlock Layout...")
     if [ -z "$selected_layout" ]; then
         echo "No selection made"
         exit 0

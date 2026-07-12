@@ -31,7 +31,7 @@ DOORway is the desktop environment layer of HALLway OS. It provides:
 | **Hyprland** | Wayland compositor with animations and tiling |
 | **QuickShell** | QML/Qt6 shell: top bar, sidebars, OSD, notifications, session screen |
 | **matugen** | Material You color theming from the active wallpaper |
-| **Rofi** | Application launcher and menu system |
+| **anyrun** | Application launcher and dmenu-style picker menus |
 | **Hyprlock** | Lock screen |
 | **swww** | Animated wallpaper backend |
 
@@ -68,7 +68,7 @@ For manual setups, core dependencies include:
 hyprland          # compositor
 quickshell        # shell (bar, sidebars, OSD, notifications)
 matugen           # Material You color theming
-rofi-wayland      # launcher
+anyrun            # launcher + picker menus
 hyprlock          # lock screen
 hypridle          # idle daemon
 swww              # wallpaper backend
@@ -109,7 +109,7 @@ Located in `~/.local/lib/doorway/`:
 | `screenshot.sh` | Screenshot capture (area, window, full) |
 | `cliphist.sh` | Clipboard history manager |
 | `lockscreen.sh` | Hyprlock launcher |
-| `rofilaunch.sh` | Rofi menu launcher |
+| `anyrun-dmenu.sh` | dmenu-style picker on anyrun (backs all menu flows) |
 | `wallpaper.sh` | Wallpaper management + matugen trigger |
 
 ---
@@ -194,7 +194,7 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | `fonts.ui.size` | int | `10` | UI font size in points |
 | `fonts.monospace.name` | str | `"CaskaydiaCove Nerd Font Mono"` | Monospace font for terminals and editors |
 | `fonts.monospace.size` | int | `9` | Monospace font size in points |
-| `fonts.interface` | str | `"JetBrainsMono Nerd Font"` | Font for the bar, rofi menus, and Hyprland groupbar |
+| `fonts.interface` | str | `"JetBrainsMono Nerd Font"` | Font for the bar, menus, and Hyprland groupbar |
 | `fonts.sidebar` | str | `"Cantarell"` | Font for QuickShell sidebar content |
 
 #### `doorway.theme` — Window geometry and blur
@@ -325,7 +325,7 @@ See [KEYBINDINGS.md](KEYBINDINGS.md) for the complete reference.
 | Keybind | Action |
 |---------|--------|
 | `Super + Return` | Terminal (Kitty) |
-| `Super + D` | Application launcher (Rofi) |
+| `Super + A` | Application launcher (anyrun) |
 | `Super + Q` | Close window |
 | `Super + W` | Toggle floating |
 | `Super + F` | Fullscreen |

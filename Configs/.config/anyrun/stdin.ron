@@ -1,0 +1,12 @@
+// Stdin plugin (dmenu mode) config — consumed when anyrun-dmenu.sh runs
+// `anyrun --plugins libstdin.so`. The launcher config (config.ron) does not
+// load this plugin; only the picker wrapper does.
+Config(
+    // Rejects free text that matches nothing (rofi's -no-custom).
+    allow_invalid: false,
+    // Plugin-level cap; anyrun-dmenu.sh passes a matching --max-entries at
+    // the anyrun level (config.ron's 10 would clamp pickers otherwise).
+    max_entries: 15,
+    // Sort by fuzzy match score, not input order.
+    preserve_order: false,
+)

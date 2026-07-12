@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-pkill -u "$USER" rofi && exit 0
+#|- cliphist.sh - clipboard manager (anyrun-dmenu; was rofi -dmenu)
+# Interim port: multi-select, Alt-key accelerators and image thumbnails were
+# rofi features with no anyrun equivalent — menu navigation is row-based
+# (the ':x:y:' sentinel rows). A QuickShell surface will replace this
+# (TODO.md, rofi → anyrun migration).
+anyrun close 2> /dev/null && exit 0
 [[ $DOORWAY_SHELL_INIT -ne 1 ]] && eval "$(doorway-shell init)"
 cache_dir="${DOORWAY_CACHE_HOME:-$HOME/.cache/doorway}"
 favorites_file="$cache_dir/landing/cliphist_favorites"
 [ -f "$HOME/.cliphist_favorites" ] && favorites_file="$HOME/.cliphist_favorites"
-cliphist_style="${ROFI_CLIPHIST_STYLE:-clipboard}"
 
 process_deletion() {
     while IFS= read -r line; do
@@ -64,49 +68,12 @@ check_content() {
         return 1
     fi
 }
-run_rofi() {
+run_menu() {
+    # anyrun has no prompt text or Alt-accelerators; the placeholder is kept
+    # for call-site readability and the ':x:y:' sentinel rows do navigation.
     local placeholder="$1"
     shift
-    rofi -dmenu \
-        -theme-str "entry { placeholder: \"$placeholder\";}" \
-        -theme-str "$font_override" \
-        -theme-str "$r_override" \
-        -theme-str "$rofi_position" \
-        -theme "$cliphist_style" \
-        -kb-custom-1 "Alt+c" \
-        -kb-custom-2 "Alt+d" \
-        -kb-custom-3 "Alt+n" \
-        -kb-custom-4 "Alt+w" \
-        -kb-custom-5 "Alt+o" \
-        -kb-custom-6 "Alt+v" \
-        -kb-custom-7 "Alt+s" \
-        "$@"
-    local exit_code=$?
-    if [ $exit_code -ne 0 ]; then
-        case "$exit_code" in
-            10) printf ":c:o:p:y:" ;;
-            11) printf ":d:e:l:e:t:e:" ;;
-            12) printf ":f:a:v:" ;;
-            13) printf ":w:i:p:e:" ;;
-            14) printf ":o:p:t:" ;;
-            15) printf ":i:m:g:" ;;
-            16) printf ":o:c:r:" ;;
-        esac
-    fi
-}
-setup_rofi_config() {
-    local font_scale="$ROFI_CLIPHIST_SCALE"
-    [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
-    local font_name=${ROFI_CLIPHIST_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
-    font_name=${font_name:-$(get_hyprConf "FONT")}
-    font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} $font_scale\";}"
-    local hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
-    local wind_border=$((hypr_border * 3 / 2))
-    local elem_border=$((hypr_border == 0 ? 5 : hypr_border))
-    rofi_position=$(get_rofi_pos)
-    local hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
-    r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;}wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
+    "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "$placeholder"
 }
 ensure_favorites_dir() {
     local dir
@@ -134,25 +101,16 @@ cliphist_cmd() {
         echo -e ":o:p:t:\t⚙️ Options"
         cliphist list
     else
-        DOORWAY_CLIPHIST_IMAGE_ONLY=true cliphist.image.py
+        # strip the rofi-era "\0icon\x1f<path>" suffix — anyrun has no icons
+        DOORWAY_CLIPHIST_IMAGE_ONLY=true cliphist.image.py | sed 's/\x0.*//'
     fi
 }
 show_history() {
-    local selected_item
-    rofi_args=(" 📜 History..." -multi-select -i -display-columns 2 -selected-row 2)
-    if [[ $CLIPHIST_IMAGE_HISTORY == true ]]; then
-        rofi_args=(" 🏞️ Image History | Alt+S to Scan" -display-columns 2
-            -show-icons -eh 3
-            -theme-str 'listview { lines: 4; columns: 2; }'
-            -theme-str 'element { enabled: true; orientation: vertical; spacing: 0%; padding: 0%; cursor: pointer; background-color: transparent; text-color: @main-fg; horizontal-align: 0.5; }'
-            -theme-str 'element-text { enabled: false;}'
-            -theme-str 'element-icon {size: 8%; spacing: 0%; padding: 0%; cursor: inherit; background-color: transparent; }'
-            -theme-str 'element selected.normal { background-color: @select-bg; text-color: @select-fg; }')
-    fi
+    local selected_item placeholder
+    placeholder=" 📜 History..."
+    [[ $CLIPHIST_IMAGE_HISTORY == true ]] && placeholder=" 🏞️ Image History"
 
-    selected_item=$(cliphist_cmd | run_rofi "${rofi_args[@]}")
-    echo "${?}"
-    echo "$selected_item"
+    selected_item=$(cliphist_cmd | run_menu "$placeholder")
     [ -n "$selected_item" ] || exit 0
     handle_special_commands "${selected_item##*$'\n'}"
     if echo -e "$selected_item" | check_content; then
@@ -167,7 +125,7 @@ show_history() {
 
 delete_items() {
     local selected_item
-    selected_item="$(cliphist list | run_rofi " 🗑️ Delete" -multi-select -i -display-columns 2)"
+    selected_item="$(cliphist list | run_menu " 🗑️ Delete")"
     handle_special_commands "${selected_item##*$'\n'}"
     process_deletion <<< "$selected_item"
 }
@@ -177,7 +135,7 @@ view_favorites() {
         return
     }
     local selected_item
-    selected_item=$(printf "%s\n" "${decoded_lines[@]}" | run_rofi "📌 View Favorites") || exit 0
+    selected_item=$(printf "%s\n" "${decoded_lines[@]}" | run_menu "📌 View Favorites") || exit 0
     if [ -n "$selected_item" ]; then
         handle_special_commands "${selected_item##*$'\n'}"
         local index
@@ -195,7 +153,7 @@ view_favorites() {
 add_to_favorites() {
     ensure_favorites_dir
     local item
-    item=$(cliphist list | run_rofi "➕ Add to Favorites...") || exit 0
+    item=$(cliphist list | run_menu "➕ Add to Favorites...") || exit 0
     if [ -n "$item" ]; then
         local full_item
         full_item=$(echo "$item" | cliphist decode)
@@ -215,7 +173,7 @@ delete_from_favorites() {
         return
     }
     local selected_favorite
-    selected_favorite=$(printf "%s\n" "${decoded_lines[@]}" | run_rofi "➖ Remove from Favorites...") || exit 0
+    selected_favorite=$(printf "%s\n" "${decoded_lines[@]}" | run_menu "➖ Remove from Favorites...") || exit 0
     if [ -n "$selected_favorite" ]; then
         local index
         index=$(printf "%s\n" "${decoded_lines[@]}" | grep -nxF "$selected_favorite" | cut -d: -f1)
@@ -235,7 +193,7 @@ delete_from_favorites() {
 clear_favorites() {
     if [ -f "$favorites_file" ] && [ -s "$favorites_file" ]; then
         local confirm
-        confirm=$(echo -e "Yes\nNo" | run_rofi "☢️ Clear All Favorites?") || exit 0
+        confirm=$(echo -e "Yes\nNo" | run_menu "☢️ Clear All Favorites?") || exit 0
         if [ "$confirm" = "Yes" ]; then
             : > "$favorites_file"
             notify-send "All favorites have been deleted."
@@ -246,7 +204,7 @@ clear_favorites() {
 }
 manage_favorites() {
     local manage_action
-    manage_action=$(echo -e "Add to Favorites\nDelete from Favorites\nClear All Favorites" | run_rofi "📓 Manage Favorites") || exit 0
+    manage_action=$(echo -e "Add to Favorites\nDelete from Favorites\nClear All Favorites" | run_menu "📓 Manage Favorites") || exit 0
     case "$manage_action" in
         "Add to Favorites")
             add_to_favorites
@@ -266,7 +224,7 @@ manage_favorites() {
 }
 clear_history() {
     local selected_item
-    selected_item=$(echo -e "Yes\nNo" | run_rofi "☢️ Clear Clipboard History?")
+    selected_item=$(echo -e "Yes\nNo" | run_menu "☢️ Clear Clipboard History?")
     handle_special_commands "${selected_item##*$'\n'}"
     if [ "$selected_item" = "Yes" ]; then
         cliphist wipe
@@ -275,12 +233,12 @@ clear_history() {
 }
 main_menu_options() {
     cat <<- EOF
-		History:::<sub>(Alt+C)</sub>
-		Image History:::<sub>(Alt+V)</sub>
-		Delete Item:::<sub>(Alt+D)</sub>
-		Clear History:::<sub>(Alt+W)</sub>
-		View Favorites:::<sub>(Alt+N)</sub>
-		Manage Favorites:::<sub>(Alt+O)</sub>
+		History
+		Image History
+		Delete Item
+		Clear History
+		View Favorites
+		Manage Favorites
 	EOF
 }
 
@@ -311,8 +269,6 @@ ocr_scan() {
 }
 
 main() {
-    setup_rofi_config
-
     # shellcheck disable=SC1091
     source "${LIB_DIR}/doorway/shutils/argparse.sh"
 
@@ -334,15 +290,8 @@ main() {
     if [ -z "$ACTION" ]; then
         # No arguments provided, show menu
         local main_action
-        main_action=$(
-            main_menu_options | run_rofi "🔎 Options (Alt O)" \
-                -display-column-separator ":::" \
-                -display-columns 1,2 \
-                -markup-rows
-        )
+        main_action=$(main_menu_options | run_menu "🔎 Options")
         handle_special_commands "${main_action##*$'\n'}"
-
-        main_action="${main_action%%:::*}"
 
         case "$main_action" in
             "History") ACTION=copy ;;

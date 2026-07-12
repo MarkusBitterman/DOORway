@@ -5,7 +5,7 @@ show_help() {
 Usage: $(basename "$0") --[options|flags] [parameters]
 options:
     -j, --json                List wallpapers in JSON format to STDOUT
-    -S, --select              Select wallpaper using rofi
+    -S, --select              Select wallpaper from a menu
     -n, --next                Set next wallpaper
     -p, --previous            Set previous wallpaper
     -r, --random              Set random wallpaper

@@ -20,8 +20,6 @@ local terminal = os.getenv("TERMINAL") or "kitty"
 local editor   = os.getenv("EDITOR")   or "code"
 local explorer = os.getenv("EXPLORER") or "dolphin"
 local browser  = os.getenv("BROWSER")  or "firefox"
-local rofiLaunch = "doorway-shell rofilaunch"
-
 local moveactivewindow = 'grep -q "true" <<< $(hyprctl activewindow -j | jq -r .floating) && hyprctl dispatch moveactive'
 
 --------------------------------------------------------------------------------
@@ -85,20 +83,21 @@ hl.bind(mainMod .. " + C",         hl.dsp.exec_cmd(editor),                     
 hl.bind(mainMod .. " + B",         hl.dsp.exec_cmd(browser),                                { description = "[Launcher|Apps] web browser" })
 hl.bind("CTRL + SHIFT + Escape",     hl.dsp.exec_cmd("doorway-shell system.monitor"),       { description = "[Launcher|Apps] system monitor" })
 
--- [Launcher|Rofi menus]
-hl.bind(mainMod .. " + A",       hl.dsp.exec_cmd("pkill -x anyrun || anyrun"),                 { description = "[Launcher] application launcher (anyrun)" })
-hl.bind(mainMod .. " + TAB",     hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " w"),   { description = "[Launcher|Rofi] window switcher" })
-hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("pkill -x rofi || " .. rofiLaunch .. " f"),   { description = "[Launcher|Rofi] file finder" })
-hl.bind(mainMod .. " + slash",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell keybinds_hint c"),  { description = "[Launcher|Rofi] keybindings hint" })
-hl.bind(mainMod .. " + comma",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell emoji-picker"),     { description = "[Launcher|Rofi] emoji picker" })
+-- [Launcher|anyrun menus] — `anyrun close` exits 0 only when it closed an
+-- open window, so `anyrun close || X` = close-if-open-else-launch. (pkill
+-- can't do this: the Nix-wrapped process is named `.anyrun-wrapped`.)
+hl.bind(mainMod .. " + A",       hl.dsp.exec_cmd("anyrun close || anyrun"),                             { description = "[Launcher] application launcher (anyrun)" })
+hl.bind(mainMod .. " + TAB",     hl.dsp.exec_cmd("anyrun close || doorway-shell window-switcher"),      { description = "[Launcher] window switcher" })
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("anyrun close || doorway-shell file-finder"),          { description = "[Launcher] file finder" })
+hl.bind(mainMod .. " + slash",   hl.dsp.exec_cmd("anyrun close || doorway-shell keybinds_hint"),        { description = "[Launcher] keybindings hint" })
+hl.bind(mainMod .. " + comma",   hl.dsp.exec_cmd("anyrun close || doorway-shell emoji-picker"),         { description = "[Launcher] emoji picker" })
 
 -- [QuickShell panels]
 hl.bind(mainMod .. " + SPACE",         hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sidebarRight toggle"), { description = "[QuickShell] toggle right sidebar" })
 hl.bind(mainMod .. " + SHIFT + SPACE", hl.dsp.exec_cmd("qs -c doorway ipc --any-display call sidebarLeft toggle"),  { description = "[QuickShell] toggle left sidebar" })
-hl.bind(mainMod .. " + period",  hl.dsp.exec_cmd("pkill -x rofi || doorway-shell glyph-picker"),     { description = "[Launcher|Rofi] glyph picker" })
-hl.bind(mainMod .. " + V",       hl.dsp.exec_cmd("pkill -x rofi || doorway-shell cliphist -c"),      { description = "[Launcher|Rofi] clipboard" })
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("pkill -x rofi || doorway-shell cliphist"),         { description = "[Launcher|Rofi] clipboard manager" })
-hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("pkill -x rofi || doorway-shell rofiselect"),       { description = "[Launcher|Rofi] select rofi launcher" })
+hl.bind(mainMod .. " + period",  hl.dsp.exec_cmd("anyrun close || doorway-shell glyph-picker"),         { description = "[Launcher] glyph picker" })
+hl.bind(mainMod .. " + V",       hl.dsp.exec_cmd("anyrun close || doorway-shell cliphist -c"),          { description = "[Launcher] clipboard" })
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("anyrun close || doorway-shell cliphist"),             { description = "[Launcher] clipboard manager" })
 
 --------------------------------------------------------------------------------
 -- Hardware Controls
@@ -131,7 +130,7 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("doorway-shell brightnesscontro
 -- [Utilities]
 hl.bind(mainMod .. " + K",       hl.dsp.exec_cmd("doorway-shell keyboardswitch"), { description = "[Utilities] toggle keyboard layout", locked = true })
 hl.bind(mainMod .. " + ALT + G",   hl.dsp.exec_cmd("doorway-shell gamemode"),       { description = "[Utilities] game mode" })
-hl.bind(mainMod .. " + SHIFT + G", hl.dsp.exec_cmd("doorway-shell gamelauncher"),   { description = "[Utilities] open game launcher" })
+hl.bind(mainMod .. " + SHIFT + G", hl.dsp.exec_cmd("anyrun close || doorway-shell gamelauncher"),   { description = "[Utilities] open game launcher" })
 
 -- [Utilities|Screen Capture]
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -an"),                       { description = "[Utilities|Screen Capture] color picker" })
@@ -147,13 +146,13 @@ hl.bind("Print",                  hl.dsp.exec_cmd("doorway-shell screenshot p"),
 -- [Theming and Wallpaper]
 hl.bind(mainMod .. " + ALT + Right", hl.dsp.exec_cmd("doorway-shell wallpaper -Gn"),                        { description = "[Theming] next global wallpaper" })
 hl.bind(mainMod .. " + ALT + Left",  hl.dsp.exec_cmd("doorway-shell wallpaper -Gp"),                        { description = "[Theming] previous global wallpaper" })
-hl.bind(mainMod .. " + SHIFT + W",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell wallpaper -SG"),       { description = "[Theming] select a global wallpaper" })
+hl.bind(mainMod .. " + SHIFT + W",   hl.dsp.exec_cmd("anyrun close || doorway-shell wallpaper -SG"),       { description = "[Theming] select a global wallpaper" })
 -- SUPER+SHIFT+R (wallbash mode) and SUPER+SHIFT+T (theme select) removed:
 -- wallbashtoggle.sh depended on theme.switch.sh (deleted Phase 10); color mode
 -- selection moves to QuickShell right sidebar in Phase 13. themeselect had no
 -- theme gallery in DOORway (single Wallbash theme); Phase 14 brings a new UI.
-hl.bind(mainMod .. " + SHIFT + Y",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell animations --select"), { description = "[Theming] select animations" })
-hl.bind(mainMod .. " + SHIFT + U",   hl.dsp.exec_cmd("pkill -x rofi || doorway-shell hyprlock --select"),   { description = "[Theming] select hyprlock layout" })
+hl.bind(mainMod .. " + SHIFT + Y",   hl.dsp.exec_cmd("anyrun close || doorway-shell animations --select"), { description = "[Theming] select animations" })
+hl.bind(mainMod .. " + SHIFT + U",   hl.dsp.exec_cmd("anyrun close || doorway-shell hyprlock --select"),   { description = "[Theming] select hyprlock layout" })
 
 --------------------------------------------------------------------------------
 -- Workspaces

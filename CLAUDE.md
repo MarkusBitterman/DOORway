@@ -25,7 +25,7 @@ DOORway/
 │   │   ├── hypr/              # Hyprland config (main entry point)
 │   │   ├── quickshell/        # QuickShell shell (bar, sidebars, OSD, notifications, session)
 │   │   ├── matugen/           # Hyprland border colors from wallpaper (template engine)
-│   │   ├── rofi/              # App launcher
+│   │   ├── anyrun/            # App launcher + dmenu-style pickers
 │   │   ├── doorway/         # DOORway-specific settings
 │   │   └── kitty/             # Terminal
 │   └── .local/

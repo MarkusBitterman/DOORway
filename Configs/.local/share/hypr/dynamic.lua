@@ -71,7 +71,7 @@ local mkdir_cmd = "mkdir -p $XDG_RUNTIME_DIR/doorway "
 
 local keybinds_hint_cmd = 'bash -c \'eval "$(doorway-shell init)" && '
                        .. '$LIB_DIR/doorway/keybinds/hint-hyprland.py '
-                       .. '--format rofi > $XDG_RUNTIME_DIR/doorway/keybinds_hint.rofi\''
+                       .. '--format rofi > $XDG_RUNTIME_DIR/doorway/keybinds_hint.cache\''
 
 -- Runtime side-effects: `exec` is not an HL.ConfigKey, so call hl.exec_cmd
 -- directly. Re-fires on every config (re)load — matches hyprlang `exec`

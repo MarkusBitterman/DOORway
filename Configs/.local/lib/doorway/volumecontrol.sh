@@ -228,7 +228,7 @@ while getopts "iop:stq" opt; do
                     --title "Choose an output device" \
                     --buttons "$(select_output | sed 's/$/;/')")
             then
-                selected_output=$(select_output | rofi -dmenu -theme "notification")
+                selected_output=$(select_output | "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "Output device")
             fi
             select_output "$selected_output"
             exit

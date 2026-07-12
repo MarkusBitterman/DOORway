@@ -22,29 +22,11 @@ fn_select() {
         notify-send -i "preferences-desktop-display" "Error" "No .lua files found in $animations_dir"
         exit 1
     fi
-    font_scale="$ROFI_ANIMATION_SCALE"
-    [[ $font_scale =~ ^[0-9]+$ ]] || font_scale=${ROFI_SCALE:-10}
-    font_name=${ROFI_ANIMATION_FONT:-$ROFI_FONT}
-    font_name=${font_name:-$(get_hyprConf "MENU_FONT")}
-    font_name=${font_name:-$(get_hyprConf "FONT")}
-    font_override="* {font: \"${font_name:-"JetBrainsMono Nerd Font"} $font_scale\";}"
-    hypr_border=${hypr_border:-"$(hyprctl -j getoption decoration:rounding | jq '.int')"}
-    wind_border=$((hypr_border * 3 / 2))
-    elem_border=$((hypr_border == 0 ? 5 : hypr_border))
-    hypr_width=${hypr_width:-"$(hyprctl -j getoption general:border_size | jq '.int')"}
-    r_override="window{border:${hypr_width}px;border-radius:${wind_border}px;} wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"
     animation_items="Disable Animation
 Theme Preference
 $animation_items"
-    rofi_select="${HYPR_ANIMATION/theme/Theme Preference}"
-    rofi_select="${rofi_select/disable/Disable Animation}"
-    selected_animation=$(awk -F/ '{print $NF}' <<< "$animation_items" | rofi -dmenu -i -select "$rofi_select" \
-        -p "Select animation" \
-        -theme-str 'entry { placeholder: "Select animation..."; }' \
-        -theme-str "$font_override" \
-        -theme-str "$r_override" \
-        -theme-str "$(get_rofi_pos)" \
-        -theme "clipboard")
+    selected_animation=$(awk -F/ '{print $NF}' <<< "$animation_items" \
+        | "$LIB_DIR/doorway/anyrun-dmenu.sh" -p "Select animation")
     if [ -z "$selected_animation" ]; then
         exit 0
     fi

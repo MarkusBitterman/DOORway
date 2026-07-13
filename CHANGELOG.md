@@ -37,6 +37,17 @@ and the git history.
 ### Changed
 - **rofi → anyrun**, fully: launcher plus all ~20 dmenu-style picker flows via
   `anyrun-dmenu.sh` (stdin plugin); rofi removed from the flake.
+- **Docs: six internals wiki articles written** (Architecture Overview, Theming,
+  Scripting API, Keybindings Reference, Hyprland Lua API Cheatsheet, Lua Migration
+  Notes), all from verified codebase ground-truth.
+
+### Removed
+- **Vestigial HyDE binaries** `doorwayctl` (= upstream `hydectl`, broken — shelled
+  out to nonexistent `hyde-shell`) and `doorway-ipc` (= `khing/hyde-ipc`): ~16 MB
+  of prebuilt binaries carried opaquely since the fork, renamed at filename-level
+  only, never rebuilt, with zero callers. `doorwayctl` was silently failing at
+  every zsh startup via a completion stub. Deleted with their flake entries,
+  completion, and all doc references.
 - **waybar, dunst, wlogout removed** — QuickShell owns all their surfaces; source
   trees deleted after soak.
 - **De-HyDE migration complete** (Phase 9): every runtime-imperative startup daemon is

@@ -666,7 +666,7 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 *(Canonical home for these two items — Phase 8 and the anyrun follow-ups point here.)*
 
 - [ ] GitHub Actions CI for `Hyprland --verify-config` — run on every PR touching `Configs/.config/hypr/` or `Configs/.local/share/hypr/`
-- [ ] New wiki articles: Architecture-Overview, Theming (matugen + DoorwayPalette — replaces the obsolete Theming-and-Wallbash scope), Keybindings-Reference, Scripting-API, Lua-Migration-Notes, Hyprland-Lua-API-Cheatsheet
+- [x] New wiki articles — DONE 2026-07-13: Architecture-Overview, Theming (matugen + DoorwayPalette), Keybindings-Reference, Scripting-API, Lua-Migration-Notes, Hyprland-Lua-API-Cheatsheet. All six written from verified codebase ground-truth; Wiki/README.md restructured into "Getting started" + "Internals & reference".
 
 ---
 
@@ -1123,6 +1123,24 @@ QuickShell surfaces are now optional UX *upgrades*, not blockers.
       Inner controls intentionally stay gold in light mode.
 - [x] Atari brand mark replaced with HALLway dolly-zoom H (`652bf387`)
 - [x] `home.pointerCursor` explicitly enabled to silence HM deprecation warning (`c00eac6e`)
+
+## Vestigial HyDE binaries removed ✅ (2026-07-13)
+
+- [x] Deleted `Configs/.local/bin/doorwayctl` (13 MB) and `doorway-ipc` (2.8 MB) —
+      prebuilt upstream binaries carried opaquely since the initial fork:
+      `doorwayctl` IS HyDE's `hydectl` (Go module `hydectl` r45.5b3a9cc, Bubble Tea
+      TUI, shells out to nonexistent `hyde-shell` → broken); `doorway-ipc` IS
+      `github.com/khing/hyde-ipc`. Renamed at filename-level only, never rebuilt/
+      rebranded, **zero callers** anywhere in Configs/. `doorwayctl` was even
+      invoked (and silently failing) at every zsh startup via a completion stub.
+- [x] Removed their `flake.nix` `.local/bin/*` entries + `zsh/completions/doorwayctl.zsh`.
+- [x] Purged doc references (README Core Utilities, Introduction tools+branding rows,
+      Using-DOORway-with-Nix bin list, CLAUDE.md tree). Documented the removal in
+      Wiki/Scripting-API.md § "Removed: the vestigial HyDE binaries".
+- [x] Bonus: dropped dead `waybar/scripts` paths from `doorway-shell`'s default
+      `DOORWAY_SCRIPTS_PATH`; fixed a stale `theme.switch` example in its `--help`.
+- [ ] If a TUI dispatcher / IPC event tool is ever wanted, build from source via the
+      flake — don't re-vendor a prebuilt upstream binary.
 
 ## Docs reconciliation ✅ (2026-07-13)
 

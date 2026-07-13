@@ -30,8 +30,6 @@ Plus the DOORway-specific layer:
 | Tool | Purpose |
 |---|---|
 | `doorway-shell` | Front-end script that dispatches to every utility in `~/.local/lib/doorway/` (screenshots, wallpapers, brightness, volume, gamemode, etc.) |
-| `doorwayctl` | IPC control utility for interacting with the running session |
-| `doorway-ipc` | Direct IPC communication primitive |
 | ~100 scripts in `~/.local/lib/doorway/` | The actual work — `wallpaper.sh`, `screenshot.sh`, `volumecontrol.sh`, `anyrun-dmenu.sh`, etc. |
 
 You don't have to glue these together yourself. The keybindings in `Configs/.config/hypr/keybindings.lua` already call them, the bar already shows their output, and the anyrun pickers are already styled.
@@ -65,7 +63,7 @@ What's specifically DOORway:
 | **Target OS** | Distro-agnostic, primarily Arch | NixOS-native |
 | **Deployment** | Imperative installer shell scripts | Home Manager module via flake input |
 | **Config format** | Mostly hyprlang (`.conf`) | Hyprland 0.55+ lua (`.lua`) |
-| **Branding prefix** | `HYDE_`, `hyde-shell`, `hydectl` | `DOORWAY_`, `doorway-shell`, `doorwayctl` |
+| **Branding prefix** | `HYDE_`, `hyde-shell`, `hydectl` | `DOORWAY_`, `doorway-shell` |
 | **Edit workflow** | Edit `~/.config/hypr/*` directly | Edit `Configs/.config/hypr/*` in repo, then `nixos-rebuild switch` (the deployed paths are read-only Nix store symlinks) |
 
 The lua migration was the first large divergence; since then DOORway has replaced the entire inherited UI surface (waybar/dunst/rofi/wlogout → QuickShell + anyrun), so the visual layer is now DOORway's own rather than HyDE's. The migration history lives in `TODO.md` and (eventually) the planned `Lua-Migration-Notes.md` wiki article.

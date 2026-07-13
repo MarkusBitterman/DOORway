@@ -918,14 +918,6 @@
                 source = "${configDir}/.local/bin/doorway-shell";
                 executable = true;
               };
-              ".local/bin/doorwayctl" = {
-                source = "${configDir}/.local/bin/doorwayctl";
-                executable = true;
-              };
-              ".local/bin/doorway-ipc" = {
-                source = "${configDir}/.local/bin/doorway-ipc";
-                executable = true;
-              };
             };
 
             home.sessionPath = [

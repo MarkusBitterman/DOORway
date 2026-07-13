@@ -29,7 +29,7 @@ DOORway/
 │   │   ├── doorway/         # DOORway-specific settings
 │   │   └── kitty/             # Terminal
 │   └── .local/
-│       ├── bin/               # doorway-shell, doorwayctl, doorway-ipc
+│       ├── bin/               # doorway-shell (dispatcher script)
 │       ├── lib/doorway/     # 100+ utility scripts
 │       ├── share/hypr/        # Session orchestrators (startup, variables, env, dynamic)
 │       └── share/doorway/   # Data files, templates

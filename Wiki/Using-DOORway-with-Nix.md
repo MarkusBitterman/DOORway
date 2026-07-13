@@ -223,8 +223,6 @@ The generated files are real files Home Manager writes (not symlinks), which is 
 ### User binaries and libraries (`~/.local/`)
 
 - `~/.local/bin/doorway-shell` (executable)
-- `~/.local/bin/doorwayctl` (executable)
-- `~/.local/bin/doorway-ipc` (executable)
 - `~/.local/lib/doorway/` → ~100 utility scripts (screenshot, wallpaper, volume, pickers, etc.)
 - `~/.local/share/doorway/` → data files, templates
 - `~/.local/share/hypr/` → lua orchestrator + startup/env/dynamic/variables modules

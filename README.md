@@ -94,9 +94,7 @@ hyprsunset  satty  dolphin
 
 | Tool | Description |
 |------|-------------|
-| `doorway-shell` | Shell wrapper for DOORway operations |
-| `doorwayctl` | IPC control utility |
-| `doorway-ipc` | Direct IPC communication |
+| `doorway-shell` | Script dispatcher — the front-end keybindings and services shell out to (`doorway-shell <name> [args]`) |
 
 ### Scripts Library
 

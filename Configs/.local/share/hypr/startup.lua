@@ -11,6 +11,17 @@
 
 local vars = require("variables")
 
+-- Park the persistent headless output (created below in hyprland.start) far
+-- off-canvas. Auto-placement otherwise lands it at (1920,0), directly right of
+-- the real screen, where the cursor can slide onto it — and layer-shell
+-- launchers (anyrun) open on the FOCUSED monitor, so one triggered while focus
+-- sat on the phantom renders invisibly ("nothing happens" on Super+A; the
+-- daemon reports "already visible"). A large offset leaves an unbridgeable gap
+-- so the cursor can't reach it. Declarative rule, not `hyprctl keyword` (which
+-- errors on lua configs — "use eval"); it applies when the output appears. The
+-- zero-monitor safety-net role is position-independent.
+hl.monitor({ output = "HEADLESS-1", mode = "1920x1080@60", position = "10000x10000", scale = "1" })
+
 hl.on("hyprland.start", function()
     -- Cursor: must run inside hyprland.start so hyprctl IPC is reachable.
     -- Everything else is declarative (flake.nix systemd.user.services.*);

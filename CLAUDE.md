@@ -498,6 +498,43 @@ erroring. The screen can look 90% fine while the journal lists every defect.
 Skim `journalctl --user -u doorway-quickshell -b -p warning` after any shell
 change, and diff the warning set before/after a deploy.
 
+## Documentation Hygiene
+
+A 2026-07-13 reconciliation pass found 7 weeks of drift: TESTING.md prescribed a
+removed command, the wiki documented a setup script that never existed, DOORway
+Lock shipped against an unchecked TODO item, and CHANGELOG.md was frozen at
+v26.5.22. Rules to keep the docs true:
+
+**Docs update in the same commit as the change.** A feature isn't done until its
+TODO.md checkbox is flipped and every doc that names the old behavior is updated.
+
+**Doc map — what to touch when:**
+
+| Change | Docs to update |
+|---|---|
+| Module option added/changed (`doorway.*`) | README § Module Options Reference |
+| Keybind added/changed | KEYBINDINGS.md + `Wiki/Keybindings-Primer.md` (regenerate the affected tables from `keybindings.lua` — its `[Group\|Sub]` descriptions are the source of truth; don't patch ad hoc) |
+| Component added/replaced/removed | README § Components + `Wiki/Introduction.md` table + `Wiki/Interface-Tour.md` |
+| Initiative/arc completes | CHANGELOG.md entry at completion — never backfilled weeks later |
+| Testing/deploy workflow changes | TESTING.md (+ this file) |
+| Shell surface redesigned | `Wiki/Interface-Tour.md` + the CLAUDE.md surface-ownership table above |
+
+**Never document a command without verifying it exists** (run it, or check the
+script/subcommand is still present). Confidently-wrong prescriptions are worse
+than missing docs — the removed `doorway-shell app` subcommand sat as step 1 of
+TESTING.md's sanity checks for weeks.
+
+**One canonical home per open TODO item.** If an item must be mentioned twice,
+the second mention is a pointer ("tracked in X"), not a duplicate checkbox.
+
+**Drift detector** — retired-tool names appearing in docs outside historical
+notes mean a doc pass is due; extend the pattern when another tool is retired:
+
+```bash
+grep -rn -iE "waybar|dunst|\brofi\b|wlogout|swww|hyde-shell|hydectl" \
+  README.md KEYBINDINGS.md TESTING.md Wiki/*.md
+```
+
 ## Code Style
 
 - **Shell scripts**: Use `shellcheck`, prefer `[[ ]]` over `[ ]`

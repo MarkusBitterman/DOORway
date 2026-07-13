@@ -8,12 +8,17 @@
 - [Hyprland Wiki](https://wiki.hypr.land/Configuring/Start/)
 - [Lua-ification announcement](https://hypr.land/news/26_lua/)
 
+> **Doc hygiene (2026-07-13):** closing an item here that changes user-visible
+> behavior means updating the docs in the same commit — see CLAUDE.md
+> § Documentation Hygiene for the doc map (README options/components,
+> KEYBINDINGS.md, Wiki, CHANGELOG at arc completion).
+
 ---
 
 ## Quick Fixes
 
 - [x] **flake.nix**: Rename `swww` → `awww` (package renamed in nixpkgs)
-- [ ] **flake.nix**: Verify `configType = "lua"` is correct after migration
+- [x] **flake.nix**: Verify `configType = "lua"` is correct after migration — set and load-bearing since the migration landed; verified running for weeks
 
 ---
 
@@ -22,7 +27,7 @@
 Create `hyprland.lua` as the new entry point that can coexist with existing `.conf` files during transition.
 
 - [x] Create `Configs/.config/hypr/hyprland.lua`
-- [ ] Test hybrid loading (lua entry + hyprlang modules via `hl.source()`)
+- [x] ~~Test hybrid loading (lua entry + hyprlang modules via `hl.source()`)~~ — OBE: `hl.source()` doesn't exist on 0.55.1 and all `.conf` files were deleted in Phase 7; there was never a hybrid period to test
 
 ---
 
@@ -121,7 +126,7 @@ Main entry:
 ### Phase 7 Deferred (low-priority follow-ups)
 
 - [ ] `workflows.sh:get_info` still reads `WORKFLOW_ICON` / `WORKFLOW_DESCRIPTION` from `workflows/*.conf` via `get_hyprConf`. Until we add lua-comment-based metadata parsing (or expose them as `_G.WORKFLOW_*` globals in the preset `.lua` files), we keep `workflows/*.conf` alongside `workflows/*.lua` purely as metadata sources.
-- [ ] `wallbash` / `theme.switch` still emit hyprlang `themes/{colors,theme,wallbash}.conf`. `dynamic.lua` was supposed to source them via `hl.source()` — but `hl.source` **does not exist** on Hyprland 0.55.1 (confirmed empirically — see Phase 8 below). Migration plan needs to change to "wallbash emits `colors.lua` returning a colour table that `hl.config()` consumes."
+- [x] ~~`wallbash` / `theme.switch` still emit hyprlang `themes/{colors,theme,wallbash}.conf`…~~ — SUPERSEDED by matugen (Phase 11); `theme.switch.sh` deleted in Phase 10, `color/hypr.sh` deleted in Phase 16. Hyprland border colors now come from `~/.local/share/matugen/hyprland-colors.lua`.
 - [x] ~~Runtime verification: `hl.keyword(...)` and `hl.source()` of wallbash-generated `.conf` files.~~ **Verified negative**: both APIs return nil on 0.55.1. Replaced `hl.keyword("gesture", ...)` with `hl.gesture({...})` and `hl.keyword("group:groupbar:*", ...)` with `hl.config({ group = { groupbar = {...} } })`. `hl.source()` has no equivalent — wallbash integration is on hold (see Phase 8).
 
 ---
@@ -133,7 +138,7 @@ Items discovered after the initial lua migration landed, while shaking down `--v
 ### Documentation
 
 - [x] **Wiki seeded** — `Wiki/README.md` (landing page / IA) and `Wiki/Troubleshooting-Hyprland.md` (depth article) created. README now points at the wiki for deep troubleshooting; the README itself only carries a concise cheat-sheet (~25 lines).
-- [ ] **Write the remaining planned wiki articles** — `Architecture-Overview.md`, `Theming-and-Wallbash.md`, `Keybindings-Reference.md`, `Scripting-API.md`, `Lua-Migration-Notes.md`, `Hyprland-Lua-API-Cheatsheet.md`. See `Wiki/README.md` for one-line scopes.
+- [ ] **Write the remaining planned wiki articles** — *tracked in Phase 17 § Infrastructure (single home for this item).* `Theming-and-Wallbash.md` scope is obsolete (wallbash → matugen); replace with a matugen/DoorwayPalette theming article.
 
 ### Wallbash → lua port — **SUPERSEDED by Phase 11 (matugen)**
 
@@ -144,7 +149,7 @@ After surveying the Hyprland dotfiles landscape (2026-06-04 planning session), t
 
 ### Config validation in CI
 
-- [ ] **Wire `Hyprland --verify-config` into GitHub Actions.** It exists, returns exit codes, and was the only reason we caught the `repeat = true` bug, the `hl.keyword` nils, and the windowrules type mismatches. Add a workflow that runs `XDG_DATA_HOME=$PWD/Configs/.local/share Hyprland --verify-config -c $PWD/Configs/.config/hypr/hyprland.lua` on every PR so we can't reintroduce parse-level regressions.
+- [ ] **Wire `Hyprland --verify-config` into GitHub Actions.** *Tracked in Phase 17 § Infrastructure (single home for this item).* It exists, returns exit codes, and was the only reason we caught the `repeat = true` bug, the `hl.keyword` nils, and the windowrules type mismatches.
 
 ---
 
@@ -189,7 +194,7 @@ After surveying the Hyprland dotfiles landscape (2026-06-04 planning session), t
 - [x] **Pass 7 — Delete `launch-unit.sh` and `app()` helper** — `Configs/.local/lib/doorway/launch-unit.sh` deleted (zero callers after Passes 2-6 declarative migrations). `app()` function, supporting locals (`session_desktop`, `unt`, `home`, `scrPath`), and the orphaned `scrPath` export in the M table all removed from `variables.lua`. `CLIPBOARD_PERSIST` entry deleted (was commented-out in startup.lua anyway; last remaining `app()` consumer). The `start` table now contains only `GNOME_KEYRING` (cross-flake deferred — see Pass 7+ section). Bonus: `variables.lua` shrunk from 95 lines to ~70 lines.
 - [x] **Pass 8 — waybar.py runtime writes audit + icon-sizes regression fix** — full audit of runtime writes in `waybar.py`. `update_icon_size()` was writing icon-size-enriched data back to `includes.json` (now a Nix store symlink → EROFS regression introduced in Pass 1). Fixed: output redirected to new `icon-sizes.json`; all 19 layout files updated to include `icon-sizes.json` alongside `includes.json` + `position.json`. All other writes (`config.jsonc`, `style.css`, `theme.css`, `global.css`, `global.css`, `staterc`, `user-style.css` stub, `position.json`) confirmed correctly runtime-owned.
 - [x] **Pass 9 — `doorway-shell` audit + HyDE-naming cleanup** — audited wrapper; renamed `HYDE_SCRIPTS_PATH` → `DOORWAY_SCRIPTS_PATH` (self-contained in `doorway-shell`; 0 external consumers); updated `hyprshutdown` label from HyDE branding to DOORway. Documented Nix-store-resolving mechanism and the `DOORWAY_SHELL_INIT` guard pattern.
-- [ ] **Pass 10 — Final sweep** — update README + CLAUDE.md to reflect declarative model; remove vestigial HyDE references in docs; archive the Phase 9 entry. *(Partial — script cleanup done; HyDE refs in macos.jsonc + custom-doorway-menu.jsonc + legacy hyprlang templates + docs sweep deferred.)*
+- [x] **Pass 10 — Final sweep** — script cleanup done 2026-06-02; macos.jsonc/custom-doorway-menu.jsonc/legacy hyprlang templates deleted in Phase 10 (Initiative II); docs sweep (README, KEYBINDINGS, TESTING, Wiki de-HyDE/de-waybar refresh) completed 2026-07-13.
 - [x] **Pass 11 — Declarative GTK/cursor/font/env lift** — lifted static theme settings (GTK theme name, icon theme, cursor, fonts) from `theme.switch.sh` + `color/dconf.sh` (imperative HyDE pipeline) to `flake.nix` Home Manager declarations. Moved Qt/Wayland toolkit env vars from `env.lua` to `home.sessionVariables`. Deleted `color/dconf.sh` (its dconf nuclear-reset workflow was incompatible with `dconf.settings`; its `hyprctl setcursor` call was already in `startup.lua`). *(See Pass 11 section below.)*
 
 ### Pass 1 — completed work
@@ -437,10 +442,7 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 
 ### Verification
 
-- [ ] `systemctl --user status doorway-matugen-watcher` returns `active` (post nixos-rebuild)
-- [ ] Changing wallpaper via `wallpaper.sh` triggers matugen run; `~/.local/share/matugen/hyprland-colors.lua` updated and border colors change
-- [ ] `systemctl --user status doorway-quickshell` is inactive/disabled (shell.enable = false)
-- [ ] `nix run nixpkgs#quickshell -- --help` returns (smoke-test the binary exists)
+- [x] All verified implicitly by weeks of daily-driver use: matugen watcher active, wallpaper changes recolor Hyprland borders, quickshell service runs (shell.enable has been `true` since Phase 12 cutover). *(Reconciled 2026-07-13.)*
 
 **Note**: template variable syntax (`{{colors.primary.default.hex_stripped}}`) should be verified against the installed matugen 4.0.0 with `matugen --dry-run` or by inspecting the first generated output. The 3.x format may differ from 4.x.
 
@@ -637,6 +639,10 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 ## Phase 17: Stretch Goals (post-soak)
 
 > **Goal**: Enhancements after the Phase 16 shell has proven stable in daily-driver use. No timeline — add to this list as ideas crystallize.
+>
+> *Doc-touch reminder: shell extensions here change the Interface-Tour and README
+> components; new module options change the README options reference; each shipped
+> item gets a CHANGELOG entry (CLAUDE.md § Documentation Hygiene).*
 
 ### Visual polish (carried from Phase 16 deferred)
 
@@ -646,7 +652,7 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 
 ### Shell extensions
 
-- [ ] QuickShell lockscreen — replace hyprlock with a QML lockscreen surface (`WlrLayershell.layer: WlrLayer.Overlay`, `WlrKeyboardFocus.Exclusive`); hyprlock config stays as fallback
+- [x] QuickShell lockscreen — **DONE 2026-07-11 as DOORway Lock** (8 phases, commits `a9d2ce82`…`d6df4ca2`): `WlSessionLock` module with signal-cutout intro → rotating retro-CRT GLSL shaders → NP-styled PAM password panel; selected per host via `doorway.lock.backend = "doorway-lock"`; hyprlock stays as automatic fallback whenever the shell is down. See CLAUDE.md § DOORway Lock.
 - [ ] AI integration in left sidebar — deferred since Phase 14 planning; revisit once productivity tabs have had soak time
 - [ ] **Screen/app-sampled dynamic accent color** — user idea (2026-07-02): with no wallpaper
   (tiled windows own the screen), sample the average color of the focused window or visible
@@ -657,8 +663,10 @@ User confirmed HALLway has `services.gnome.gnome-keyring.enable = true` and `sec
 
 ### Infrastructure
 
-- [ ] GitHub Actions CI for `Hyprland --verify-config` (Phase 8 open item) — run on every PR touching `Configs/.config/hypr/` or `Configs/.local/share/hypr/`
-- [ ] Wiki articles (Phase 8 open item): Architecture-Overview, Theming-and-Wallbash, Keybindings-Reference, Scripting-API, Lua-Migration-Notes
+*(Canonical home for these two items — Phase 8 and the anyrun follow-ups point here.)*
+
+- [ ] GitHub Actions CI for `Hyprland --verify-config` — run on every PR touching `Configs/.config/hypr/` or `Configs/.local/share/hypr/`
+- [ ] New wiki articles: Architecture-Overview, Theming (matugen + DoorwayPalette — replaces the obsolete Theming-and-Wallbash scope), Keybindings-Reference, Scripting-API, Lua-Migration-Notes, Hyprland-Lua-API-Cheatsheet
 
 ---
 
@@ -791,15 +799,23 @@ require("themes/colors")
 - [x] **`doorway.animations.preset`** — 18 presets in `animations/`; `animations.lua` now reads from `doorway-animation-preset.lua` sidecar via pcall.
 - [x] **`doorway.lock.layout`** — 8 presets in `hyprlock/`; `hyprlock.conf` converted to generated `.text`, `$LAYOUT_PATH` interpolated from option.
 
-### Tier 2 — user-configurable values (convert static file → `.text` in flake)
+*Doc-touch reminder: every new `doorway.*` option lands with its row in README § Module Options Reference.*
 
-- [ ] **`doorway.theme`** — gaps (in/out), border size, rounding, layout (dwindle|master). Requires converting `Configs/.config/hypr/themes/theme.conf` from `.source` to `.text`.
-- [ ] **`doorway.input`** — numlock default, mouse accel profile, touchpad natural scroll, active/inactive window opacity.
+### Tier 2 — user-configurable values (convert static file → `.text` in flake) — ✅ DONE
 
-### Tier 3 — service toggles
+- [x] **`doorway.theme`** — gapsIn/gapsOut, borderSize, rounding, layout (dwindle|master), plus `theme.blur.{enabled,size,passes}` and `theme.iconTheme.{name,package}`.
+- [x] **`doorway.input`** — numlock, accelProfile (flat|adaptive|custom), naturalScroll, activeOpacity/inactiveOpacity.
 
-- [ ] **`doorway.blueLight`** — `hyprsunset` enable + temperature (K) + schedule times (currently all commented-out in `hyprsunset.conf`).
-- [ ] **`doorway.bluetooth.enable`** / **`doorway.networkApplet.enable`** / **`doorway.removableMedia.enable`** — gate existing `mkDoorwayService` entries.
+### Tier 3 — service toggles — ✅ DONE
+
+- [x] **`doorway.blueLight`** — enable + temperature + schedule (dayTime/nightTime) + `schedule.useWeatherTimes` (PirateWeather sunrise/sunset). Note: generated `hyprsunset.conf` is scheduleless since the 2026-07-04 night-light fix — QuickShell is the sole temperature driver.
+- [x] **`doorway.bluetooth.enable`** / **`doorway.networkApplet.enable`** / **`doorway.removableMedia.enable`** — gate the `mkDoorwayService` entries.
+
+### Landed beyond the original tiers *(reconciled 2026-07-13)*
+
+- [x] **`doorway.lock.backend`** — `"hyprlock"` | `"doorway-lock"` (DOORway Lock shader screensaver).
+- [x] **`doorway.bar.topLeftIcon`** — bar identity icon (`"distro"` auto-detect or a named symbolic icon).
+- [x] **`doorway.weather.*`** — PirateWeather bar widget: enable, zipCode, updateFrequency, pirateWeatherApiKeyFile, units.
 
 ### Do NOT parameterise
 
@@ -889,8 +905,10 @@ Toggle via bar util button, sidebar quick toggle, launcher `dark`/`light`, or
 `qs -c doorway ipc --any-display call theme toggleLightDark` (`getMode` returns the current one).
 Verified cold-start in a nested instance: both modes render, toggle repaints, mode persists.
 
-- [ ] **Post-rebuild check**: `~/.config/doorway/` is a real dir; config.json migrated from the
-  old path; toggle works on the deployed instance; journal shows no UPower warnings.
+- [x] **Post-rebuild check** — verified 2026-07-13: `~/.config/doorway/` is a real dir with a
+  writable `config.json` (individual store symlinks for config.toml + wallbash/); mode toggle
+  in daily use since. Residual: the old `~/.config/illogical-impulse/` rollback dir still
+  exists — safe to delete in a future sweep.
 - [ ] **Gold-mode soak polish** — plastic tone values (`DoorwayPalette` gold variants,
   `goldScheme` surfaces) were designed on-screen once; audit against real daily use.
 - [ ] **`Wallpapers.qml` / `FirstRunExperience.qml`** still reference the nonexistent
@@ -968,9 +986,10 @@ QuickShell surfaces are now optional UX *upgrades*, not blockers.
 **Follow-ups:**
 - [ ] QuickShell surface upgrades where richer UX is wanted: clipboard
       (thumbnails/multi-select), wallpaper grid, keybind-hint overlay,
-      window-switcher overview
-- [ ] Wiki refresh — Interface-Tour/Introduction/Keybindings-Primer still
-      describe the waybar/dunst/rofi era (pre-Initiative-II throughout)
+      window-switcher overview. *Docs on landing: Wiki/Interface-Tour.md
+      (anyrun pickers table) + KEYBINDINGS.md if binds change.*
+- [x] Wiki refresh — Interface-Tour/Introduction/Keybindings-Primer updated to the
+      QuickShell/anyrun era 2026-07-13 (docs reconciliation pass)
 - [ ] `bookmarks.py` is orphaned (its rofi -modi consumer retired); fold into
       a future anyrun plugin or QS surface, or delete
 - [ ] Cosmetic: `hint-hyprland.py --format rofi` and gamelauncher
@@ -1068,3 +1087,55 @@ QuickShell surfaces are now optional UX *upgrades*, not blockers.
       documented intent. Also seeded `blueLight.temperature` into config.json so the Nix
       option still drives QuickShell's colorTemperature (was orphaned + mismatched at 3500
       vs QuickShell's 5000 default).
+
+---
+
+# Post-Walnut ledger (2026-07-05 → 07-12)
+
+> Work that landed after the Black Walnut batches, reconciled into this file 2026-07-13.
+> Full detail lives in CLAUDE.md (DOORway Lock section) and the commit messages.
+
+## Left sidebar — "The Desk Edition" ✅ (2026-07-05)
+
+- [x] Magazine page de-Materialized: matte ink-on-paper (`MagazinePaper` + `Editorial`
+      singleton), squared corners, flush spine, six informational pages
+      (`83bf24f9`, `fa7b9392`, `a1c519da`, `0760bfee`). Tasks tab dropped (shared component
+      constraint resolved by removal).
+
+## DOORway Lock ✅ (2026-07-10 → 07-11, 8 phases)
+
+- [x] Retro-CRT shader suite baked to `.qsb` (`a9d2ce82`) → service singleton + test harness
+      (`7374059e`) → signal-cutout intro (`07838cf1`) → PAM auth + cartridge-label password
+      panel (`c26f16c2`) → real `WlSessionLock` (`cce0c413`) → cutover wiring with hyprlock
+      fallback via `doorway.lock.backend` (`4d2e3657`) → LockedHint + controller wake + docs
+      (`d6df4ca2`).
+- [x] Crash-recovery hardening: controller watcher self-exits on parent death (`78c29c66`);
+      **all DOORway services moved `ExitType=cgroup` → `ExitType=main`** so `Restart=always`
+      fires even when a child outlives a crash (`a64798a7`) — see CLAUDE.md ExitType gotcha.
+- [x] Idle chain ends at DPMS by default; suspend is per-host opt-in (`68dafd2c`) —
+      Atari VCS 800 platform sleep is broken at firmware level (see memory).
+
+## Bar & right sidebar (2026-07-11 → 07-12)
+
+- [x] Bar network gauge replaces the swap resource dial (`703880b1`)
+- [x] Right sidebar **ENCOM boardroom makeover** (`08830bc9`) — data-flow shader + HudPanels
+      + VitalsHud + litclock; supersedes the Batch 5a walnut-shell styling for this surface.
+      Inner controls intentionally stay gold in light mode.
+- [x] Atari brand mark replaced with HALLway dolly-zoom H (`652bf387`)
+- [x] `home.pointerCursor` explicitly enabled to silence HM deprecation warning (`c00eac6e`)
+
+## Docs reconciliation ✅ (2026-07-13)
+
+- [x] TODO.md stale checkboxes closed (this pass); duplicate CI/wiki items deduped into
+      Phase 17 § Infrastructure.
+- [x] README.md: components/themes/options/keybindings sections corrected to the
+      QuickShell + matugen-border-only + DOORway Lock reality; dead `doorway-shell app`
+      debugging steps replaced.
+- [x] KEYBINDINGS.md: rewritten from `keybindings.lua` (was untouched HyDE inheritance —
+      rofi menus, waybar binds, deleted theme binds, HyDE branding).
+- [x] TESTING.md: dead `doorway-shell app` + `Scripts/*.sh` paths fixed; waybar/dunst →
+      QuickShell.
+- [x] Wiki: Introduction, Interface-Tour, Keybindings-Primer, Using-DOORway-with-Nix
+      refreshed to the QuickShell/anyrun era; Wiki/README.md descriptions updated.
+- [x] CHANGELOG.md: consolidated entry added covering v26.5.22 → now (Initiative II,
+      de-HyDE passes, Black Walnut, DOORway Lock, anyrun migration).

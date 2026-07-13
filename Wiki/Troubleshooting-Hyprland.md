@@ -111,17 +111,11 @@ Means the function doesn't exist on this Hyprland version. Lua doesn't have stat
 
 **Cross-reference the [upstream lua example](https://github.com/hyprwm/Hyprland/blob/main/example/hyprland.lua)** — it's the authoritative API surface. If a call isn't documented there, it probably doesn't exist.
 
-#### The wallbash gap
+#### The missing `hl.source` (and how DOORway routes around it)
 
-On Hyprland 0.55.1, **`hl.source` does not exist**. There is no equivalent in the lua API — none of `hl.source`, `hl.include`, `hl.load`, `hl.parse` are defined. The wallbash colour pipeline currently writes a hyprlang `colors.conf` file (`~/.config/hypr/themes/colors.conf`), and `Configs/.local/share/hypr/dynamic.lua` contains placeholder `try_source(...)` calls that are intentionally pcall-wrapped no-ops:
+On Hyprland 0.55.1, **`hl.source` does not exist**. There is no equivalent in the lua API — none of `hl.source`, `hl.include`, `hl.load`, `hl.parse` are defined, so lua configs cannot consume hyprlang files at runtime.
 
-```lua
-local function try_source(path)
-    if hl.source then pcall(function() hl.source(path) end) end
-end
-```
-
-Until the wallbash pipeline is refactored to emit `colors.lua` (a lua module returning a color table that `hl.config()` can consume), wallbash-driven dynamic theming is on pause. The groupbar therefore uses Hyprland defaults. See `TODO.md` for the tracking entry.
+Historical note: this is what killed the inherited wallbash → Hyprland color pipeline. DOORway's answer was to drop it entirely — **matugen** now renders a real lua file (`~/.local/share/matugen/hyprland-colors.lua`) on every wallpaper change, and `Configs/.local/share/hypr/dynamic.lua` consumes it with plain `pcall(dofile, path)`. If your window-border accents stop following the wallpaper, check `systemctl --user status doorway-matugen-watcher.service` and confirm the rendered file exists.
 
 ### 2b. Type errors
 
@@ -277,7 +271,7 @@ Total time from symptom to root cause: about 90 seconds, mostly thanks to `--ver
 
 | Symptom | File against |
 |---|---|
-| Wrong keybind, wrong window rule, broken theme, wrong rofi launcher | DOORway |
+| Wrong keybind, wrong window rule, broken theme, broken launcher/picker | DOORway |
 | `CBackend::create() failed!`, libseat errors, regreet "XFCE (Wayland)" missing | HALLway |
 | Hyprland crashes mid-session with a stack trace including `hyprland::CCompositor` | hyprwm/Hyprland upstream |
 | `seatd` socket missing, `/dev/dri/cardN` permissions | NixOS module / `seatd` upstream |

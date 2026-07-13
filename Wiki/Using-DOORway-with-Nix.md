@@ -1,19 +1,8 @@
 # Using DOORway with Nix
 
-This article gets DOORway running on your NixOS system. There are two paths — the flake-based path (recommended, declarative, rollback-safe) and the manual setup script (good for trying it without touching your system configuration).
+This article gets DOORway running on your NixOS system via the flake + Home Manager module — the only supported path, and the one HALLway uses and we test against. It's declarative, rollback-safe, and version-pinned.
 
 If you've never written a Nix flake before, start at the next section. If you're already running flakes for your NixOS config, [skip ahead](#1-add-doorway-as-a-flake-input).
-
----
-
-## At a glance
-
-| Path | When to use it | What you get | What you commit to |
-|---|---|---|---|
-| **Flake + Home Manager module** (recommended) | You already manage NixOS declaratively, or you're ready to start | Reproducible, rollback-able, version-pinned desktop that comes back identically on every machine | A few lines in `flake.nix` + an import in `home.nix` |
-| **`Scripts/setup-nixos.sh`** | You want to try DOORway before adopting it, or you don't use flakes yet | A working DOORway session running from symlinks into a cloned repo | A clone of this repo somewhere on disk; you handle package installation separately |
-
-The flake path is what HALLway uses and what we test against. The manual path is supported but rougher around the edges.
 
 ---
 
@@ -25,15 +14,14 @@ A **flake** is a self-contained Nix project with three parts:
 2. **Outputs** — things the flake produces. Packages, NixOS modules, Home Manager modules, devShells, library functions, anything Nix can express.
 3. **`flake.nix`** — the manifest tying inputs and outputs together. Pure Nix; no side effects.
 
-DOORway is a flake. Its `inputs` are just `nixpkgs/nixos-unstable`. Its `outputs` are:
+DOORway is a flake. Its `inputs` are `nixpkgs/nixos-unstable` plus a pinned `hyprland`. Its `outputs` are:
 
 - `homeManagerModules.default` — the Home Manager module you import (also exposed as `homeManagerModules.doorway`)
+- `nixosModules.default` — the system-side module: owns `programs.hyprland`, i2c access for external-monitor brightness, UPower, gnome-keyring, and the XDG menu spec KDE apps need
 - `devShells.default` — a `nix develop` shell with Hyprland, linters, formatters, and helpers (for hacking on DOORway itself)
 - `lib.doorwayDeps` — the dependency package list, exposed for downstream flakes (HALLway) to reuse
 
 Why a flake and not a tarball: pinned inputs mean the version of Hyprland that DOORway was tested against is the version you actually get. No "works on my machine" because the lock file makes the machine the same.
-
-When you'd still prefer the manual script: you don't yet have a flake-managed NixOS system and you want to evaluate DOORway before adopting flakes generally. The script gets you running without changing how the rest of your system is built.
 
 ---
 
@@ -145,7 +133,7 @@ If you're starting from scratch, here's the smallest working `home.nix` that ena
 
 ## Module options
 
-All defined in `flake.nix` (lines 77–105 if you want to read the source):
+The full options reference lives in the [README § Module Options Reference](../README.md#module-options-reference) — it covers `doorway.{cursor,fonts,theme,input,animations,lock,idle,blueLight,shell,bar,weather}` and the service toggles. The core options:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
@@ -153,7 +141,7 @@ All defined in `flake.nix` (lines 77–105 if you want to read the source):
 | `doorway.monitor` | string | `",preferred,auto,1"` | Primary monitor configuration in Hyprland's `output,mode,position,scale` format. Parsed into `hl.monitor({...})` in the generated `monitors.lua`. |
 | `doorway.extraMonitors` | list of strings | `[]` | Additional monitors, same format as `monitor`. One entry per extra display. |
 | `doorway.keyboard` | string | `"us"` | xkb keyboard layout. Injected into the generated `userprefs.lua` as `kb_layout`. |
-| `doorway.installPackages` | bool | `true` | Whether to add DOORway's runtime dependencies (hyprland, waybar, rofi, dunst, etc.) to `home.packages`. Set to `false` if you install them at the NixOS system level instead. |
+| `doorway.installPackages` | bool | `true` | Whether to add DOORway's runtime dependencies (hyprland, quickshell, anyrun, matugen, kitty, etc.) to `home.packages`. Set to `false` if you install them at the NixOS system level instead. |
 
 ### `monitor` and `extraMonitors` — worked examples
 
@@ -191,7 +179,7 @@ If you need anything more advanced (mirrored displays, manual `transform=`, etc.
 
 ### Why `installPackages` is a thing
 
-By default the module adds all of DOORway's runtime dependencies (hyprland, waybar, rofi, dunst, hyprlock, hypridle, kitty, grim/slurp, brightnessctl, etc.) to `home.packages` so a clean Home Manager activation gives you a fully working desktop with no further package management.
+By default the module adds all of DOORway's runtime dependencies (hyprland, quickshell, anyrun, matugen, hyprlock, hypridle, kitty, grim/slurp, brightnessctl, ddcutil, etc.) to `home.packages` so a clean Home Manager activation gives you a fully working desktop with no further package management.
 
 But you may already install these at the **NixOS system level** (which is what HALLway does — it puts Hyprland in `environment.systemPackages` so it shows up in the display manager's session list). Setting `doorway.installPackages = false;` prevents duplicate installs.
 
@@ -215,34 +203,31 @@ Individual symlinks into the Nix store, so the generated files can live alongsid
 | `hypr/animations.lua` | `Configs/.config/hypr/animations.lua` (read-only) |
 | `hypr/workflows.lua` | `Configs/.config/hypr/workflows.lua` (read-only) |
 | `hypr/shaders.lua` | `Configs/.config/hypr/shaders.lua` (read-only) |
-| `hypr/hypridle.conf`, `hyprlock.conf`, `hyprsunset.conf`, `nvidia.conf` | corresponding source `.conf` files |
+| `hypr/nvidia.conf` | source `.conf` file |
+| `hypr/{hypridle,hyprlock,hyprsunset}.conf` | **generated** from `doorway.idle`, `doorway.lock`, `doorway.blueLight` options |
 | `hypr/{animations,shaders,themes,workflows,hyprlock}/` | corresponding source directories |
 | `hypr/monitors.lua` | **generated** from your `doorway.monitor` + `extraMonitors` options |
 | `hypr/userprefs.lua` | **generated** from your `doorway.keyboard` option (and a few sensible defaults) |
+| `hypr/doorway-{cursor,fonts,theme,animation-preset}.lua` | **generated** sidecars carrying module-option values into the lua config |
 
 The generated files are real files Home Manager writes (not symlinks), which is why they can coexist with the symlinked source files — a whole-directory symlink to the Nix store would have been read-only and prevented this.
 
 ### Other app configs (`~/.config/<app>/`)
 
-Whole-directory symlinks into the Nix store (these don't need generated files alongside them):
-
-- `~/.config/rofi/` → `Configs/.config/rofi/`
-- `~/.config/dunst/` → `Configs/.config/dunst/`
-- `~/.config/doorway/` → `Configs/.config/doorway/`
-- `~/.config/kitty/` → `Configs/.config/kitty/`
-- `~/.config/wlogout/` → `Configs/.config/wlogout/`
-
-Notable absence: **waybar's config directory is intentionally not Nix-managed.** `waybar.py` (one of the scripts in `~/.local/lib/doorway/`) generates `~/.config/waybar/{config.jsonc,style.css,includes/}` at runtime from layout templates in `~/.local/share/waybar/`. This is what makes `SUPER + ALT + ↑/↓` (cycle waybar layouts) work without a NixOS rebuild. See [Introduction § The bar is its own thing](Introduction.md#3-the-bar-is-its-own-thing-owned-by-waybarpy) for the rationale.
+- `~/.config/quickshell/doorway/` → the whole shell (whole-dir symlink)
+- `~/.config/anyrun/` → launcher + picker config (whole-dir symlink)
+- `~/.config/kitty/` → terminal config (whole-dir symlink)
+- `~/.config/matugen/` → config.toml + templates (individual links)
+- `~/.config/doorway/` → individual links for `config.toml` and `wallbash/` only — the directory itself is real and writable, because the shell persists its runtime config to `~/.config/doorway/config.json` there
 
 ### User binaries and libraries (`~/.local/`)
 
 - `~/.local/bin/doorway-shell` (executable)
 - `~/.local/bin/doorwayctl` (executable)
 - `~/.local/bin/doorway-ipc` (executable)
-- `~/.local/lib/doorway/` → ~80 utility scripts (theme, screenshot, wallpaper, volume, etc.)
-- `~/.local/share/doorway/` → data files, schemas, theme registry
+- `~/.local/lib/doorway/` → ~100 utility scripts (screenshot, wallpaper, volume, pickers, etc.)
+- `~/.local/share/doorway/` → data files, templates
 - `~/.local/share/hypr/` → lua orchestrator + startup/env/dynamic/variables modules
-- `~/.local/share/waybar/` → waybar layout templates (the source `waybar.py` reads)
 
 ### PATH
 
@@ -254,7 +239,9 @@ Notable absence: **waybar's config directory is intentionally not Nix-managed.**
 
 ### What you'll see at runtime
 
-On first login after `nixos-rebuild switch`, you'll see the wallpaper come up, then the waybar at the top, then a brief moment as services warm up (clipboard daemons, notifications, network applet, etc.). Total cold-start to "everything responsive" is typically 1–3 seconds on modern hardware.
+On first login after `nixos-rebuild switch`, you'll see the wallpaper come up, then the QuickShell bar at the top, then a brief moment as services warm up (clipboard daemons, tray applets, matugen watcher, etc.). Total cold-start to "everything responsive" is typically 1–3 seconds on modern hardware.
+
+After later rebuilds, run `systemctl --user restart doorway-quickshell.service` so the shell picks up its new store paths — Home Manager does not reliably restart user services.
 
 If something doesn't appear (empty desktop, no bar), follow [Troubleshooting-Hyprland.md](Troubleshooting-Hyprland.md). The two most common causes are silent exec-once failures (check `journalctl --user -b -n 200`) and lua parse errors (run `Hyprland --verify-config`).
 
@@ -300,34 +287,6 @@ sudo nixos-rebuild switch --flake .#<host>
 ```
 
 `nix flake update` before `git push` will silently reuse the previous commit. The CLAUDE.md "Flake-based deploy workflow" section has the full story.
-
----
-
-## The manual setup script
-
-For users who haven't adopted flakes yet, or who want to try DOORway without touching their system config:
-
-```bash
-git clone https://github.com/MarkusBitterman/DOORway.git ~/DOORway
-cd ~/DOORway/Scripts
-./setup-nixos.sh
-```
-
-What it does:
-
-- Checks that you're on NixOS and that the required packages are present (hyprland, waybar, rofi, dunst, hyprlock, hypridle, kitty).
-- Symlinks every relevant directory from `~/DOORway/Configs/` into `~/.config/`, `~/.local/lib/`, `~/.local/share/`, and `~/.local/bin/`.
-- Reports anything that conflicted so you can decide whether to back up your existing dotfiles.
-
-Flags worth knowing:
-
-- `--dry-run` — print what it would symlink without touching the filesystem
-- `--force` — overwrite existing files / symlinks at the target paths
-- `--help` — flag list
-
-This path does **not** install the runtime packages — you need to ensure hyprland, waybar, rofi, dunst, hyprlock, hypridle, kitty (and the rest of the dependency list — see [`flake.nix` `doorwayDeps`](../flake.nix)) are available at the NixOS system level yourself.
-
-Use this for evaluation. If you stick with DOORway, migrating to the flake path is recommended: it handles packages, is rollback-safe, and is what we test against.
 
 ---
 

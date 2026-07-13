@@ -13,30 +13,28 @@ A working session, not a parts list. After enabling the module and rebuilding, l
 | Layer | Component | What it does for you |
 |---|---|---|
 | Compositor | **Hyprland** (lua-config era, 0.55+) | Animated tiling Wayland compositor with workspaces, scratchpad, groups |
-| Status bar | **Waybar** | Top-of-screen bar with workspace indicator, clock, network/audio/battery, tray, custom DOORway menu |
-| Launcher | **Rofi** | App launcher, window switcher, file finder, emoji/glyph pickers, clipboard history, theme selector |
-| Notifications | **Dunst** | Top-right popups with action support |
-| Lock | **Hyprlock** + **Hypridle** | Idle-triggered screen lock with customizable layouts |
-| Logout | **Wlogout** | Visual logout/shutdown/reboot/suspend tile menu |
-| Wallpaper | **Hyprpaper** + `wallpaper.sh` | Wallpaper rotation tied to themes |
+| Shell | **QuickShell** (QML/Qt6, single process) | Top bar, right sidebar (system controls), left sidebar ("The Desk Edition"), OSD, notification popups, session screen |
+| Launcher | **anyrun** | App launcher plus every dmenu-style picker (window switcher, file finder, emoji/glyph, clipboard history, keybind hint) |
+| Lock | **DOORway Lock** + **Hypridle** | Idle-triggered shader-screensaver lock (retro-CRT GLSL + PAM panel); hyprlock remains as automatic fallback |
+| Wallpaper | **awww** + `wallpaper.sh` | Animated wallpaper backend; wallpaper changes drive Hyprland border colors via matugen |
 | Terminal | **Kitty** | Default terminal with GPU acceleration |
 | Screenshots | **grim** + **slurp** + **satty** | Region/window/full capture, freeze-and-shoot, annotation |
-| Clipboard | **cliphist** + **wl-paste** | Persistent clipboard history with rofi UI |
+| Clipboard | **cliphist** + **wl-paste** | Persistent clipboard history with anyrun picker UI |
 | Color | **hyprpicker** | Pixel color picker |
-| Display tone | **hyprsunset** | Optional blue-light filter |
-| Auth UI | **polkit-kde-agent** | Graphical password prompts for sudo/admin actions |
-| Secrets | **gnome-keyring** | Secret Service API for VSCodium, Firefox, etc. |
+| Display tone | **hyprsunset** | Optional blue-light filter (temperature driven by QuickShell, optionally on real sunset times) |
+| Auth UI | **polkit-gnome** | Graphical password prompts for sudo/admin actions |
+| Secrets | **gnome-keyring** | Secret Service API for VSCodium, Firefox, etc. (provided system-side by HALLway) |
 
 Plus the DOORway-specific layer:
 
 | Tool | Purpose |
 |---|---|
-| `doorway-shell` | Front-end script that dispatches to every utility in `~/.local/lib/doorway/` (themes, screenshots, wallpapers, brightness, volume, gamemode, etc.) |
+| `doorway-shell` | Front-end script that dispatches to every utility in `~/.local/lib/doorway/` (screenshots, wallpapers, brightness, volume, gamemode, etc.) |
 | `doorwayctl` | IPC control utility for interacting with the running session |
 | `doorway-ipc` | Direct IPC communication primitive |
-| ~80 scripts in `~/.local/lib/doorway/` | The actual work — `wallpaper.sh`, `theme.switch.sh`, `screenshot.sh`, `volumecontrol.sh`, etc. |
+| ~100 scripts in `~/.local/lib/doorway/` | The actual work — `wallpaper.sh`, `screenshot.sh`, `volumecontrol.sh`, `anyrun-dmenu.sh`, etc. |
 
-You don't have to glue these together yourself. The keybindings in `Configs/.config/hypr/keybindings.lua` already call them, the waybar already shows their output, and the rofi menus are already styled.
+You don't have to glue these together yourself. The keybindings in `Configs/.config/hypr/keybindings.lua` already call them, the bar already shows their output, and the anyrun pickers are already styled.
 
 ---
 
@@ -44,15 +42,15 @@ You don't have to glue these together yourself. The keybindings in `Configs/.con
 
 - **NixOS users who want a curated Hyprland setup** without assembling one from a dozen separate dotfiles repos. You add one flake input and you're done.
 - **Users of [HALLway OS](https://github.com/MarkusBitterman/HALLway)**, which consumes DOORway as its desktop layer. If you're on HALLway, you already have this — see [Using-DOORway-with-Nix.md](Using-DOORway-with-Nix.md) for the integration details.
-- **People who like HyDE's aesthetic and tooling** but want declarative deployment, reproducibility, and the ability to roll back desktop changes the way you roll back any other NixOS generation.
-- **Anyone planning to customize.** The whole `Configs/` tree is a thin payload — keybindings are one lua file, themes are a directory, waybar layouts are templated. You can fork and edit without reverse-engineering an installer.
+- **People who want a desktop with a committed visual identity** — the Nintendo-Power/retro-CRT "cartridge" look (gray NES cart dark mode, gold Zelda cart light mode), the Black Walnut bar, the magazine-page sidebar — with declarative deployment, reproducibility, and rollback the way you roll back any other NixOS generation.
+- **Anyone planning to customize.** The whole `Configs/` tree is a thin payload — keybindings are one lua file, the shell is readable QML, the palette is one committed singleton. You can fork and edit without reverse-engineering an installer.
 
 ## Who this isn't for
 
 - **Arch / Fedora / non-NixOS users.** Use [upstream HyDE](https://github.com/HyDE-Project/HyDE) instead. DOORway's deployment story is Nix-shaped end-to-end; there is no equivalent on imperative distros and we don't try to provide one.
 - **Anyone wanting hyprlang configs.** DOORway migrated to Hyprland 0.55+'s lua config format. The `*.conf` files are gone (with the exception of a few daemon configs that still use hyprlang — `hypridle.conf`, `hyprlock.conf`). If you have a strong preference for hyprlang, you'll be fighting the codebase.
-- **Anyone counting on full wallbash dynamic recoloring today.** The wallbash pipeline (extract palette from wallpaper → recolor everything live) is currently on pause; see [the wallbash gap](Troubleshooting-Hyprland.md#the-wallbash-gap) for the technical reason. Static theme switching via the rofi selector works fine — you can still change themes and the colors update — but the per-wallpaper auto-derived palette path doesn't apply to Hyprland itself yet.
-- **People who want a minimal i3-style setup.** DOORway is loaded: animations, blur, gradients, a fairly busy waybar, a theme system. It's HyDE-flavored, not bare-bones. You can strip features but the defaults aren't minimal.
+- **Anyone wanting wallpaper-derived shell theming (Material You everywhere).** DOORway made the opposite choice deliberately: the shell's colors are a *committed* palette (`DoorwayPalette.qml`) with two cartridge modes, and only Hyprland's window-border accents follow the wallpaper (via matugen). If you want your whole bar to recolor per wallpaper, this isn't that desktop.
+- **People who want a minimal i3-style setup.** DOORway is loaded: animations, blur, a woodgrain bar with HUD gauges, two sidebars, a shader lock screen. You can strip features but the defaults aren't minimal.
 
 ---
 
@@ -70,7 +68,7 @@ What's specifically DOORway:
 | **Branding prefix** | `HYDE_`, `hyde-shell`, `hydectl` | `DOORWAY_`, `doorway-shell`, `doorwayctl` |
 | **Edit workflow** | Edit `~/.config/hypr/*` directly | Edit `Configs/.config/hypr/*` in repo, then `nixos-rebuild switch` (the deployed paths are read-only Nix store symlinks) |
 
-The lua migration is the largest semantic divergence. It's documented in detail in `HyDE-to-DOORway.md` and (eventually) in the planned `Lua-Migration-Notes.md` wiki article.
+The lua migration was the first large divergence; since then DOORway has replaced the entire inherited UI surface (waybar/dunst/rofi/wlogout → QuickShell + anyrun), so the visual layer is now DOORway's own rather than HyDE's. The migration history lives in `TODO.md` and (eventually) the planned `Lua-Migration-Notes.md` wiki article.
 
 DOORway is then consumed by [HALLway](https://github.com/MarkusBitterman/HALLway), the full NixOS flake that bundles a complete operating system. HALLway treats DOORway as one of its inputs — the same pattern any other NixOS user would use. You can run DOORway outside HALLway just fine; HALLway is the largest consumer, not the only one.
 
@@ -82,7 +80,7 @@ Three load-bearing ideas shape the design. Worth knowing up front because they e
 
 ### 1. The repo is the source of truth, the deployed paths are read-only.
 
-Every file under `~/.config/hypr/`, `~/.config/rofi/`, `~/.local/lib/doorway/`, etc. is either a symlink into the Nix store (root-owned, read-only) or a file Home Manager generated at activation. **You don't edit them directly.** You edit the corresponding file in this repo's `Configs/` tree, then `sudo nixos-rebuild switch --flake ...` to redeploy.
+Every file under `~/.config/hypr/`, `~/.config/anyrun/`, `~/.config/quickshell/`, `~/.local/lib/doorway/`, etc. is either a symlink into the Nix store (root-owned, read-only) or a file Home Manager generated at activation. **You don't edit them directly.** You edit the corresponding file in this repo's `Configs/` tree, then `sudo nixos-rebuild switch --flake ...` to redeploy.
 
 This is the single biggest mental shift for users coming from imperative distros. For the full story (including the runtime-write story for scripts that need to save state somewhere), see [CLAUDE.md's Nix Store Workflow section](../CLAUDE.md#nix-store-workflow--critical).
 
@@ -92,11 +90,11 @@ Hyprland 0.55+ kept the declarative `hl.config({...})` table but moved a lot of 
 
 What this means for you: most "I want it to do X on startup" or "I want a new shortcut for Y" changes are simple lua additions, not config-file edits. The full chain is documented (eventually) in the planned `Architecture-Overview.md`.
 
-### 3. The bar is its own thing, owned by `waybar.py`.
+### 3. The shell is one QuickShell process; the daemons are systemd user units.
 
-Most Nix-managed desktop setups treat `~/.config/waybar/` as a static config directory. DOORway doesn't — `waybar.py` generates the active config, layout, and stylesheet at runtime, picking modules and styles from templates that live in `~/.local/share/waybar/` (Nix-managed) and writing the live config into `~/.config/waybar/` (session state, *not* Nix-managed). This is why you can switch waybar layouts at runtime (`SUPER + ALT + ↑/↓`) without rebuilding NixOS.
+Everything you see (bar, sidebars, OSD, notifications, session screen, lock) is a single QuickShell instance running as `doorway-quickshell.service`. Everything that runs alongside it (clipboard watchers, tray applets, idle daemon, matugen watcher, blue-light filter) is a declarative systemd user unit defined in `flake.nix` — Hyprland's own startup hook is down to a single `hyprctl setcursor` call.
 
-If you find yourself trying to edit `~/.config/waybar/config.jsonc` and watching your changes vanish on next reload, this is why. Edit the templates in `Configs/.local/share/waybar/` instead.
+Two practical consequences: `systemctl --user status doorway-quickshell.service` (and the journal) is where UI problems surface, not Hyprland's log; and after a rebuild you `systemctl --user restart doorway-quickshell.service` to pick up new store paths — Home Manager does not reliably restart user services for you.
 
 ---
 

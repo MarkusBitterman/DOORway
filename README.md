@@ -29,11 +29,11 @@ DOORway is the desktop environment layer of HALLway OS. It provides:
 | Component | Purpose |
 |-----------|---------|
 | **Hyprland** | Wayland compositor with animations and tiling |
-| **QuickShell** | QML/Qt6 shell: top bar, sidebars, OSD, notifications, session screen |
-| **matugen** | Material You color theming from the active wallpaper |
+| **QuickShell** | QML/Qt6 shell: top bar, sidebars, OSD, notifications, session screen, lock screen |
+| **DOORway Lock** | Shader-screensaver lock screen (QuickShell `WlSessionLock`); hyprlock remains as automatic fallback |
+| **matugen** | Hyprland border accent colors derived from the active wallpaper |
 | **anyrun** | Application launcher and dmenu-style picker menus |
-| **Hyprlock** | Lock screen |
-| **swww** | Animated wallpaper backend |
+| **awww** | Animated wallpaper backend |
 
 **Why DOORway exists:**
 
@@ -66,20 +66,21 @@ For manual setups, core dependencies include:
 
 ```nix
 hyprland          # compositor
-quickshell        # shell (bar, sidebars, OSD, notifications)
-matugen           # Material You color theming
+quickshell        # shell (bar, sidebars, OSD, notifications, lock)
+matugen           # wallpaper → Hyprland border colors
 anyrun            # launcher + picker menus
-hyprlock          # lock screen
+hyprlock          # lock screen fallback
 hypridle          # idle daemon
-swww              # wallpaper backend
+awww              # wallpaper backend
 material-symbols  # icon font for QuickShell surfaces
 polkit_gnome      # authentication agent
+ddcutil           # external-monitor brightness (DDC/CI)
 
 # Screenshots & clipboard
 grim  slurp  cliphist
 
 # Utilities
-kitty  brightnessctl  playerctl  wireplumber
+kitty  brightnessctl  playerctl  wireplumber  fd
 
 # Optional
 hyprsunset  satty  dolphin
@@ -108,7 +109,7 @@ Located in `~/.local/lib/doorway/`:
 | `volumecontrol.sh` | Audio volume with OSD feedback |
 | `screenshot.sh` | Screenshot capture (area, window, full) |
 | `cliphist.sh` | Clipboard history manager |
-| `lockscreen.sh` | Hyprlock launcher |
+| `lockscreen.sh` | Lock screen launcher (DOORway Lock or hyprlock, per `doorway.lock.backend`) |
 | `anyrun-dmenu.sh` | dmenu-style picker on anyrun (backs all menu flows) |
 | `wallpaper.sh` | Wallpaper management + matugen trigger |
 
@@ -209,6 +210,8 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | `theme.blur.enabled` | bool | `true` | Enable background blur behind transparent surfaces |
 | `theme.blur.size` | int (≥ 1) | `6` | Blur kernel radius — larger is blurrier but heavier |
 | `theme.blur.passes` | int (≥ 1) | `3` | Number of blur passes — more passes = smoother result |
+| `theme.iconTheme.name` | str | `"Tela-dracula"` | Icon theme name (Tela variants: `Tela`, `Tela-blue`, `Tela-dracula`, `Tela-nord`, … each also with `-dark`/`-light` suffixes) |
+| `theme.iconTheme.package` | package | `pkgs.tela-icon-theme` | Nix package providing the icon theme |
 
 Borders are painted by **matugen** with Material You accent colors extracted from your active wallpaper. `theme.borderSize = 4` with a bold wallpaper and `animations.preset = "LimeFrenzy"` gives a continuously animated neon glow effect.
 
@@ -243,7 +246,8 @@ Available presets:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `lock.layout` | enum | `"DOORway"` | Hyprlock layout preset from `hyprlock/` |
+| `lock.backend` | `"hyprlock"` \| `"doorway-lock"` | `"hyprlock"` | Which locker `lockscreen.sh` launches. `"doorway-lock"` is the QuickShell shader-screensaver lock (retro-CRT shaders + PAM panel); it falls back to hyprlock automatically whenever the shell isn't running, so it never fails open |
+| `lock.layout` | enum | `"DOORway"` | Hyprlock layout preset from `hyprlock/` (used by the hyprlock backend and the fallback path) |
 
 Available layouts: `DOORway` (wallbash colors), `Anurati` (sci-fi typeface), `Arfan on Clouds`, `greetd`, `greetd-wallbash`, `IBM Plex`, `IMB Xtented`, `SF Pro`.
 
@@ -275,14 +279,33 @@ Available layouts: `DOORway` (wallbash colors), `Anurati` (sci-fi typeface), `Ar
 | `blueLight.temperature` | int 1000–10000 | `3500` | Night-mode color temperature in Kelvin. Lower = warmer/redder |
 | `blueLight.schedule.dayTime` | str | `"06:00"` | Time (HH:MM) to restore daylight colors |
 | `blueLight.schedule.nightTime` | str | `"21:00"` | Time (HH:MM) to apply night temperature |
+| `blueLight.schedule.useWeatherTimes` | bool | `false` | With `weather.enable`, use today's actual sunrise/sunset from PirateWeather instead of the fixed times |
 
 Reference temperatures: `2700K` incandescent · `3500K` warm white · `5500K` neutral · `6500K` daylight.
+
+The hyprsunset daemon itself runs scheduleless — QuickShell is the sole temperature driver, so the schedule options control when *QuickShell* applies the night temperature.
 
 #### `doorway.shell` — QuickShell UI shell
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `shell.enable` | bool | `true` | Enable the QuickShell bar, sidebars, OSD, and notification popups |
+| `shell.enable` | bool | `true` | Enable the QuickShell bar, sidebars, OSD, notifications, and session/lock surfaces |
+
+#### `doorway.bar` — Top bar
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `bar.topLeftIcon` | str | `"distro"` | Icon on the bar's top-left button. `"distro"` auto-detects (nixos-symbolic, arch-symbolic, …); any other string is looked up as `<name>-symbolic` in the icon theme, then in `assets/icons/` |
+
+#### `doorway.weather` — PirateWeather bar widget
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `weather.enable` | bool | `false` | Enable the bar weather widget and its periodic fetch service |
+| `weather.zipCode` | str | `""` | US ZIP / postal code; geocoded via Nominatim on first run and cached |
+| `weather.updateFrequency` | int | `15` | Refresh interval in minutes (systemd timer) |
+| `weather.pirateWeatherApiKeyFile` | str | `""` | Path to a systemd `EnvironmentFile` containing `PIRATE_WEATHER_API_KEY=…` (get a key at pirateweather.net; pairs well with sops-nix) |
+| `weather.units` | `"us"` \| `"si"` \| `"ca"` \| `"uk2"` | `"us"` | `us` °F/mph · `si` °C/m/s · `ca` °C/km/h · `uk2` °C/mph |
 
 #### Service Toggles
 
@@ -296,16 +319,34 @@ Reference temperatures: `2700K` incandescent · `3500K` warm white · `5500K` ne
 
 ## Themes
 
-DOORway uses **matugen** (Material You) for dynamic theming — colors are extracted from your active wallpaper and applied to the QuickShell surfaces and Hyprland border colors in real time.
+DOORway's theming splits into two deliberately separate systems:
 
-### How it works
+### QuickShell: committed cartridge palette
+
+The shell surfaces (bar, sidebars, OSD, notifications, lock) do **not** recolor from the
+wallpaper. Colors come from a committed palette singleton
+(`modules/common/DoorwayPalette.qml`, Nintendo-Power tokens) with two cartridge modes:
+
+- **`dark`** — gray NES cart
+- **`gold`** — gold Zelda cart (light mode)
+
+Toggle via the bar's dark-mode button, the right-sidebar quick toggle, launcher
+`dark`/`light` actions, or:
+
+```bash
+qs -c doorway ipc --any-display call theme toggleLightDark
+```
+
+The mode persists at `appearance.palette.mode` in `~/.config/doorway/config.json`.
+
+### Hyprland borders: matugen from the wallpaper
+
+matugen runs for exactly one output — Hyprland's border accent colors:
 
 1. `wallpaper.sh` sets the wallpaper and writes a trigger file to `~/.cache/doorway/wall.set`
 2. `doorway-matugen-watcher` (systemd user service) detects the change via `inotifywait`
-3. `matugen image <wallpaper>` generates a Material You palette and writes:
-   - `~/.local/share/matugen/hyprland-colors.lua` — Hyprland border colors (sourced by `dynamic.lua`)
-   - `~/.config/quickshell/doorway/modules/common/Colors.qml` — QuickShell color singleton
-4. Hyprland reloads automatically; QuickShell picks up the new `Colors.qml` values
+3. `matugen image <wallpaper>` renders `~/.local/share/matugen/hyprland-colors.lua`
+4. Hyprland reloads; `dynamic.lua` sources the new border colors
 
 ### Wallpaper commands
 
@@ -324,16 +365,17 @@ See [KEYBINDINGS.md](KEYBINDINGS.md) for the complete reference.
 
 | Keybind | Action |
 |---------|--------|
-| `Super + Return` | Terminal (Kitty) |
+| `Super + T` | Terminal (Kitty) |
 | `Super + A` | Application launcher (anyrun) |
+| `Super + Tab` | Window switcher |
 | `Super + Q` | Close window |
 | `Super + W` | Toggle floating |
-| `Super + F` | Fullscreen |
+| `Shift + F11` | Fullscreen |
 | `Super + /` | Show all keybindings |
 | `Super + L` | Lock screen |
-| `Super + Delete` | Session screen (lock / suspend / reboot / shutdown) |
+| `Super + Delete` | Session screen (lock / suspend / logout / shutdown) |
 | `Super + SPACE` | Toggle right sidebar (system controls) |
-| `Super + Shift + SPACE` | Toggle left sidebar (productivity) |
+| `Super + Shift + SPACE` | Toggle left sidebar (The Desk Edition) |
 
 ### Window Management
 
@@ -348,15 +390,17 @@ See [KEYBINDINGS.md](KEYBINDINGS.md) for the complete reference.
 
 | Keybind | Action |
 |---------|--------|
-| `Print` | Screenshot area |
-| `Super + Print` | Screenshot window |
-| `Ctrl + Print` | Screenshot full screen |
+| `Super + P` | Snip a region |
+| `Super + Ctrl + P` | Freeze screen, then snip |
+| `Super + Alt + P` | Screenshot active monitor |
+| `Print` | Screenshot all monitors |
+| `Super + Shift + P` | Color picker (hyprpicker) |
 
 ---
 
 ## Styles
 
-> Screenshots coming soon — DOORway is under active development as of 2026-06.
+> Screenshots coming soon — DOORway is under active development as of 2026-07.
 
 ---
 
@@ -415,11 +459,12 @@ start-hyprland
 # Lua config errors (stdout disabled after init — check the log file):
 cat /run/user/$(id -u)/hypr/*/hyprland.log | grep -v "DEBUG from aquamarine"
 
-# Daemon crashes (exec-once failures are silent in the Hyprland log):
+# Daemon crashes — DOORway services are declarative systemd user units:
 journalctl --user -b -n 200 | grep -iE "(quickshell|doorway|hypr)"
+systemctl --user status doorway-quickshell.service doorway-matugen-watcher.service
 
-# Sanity-check app2unit.sh is findable (run from the debug terminal above):
-doorway-shell app -u test.scope -t scope -- echo "ok"
+# Shell-surface defects announce themselves as journal warnings:
+journalctl --user -u doorway-quickshell.service -b --no-pager | grep -vE "DEBUG|INFO"
 ```
 
 Inside DOORway: `Super + F5` reloads the config live (see [Keybindings](#keybindings)).

@@ -2,7 +2,7 @@
 
 This article is a curated, by-use-case tour of DOORway's keyboard shortcuts. The goal is *learning* — the binds most users press most often, grouped so you can build muscle memory. If you want an exhaustive auto-generated index of every single binding (including the obscure ones), watch for the planned `Keybindings-Reference.md`; for now, the source of truth is `Configs/.config/hypr/keybindings.lua`.
 
-For everything *visible* you'd want to interact with (panels, menus, the waybar, dunst, theme switching), see [Interface-Tour.md](Interface-Tour.md). The two articles complement each other.
+For everything *visible* you'd want to interact with (the bar, sidebars, pickers, notifications, theme switching), see [Interface-Tour.md](Interface-Tour.md). The two articles complement each other.
 
 ---
 
@@ -16,11 +16,10 @@ DOORway uses the standard modifier vocabulary:
 | `SHIFT` | Shift |
 | `CTRL` | Control |
 | `ALT` | Alt / Option |
-| `ALT_R`, `Control_R` | Right Alt, Right Control — distinguished from their left-side counterparts for the waybar toggle |
 
 A binding like `SUPER + SHIFT + Q` means "hold SUPER and SHIFT, then press Q." Modifiers go in any order; the trailing key is the actual action key.
 
-**Note on the live keybinds:** if you forget any of these, press `SUPER + /` at any time to open a searchable rofi-driven keybindings hint — that menu reflects the current config exactly, so it won't drift if you customize the bindings.
+**Note on the live keybinds:** if you forget any of these, press `SUPER + /` at any time to open a searchable keybindings hint (an anyrun picker) — that menu reflects the current config exactly, so it won't drift if you customize the bindings.
 
 ---
 
@@ -31,15 +30,16 @@ If you only learn ten bindings, learn these. They cover ~80% of daily desktop us
 | Key | Action |
 |---|---|
 | `SUPER + T` | Open terminal (Kitty) |
-| `SUPER + A` | Application launcher (rofi) |
-| `SUPER + Tab` | Window switcher (rofi) |
+| `SUPER + A` | Application launcher (anyrun) |
+| `SUPER + Tab` | Window switcher |
 | `SUPER + Q` | Close focused window |
 | `SUPER + W` | Toggle floating mode on the focused window |
 | `SUPER + 1`..`SUPER + 0` | Switch to workspace 1–10 |
 | `SUPER + ←/→/↑/↓` | Focus the window in that direction |
+| `SUPER + SPACE` / `SUPER + SHIFT + SPACE` | Toggle the right / left sidebar |
 | `SUPER + L` | Lock the screen |
 | `SUPER + /` | Show the searchable keybindings menu (use this whenever you forget anything) |
-| `CTRL + ALT + Delete` | Open the logout menu |
+| `SUPER + Delete` | Open the session screen (lock / suspend / logout / shutdown) |
 
 If you internalize just `SUPER + T`, `SUPER + A`, `SUPER + Q`, and `SUPER + /`, you can navigate by discovery — `SUPER + /` lists every other binding, searchable.
 
@@ -74,7 +74,8 @@ If you internalize just `SUPER + T`, `SUPER + A`, `SUPER + Q`, and `SUPER + /`, 
 | `SUPER + Q` | Close the focused window (sends `killactive`) |
 | `ALT + F4` | Same as `SUPER + Q` — close the focused window |
 | `SUPER + F5` | Reload the Hyprland config (picks up changes to `~/.config/hypr/*.lua` without logout) |
-| `SUPER + Delete` | Kill the entire Hyprland session (drops you back to your display manager) |
+| `SUPER + ALT + R` | Restart the QuickShell shell (apply a rebuild's new store paths) |
+| `SUPER + Delete` | Open the session screen — lock, suspend, logout, or shutdown from there |
 
 ### Mouse-modifier window manipulation
 
@@ -137,21 +138,27 @@ These open specific apps directly, bypassing the launcher menu:
 | `SUPER + B` | Web browser (Firefox) | Honors `$BROWSER` |
 | `CTRL + SHIFT + Escape` | System monitor | Doorway's wrapper picks an installed monitor (Mission Center, htop, etc.) |
 
-### Rofi menus
+### anyrun menus
 
-Each of these opens a rofi-driven menu. **Pressing the same keybind a second time closes an open rofi instance** (every rofi launcher is `pkill -x rofi || …`):
+Each of these opens an anyrun picker. **Pressing the same keybind a second time closes an open picker** (every launcher bind is `anyrun close || …`):
 
 | Key | Menu |
 |---|---|
-| `SUPER + A` | Application launcher (search + launch desktop entries) |
-| `SUPER + Tab` | Window switcher (jump to any open window) |
+| `SUPER + A` | Application launcher (search + launch desktop entries; also does inline math and `dark`/`light` mode actions) |
+| `SUPER + Tab` | Window switcher (jump to any open window, MRU-ordered) |
 | `SUPER + SHIFT + E` | File finder |
 | `SUPER + /` | Keybindings hint (searchable, auto-generated from `keybindings.lua` descriptions) |
 | `SUPER + ,` | Emoji picker |
 | `SUPER + .` | Glyph picker (Unicode symbols) |
 | `SUPER + V` | Clipboard (quick pick — last N entries) |
-| `SUPER + SHIFT + V` | Clipboard manager (full history, with delete/pin) |
-| `SUPER + SHIFT + A` | Rofi launcher style selector (switch which rofi theme drives `SUPER + A`) |
+| `SUPER + SHIFT + V` | Clipboard manager (full history, with delete options) |
+
+### QuickShell panels
+
+| Key | Panel |
+|---|---|
+| `SUPER + SPACE` | Right sidebar — system controls (sliders, toggles, Wi-Fi/Bluetooth, calendar, notification history) |
+| `SUPER + SHIFT + SPACE` | Left sidebar — The Desk Edition |
 
 ---
 
@@ -206,19 +213,15 @@ The volume / brightness keys are bound with `locked = true`, which means they ke
 
 ## Theme, wallpaper, and appearance
 
-The whole appearance customization surface is keyboard-driven through rofi menus:
-
 | Key | Menu |
 |---|---|
-| `SUPER + SHIFT + T` | Theme selector (palette + wallpaper set + bar style + cursor) |
-| `SUPER + SHIFT + W` | Wallpaper selector (pick from the active theme's wallpaper set) |
-| `SUPER + ALT + →` | Next wallpaper (cycle within the current theme) |
+| `SUPER + SHIFT + W` | Wallpaper selector (also recolors Hyprland window borders via matugen) |
+| `SUPER + ALT + →` | Next wallpaper |
 | `SUPER + ALT + ←` | Previous wallpaper |
-| `SUPER + ALT + ↑` | Next waybar layout |
-| `SUPER + ALT + ↓` | Previous waybar layout |
-| `SUPER + SHIFT + R` | Wallbash mode selector (which color extraction algorithm to use; subject to the wallbash-lua gap, see [Interface-Tour § What doesn't work today](Interface-Tour.md#what-doesnt-work-today-wallbash-dynamic-recoloring)) |
 | `SUPER + SHIFT + Y` | Animation preset selector |
-| `SUPER + SHIFT + U` | Hyprlock layout selector |
+| `SUPER + SHIFT + U` | Hyprlock layout selector (the fallback locker's layout) |
+
+Light/dark (gold/gray cartridge) mode has no dedicated keybinding — toggle it from the bar's dark-mode button, the right sidebar, or by typing `dark` / `light` into the launcher (`SUPER + A`).
 
 ---
 
@@ -245,20 +248,14 @@ If you have multiple keyboard layouts configured:
 
 ## System
 
-### Waybar control
-
-| Key | Action |
-|---|---|
-| `ALT_R + Control_R` (right Alt + right Ctrl) | Toggle waybar visibility |
-
 ### Session control
 
 | Key | Action |
 |---|---|
-| `SUPER + L` | Lock the screen (hyprlock) |
-| `CTRL + ALT + Delete` | Open the logout menu (wlogout) |
-| `SUPER + Delete` | Kill the Hyprland session immediately |
+| `SUPER + L` | Lock the screen (DOORway Lock, or hyprlock per `doorway.lock.backend`) |
+| `SUPER + Delete` / `CTRL + ALT + Delete` | Open the session screen (lock / suspend / logout / shutdown) |
 | `SUPER + F5` | Live-reload the Hyprland config |
+| `SUPER + ALT + R` | Restart the QuickShell shell |
 
 ---
 
@@ -277,7 +274,7 @@ For completeness — bindings that are mouse-driven rather than keyboard-driven:
 
 ## Where this list comes from
 
-Every binding above lives in `Configs/.config/hypr/keybindings.lua`. The keybinds are written using the `hl.bind(key, dispatcher, opts)` API; opts include a `description` field that follows the `[Group|Subgroup] description` format. That format isn't decorative — it's structured input for `keybinds/hint-hyprland.py`, which is what powers the `SUPER + /` rofi keybindings menu. If you customize bindings and want them to appear in the hint menu, follow the same `[Group|Subgroup] description` convention.
+Every binding above lives in `Configs/.config/hypr/keybindings.lua`. The keybinds are written using the `hl.bind(key, dispatcher, opts)` API; opts include a `description` field that follows the `[Group|Subgroup] description` format. That format isn't decorative — it's structured input for `keybinds/hint-hyprland.py`, which is what powers the `SUPER + /` keybindings hint picker. If you customize bindings and want them to appear in the hint menu, follow the same `[Group|Subgroup] description` convention.
 
 Bindings not listed here (because they're rarely-pressed or are duplicate hardware keys):
 

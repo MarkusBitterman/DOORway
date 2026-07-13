@@ -7,6 +7,53 @@ DOORway is forked from HyDE (https://github.com/HyDE-Project/HyDE).
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to _Modified_ [CalVer](https://calver.org/). See [Versioning](https://github.com/HyDE-Project/HyDE/blob/master/RELEASE_POLICY.md#versioning-yymq) For more info
  -->
 
+## v26.7.13 | Consolidated: the QuickShell era (v26.5.22 → now)
+
+Nothing was recorded here between v26.5.22 and 2026-07-13; this entry summarizes
+the arcs that landed in that window. Full detail: `TODO.md` (per-phase ledgers)
+and the git history.
+
+### Added
+- **QuickShell shell** (Initiative II, Phases 10–16): single QML/Qt6 process owning the
+  top bar, both sidebars, OSD, notification popups, and session screen. Forked from
+  end-4/dots-hyprland `ii/` (GPLv3, attribution preserved).
+- **DOORway Lock**: shader-screensaver lock screen (`WlSessionLock`) — signal-cutout
+  intro, rotating retro-CRT GLSL shaders, PAM password panel. Opt-in per host via
+  `doorway.lock.backend = "doorway-lock"`; falls back to hyprlock whenever the shell
+  is down.
+- **Committed cartridge palette**: `DoorwayPalette.qml` (Nintendo-Power tokens) with
+  `dark` (gray NES cart) / `gold` (gold LoZ cart) modes; replaces wallpaper-derived
+  shell theming. matugen remains for Hyprland border colors only.
+- **Black Walnut / ENCOM visual identity**: walnut-shell bar with inset wells and
+  engraved indicators, icon-tinted active-window label, magazine-page left sidebar
+  ("The Desk Edition"), ENCOM-boardroom right sidebar, bar network gauge.
+- **Module options**: `doorway.theme.*` (gaps, borders, rounding, blur, icon theme),
+  `doorway.input.*`, `doorway.blueLight.*` (incl. weather-driven sunset times),
+  `doorway.lock.backend`, `doorway.bar.topLeftIcon`, `doorway.weather.*`
+  (PirateWeather widget), service toggles (bluetooth / networkApplet / removableMedia).
+- **nixosModules.default**: DOORway owns `programs.hyprland`, i2c/ddcutil brightness
+  access, UPower, and the XDG menu spec for KDE apps.
+
+### Changed
+- **rofi → anyrun**, fully: launcher plus all ~20 dmenu-style picker flows via
+  `anyrun-dmenu.sh` (stdin plugin); rofi removed from the flake.
+- **waybar, dunst, wlogout removed** — QuickShell owns all their surfaces; source
+  trees deleted after soak.
+- **De-HyDE migration complete** (Phase 9): every runtime-imperative startup daemon is
+  now a declarative systemd user unit; `startup.lua` is down to `hyprctl setcursor`.
+- **All DOORway services use `ExitType=main`** so crash recovery restarts fire even
+  when a child process outlives the crash.
+- **Idle chain ends at DPMS** by default; suspend is per-host opt-in.
+
+### Fixed
+- The 2600.7.2 "Fujiwara" UX review closed a broad defect set: bar icon rendering,
+  calendar widget, RippleButton backgrounds (cold-start texture bugs → Qt5Compat
+  effects rule), desktop-monitor brightness (ddcutil), empty KDE "Open With" menus,
+  `/run/user` tmpfs exhaustion, `qs ipc` socket races, night-light reverting a minute
+  after sunset (daemon vs QuickShell schedule conflict).
+
+---
+
 ## v26.5.22 | Fix startup daemons (doorway-shell app path)
 
 ### Fixed

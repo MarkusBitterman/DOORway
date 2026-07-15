@@ -1174,9 +1174,13 @@
               doorway-weather-fetch = {
                 Unit.Description = "DOORway PirateWeather periodic fetch timer";
                 Timer = {
-                  OnBootSec = "1min";
+                  # Seed the first fire from the timer's OWN activation, not from
+                  # boot. OnBootSec is monotonic-from-system-boot, so on a rebuild
+                  # of a long-uptime host it lands in the past and never fires;
+                  # OnUnitActiveSec can't seed either (no prior service run to
+                  # anchor to). OnActiveSec re-anchors on every timer (re)start.
+                  OnActiveSec = "1min";
                   OnUnitActiveSec = "${toString cfg.weather.updateFrequency}min";
-                  Persistent = true;
                 };
                 Install.WantedBy = [ "timers.target" ];
               };

@@ -257,7 +257,14 @@ Available layouts: `DOORway` (wallbash colors), `Anurati` (sci-fi typeface), `Ar
 | `idle.timeouts.dim` | int | `60` | Seconds until screen dims |
 | `idle.timeouts.lock` | int | `120` | Seconds until session locks |
 | `idle.timeouts.dpms` | int | `300` | Seconds until display turns off (DPMS) |
-| `idle.timeouts.suspend` | int \| null | `500` | Seconds until suspend. `null` disables suspend |
+| `idle.timeouts.suspend` | int \| null | `null` | Seconds until `suspend-then-hibernate`, or `null` (default) to end the idle chain at DPMS off. Opt in per host only after verifying firmware sleep actually works |
+
+#### `doorway.session` — Session restore
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `session.restore` | bool | `false` | Reopen the previous session's apps at login (macOS-style "reopen windows"). A timer snapshots running clients to `$XDG_STATE_HOME/doorway/session.json`; a oneshot relaunches each app on its saved workspace at session start. Apps reopen fresh — tabs/buffers are each app's own session-restore feature |
+| `session.saveIntervalMinutes` | positive int | `2` | Minutes between session snapshots |
 
 #### `doorway.input` — Input and opacity
 

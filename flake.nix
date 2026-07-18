@@ -370,6 +370,27 @@
               };
             };
 
+            session = {
+              restore = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = ''
+                  Reopen the previous session's apps at login (macOS-style
+                  "reopen windows on login"): a timer snapshots running
+                  clients to $XDG_STATE_HOME/doorway/session.json and a
+                  oneshot relaunches each app on its saved workspace at
+                  session start. Apps reopen FRESH — tabs/buffers are each
+                  app's own session-restore's job. Complements hibernation
+                  (which preserves RAM): this covers real reboots.
+                '';
+              };
+              saveIntervalMinutes = lib.mkOption {
+                type = lib.types.ints.positive;
+                default = 2;
+                description = "Minutes between session snapshots.";
+              };
+            };
+
             fonts = {
               ui = {
                 name = lib.mkOption {
@@ -1168,23 +1189,59 @@
                   EnvironmentFile = cfg.weather.pirateWeatherApiKeyFile;
                 };
               };
+
+              # Session snapshot for restore-on-login; fired by
+              # doorway-session-save.timer. Plain oneshot (not mkDoorwayOneshot):
+              # timer-driven, so it must not be WantedBy graphical-session.target.
+              doorway-session-save = lib.mkIf cfg.session.restore {
+                Unit = {
+                  Description = "DOORway session snapshot (running clients)";
+                  PartOf = [ "graphical-session.target" ];
+                };
+                Service = {
+                  Type = "oneshot";
+                  ExecStart = "%h/.local/lib/doorway/session-save.sh";
+                };
+              };
+
+              doorway-session-restore = lib.mkIf cfg.session.restore (mkDoorwayOneshot {
+                description = "DOORway session restore (reopen previous apps)";
+                execStart = "%h/.local/lib/doorway/session-restore.sh";
+              });
             };
 
-            systemd.user.timers = lib.mkIf cfg.weather.enable {
-              doorway-weather-fetch = {
-                Unit.Description = "DOORway PirateWeather periodic fetch timer";
-                Timer = {
-                  # Seed the first fire from the timer's OWN activation, not from
-                  # boot. OnBootSec is monotonic-from-system-boot, so on a rebuild
-                  # of a long-uptime host it lands in the past and never fires;
-                  # OnUnitActiveSec can't seed either (no prior service run to
-                  # anchor to). OnActiveSec re-anchors on every timer (re)start.
-                  OnActiveSec = "1min";
-                  OnUnitActiveSec = "${toString cfg.weather.updateFrequency}min";
+            systemd.user.timers = lib.mkMerge [
+              (lib.mkIf cfg.weather.enable {
+                doorway-weather-fetch = {
+                  Unit.Description = "DOORway PirateWeather periodic fetch timer";
+                  Timer = {
+                    # Seed the first fire from the timer's OWN activation, not from
+                    # boot. OnBootSec is monotonic-from-system-boot, so on a rebuild
+                    # of a long-uptime host it lands in the past and never fires;
+                    # OnUnitActiveSec can't seed either (no prior service run to
+                    # anchor to). OnActiveSec re-anchors on every timer (re)start.
+                    OnActiveSec = "1min";
+                    OnUnitActiveSec = "${toString cfg.weather.updateFrequency}min";
+                  };
+                  Install.WantedBy = [ "timers.target" ];
                 };
-                Install.WantedBy = [ "timers.target" ];
-              };
-            };
+              })
+              (lib.mkIf cfg.session.restore {
+                doorway-session-save = {
+                  Unit.Description = "DOORway periodic session snapshot timer";
+                  Timer = {
+                    # OnActiveSec (not OnBootSec — see weather timer above) also
+                    # gives session-restore a full interval's head start, so the
+                    # first save can't capture a half-restored session. The save
+                    # script refusing to write an empty snapshot is the second
+                    # guard.
+                    OnActiveSec = "${toString cfg.session.saveIntervalMinutes}min";
+                    OnUnitActiveSec = "${toString cfg.session.saveIntervalMinutes}min";
+                  };
+                  Install.WantedBy = [ "timers.target" ];
+                };
+              })
+            ];
 
             # Transitional (2026-07): ~/.config/doorway used to be deployed as one
             # whole-dir store symlink. HM's orphan cleanup keeps it (the path still

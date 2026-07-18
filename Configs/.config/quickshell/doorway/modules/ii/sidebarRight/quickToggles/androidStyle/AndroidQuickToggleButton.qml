@@ -6,7 +6,7 @@ import qs.modules.common.models.quickToggles
 import qs.modules.common.functions
 import qs.modules.common.widgets
 
-PlasticKey {
+HudKey {
     id: root
 
     // Info to be passed to by repeater
@@ -61,9 +61,9 @@ PlasticKey {
     horizontalPadding: padding
     verticalPadding: padding
 
-    // Cream-bright when ON (the LED carries the accent), dimmed paper when OFF/disabled.
-    property color colText: (toggled && enabled) ? DoorwayPalette.agedPaper
-        : ColorUtils.transparentize(Appearance.colors.colOnLayer2, enabled ? 0.15 : 0.7)
+    // Bright readout when ON, dim readout when OFF, ghosted when disabled.
+    property color colText: (toggled && enabled) ? DoorwayPalette.hudText
+        : ColorUtils.transparentize(DoorwayPalette.hudTextDim, enabled ? 0 : 0.55)
     property color colIcon: colText
 
     onClicked: {
@@ -104,13 +104,10 @@ PlasticKey {
                 radius: Math.max(2, root.radius - root.verticalPadding)
                 // Only the separate-hit-target case gets a visible recessed plate.
                 property bool subTarget: (root.altAction && root.expandedSize)
-                visible: subTarget  // when false the plate (and its gradient) simply don't render
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
-                    GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
-                }
+                visible: subTarget  // when false the plate simply doesn't render
+                color: DoorwayPalette.hudWell
                 border.width: subTarget ? 1 : 0
-                border.color: DoorwayPalette.plasticEdge
+                border.color: DoorwayPalette.hudLine
 
                 // Press/hover state layer on the icon sub-plate.
                 Loader {
@@ -118,7 +115,7 @@ PlasticKey {
                     active: iconBackground.subTarget
                     sourceComponent: Rectangle {
                         radius: iconBackground.radius
-                        color: ColorUtils.transparentize(DoorwayPalette.agedPaper, iconMouseArea.containsPress ? 0.85 : iconMouseArea.containsMouse ? 0.93 : 1)
+                        color: ColorUtils.transparentize(DoorwayPalette.hudText, iconMouseArea.containsPress ? 0.85 : iconMouseArea.containsMouse ? 0.93 : 1)
                         Behavior on color {
                             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                         }
@@ -156,11 +153,13 @@ PlasticKey {
                         left: parent.left
                         right: parent.right
                     }
-                    font.pixelSize: Appearance.font.pixelSize.smallie
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.family: Appearance.font.family.monospace
+                    font.letterSpacing: 1
                     font.weight: 600
                     color: root.colText
                     elide: Text.ElideRight
-                    text: root.name
+                    text: root.name.toUpperCase()
                 }
 
                 StyledText {

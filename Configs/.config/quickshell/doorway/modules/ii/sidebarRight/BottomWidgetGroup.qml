@@ -104,7 +104,7 @@ HudPanel {
                 text: "keyboard_arrow_up"
                 iconSize: Appearance.font.pixelSize.larger
                 horizontalAlignment: Text.AlignHCenter
-                color: Appearance.colors.colOnLayer1
+                color: DoorwayPalette.hudTextDim
             }
         }
 
@@ -114,8 +114,9 @@ HudPanel {
             Layout.leftMargin: 0
             // text: `${DateTime.collapsedCalendarFormat}   •   ${remainingTasks} task${remainingTasks > 1 ? "s" : ""}`
             text: Translation.tr("%1   •   %2 tasks").arg(DateTime.collapsedCalendarFormat).arg(remainingTasks)
-            font.pixelSize: Appearance.font.pixelSize.large
-            color: Appearance.colors.colOnLayer1
+            font.pixelSize: Appearance.font.pixelSize.small
+            font.family: Appearance.font.family.monospace
+            color: DoorwayPalette.hudText
         }
     }
 
@@ -160,6 +161,10 @@ HudPanel {
                         required property var modelData
                         showToggledHighlight: false
                         toggled: root.selectedTab == index
+                        colText: DoorwayPalette.hudTextDim
+                        colTextToggled: DoorwayPalette.hudText
+                        colBgHover: Qt.rgba(1, 1, 1, 0.06)
+                        colBgActive: Qt.rgba(1, 1, 1, 0.10)
                         buttonText: modelData.name
                         buttonIcon: modelData.icon
                         onPressed: {
@@ -181,7 +186,7 @@ HudPanel {
                     text: "keyboard_arrow_down"
                     iconSize: Appearance.font.pixelSize.larger
                     horizontalAlignment: Text.AlignHCenter
-                    color: Appearance.colors.colOnLayer1
+                    color: DoorwayPalette.hudTextDim
                 }
             }
         }

@@ -39,19 +39,19 @@ Item {
                         return `${minutes}:${seconds}`;
                     }
                     font.pixelSize: 40
-                    color: Appearance.m3colors.m3onSurface
+                    color: DoorwayPalette.hudText
                 }
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: TimerService.pomodoroLongBreak ? Translation.tr("Long break") : TimerService.pomodoroBreak ? Translation.tr("Break") : Translation.tr("Focus")
                     font.pixelSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colSubtext
+                    color: DoorwayPalette.hudTextDim
                 }
             }
 
             Rectangle {
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer2
+                color: DoorwayPalette.hudCard
                 
                 anchors {
                     right: parent.right
@@ -63,7 +63,7 @@ Item {
                 StyledText {
                     id: cycleText
                     anchors.centerIn: parent
-                    color: Appearance.colors.colOnLayer2
+                    color: DoorwayPalette.hudText
                     text: TimerService.pomodoroCycle + 1
                 }
             }
@@ -79,14 +79,14 @@ Item {
                     anchors.centerIn: parent
                     horizontalAlignment: Text.AlignHCenter
                     text: TimerService.pomodoroRunning ? Translation.tr("Pause") : (TimerService.pomodoroSecondsLeft === TimerService.focusTime) ? Translation.tr("Start") : Translation.tr("Resume")
-                    color: TimerService.pomodoroRunning ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnPrimary
+                    color: TimerService.pomodoroRunning ? DoorwayPalette.hudText : DoorwayPalette.inkBlack
                 }
                 implicitHeight: 35
                 implicitWidth: 90
                 font.pixelSize: Appearance.font.pixelSize.larger
                 onClicked: TimerService.togglePomodoro()
-                colBackground: TimerService.pomodoroRunning ? Appearance.colors.colSecondaryContainer : Appearance.colors.colPrimary
-                colBackgroundHover: TimerService.pomodoroRunning ? Appearance.colors.colSecondaryContainer : Appearance.colors.colPrimary
+                colBackground: TimerService.pomodoroRunning ? Qt.rgba(DoorwayPalette.skyHint.r, DoorwayPalette.skyHint.g, DoorwayPalette.skyHint.b, 0.14) : DoorwayPalette.powerGold
+                colBackgroundHover: TimerService.pomodoroRunning ? Qt.rgba(DoorwayPalette.skyHint.r, DoorwayPalette.skyHint.g, DoorwayPalette.skyHint.b, 0.14) : DoorwayPalette.powerGold
             }
 
             RippleButton {
@@ -97,15 +97,15 @@ Item {
                 enabled: (TimerService.pomodoroSecondsLeft < TimerService.pomodoroLapDuration) || TimerService.pomodoroCycle > 0 || TimerService.pomodoroBreak
 
                 font.pixelSize: Appearance.font.pixelSize.larger
-                colBackground: Appearance.colors.colErrorContainer
-                colBackgroundHover: Appearance.colors.colErrorContainerHover
-                colRipple: Appearance.colors.colErrorContainerActive
+                colBackground: Qt.rgba(DoorwayPalette.redBright.r, DoorwayPalette.redBright.g, DoorwayPalette.redBright.b, 0.18)
+                colBackgroundHover: Qt.rgba(DoorwayPalette.redBright.r, DoorwayPalette.redBright.g, DoorwayPalette.redBright.b, 0.26)
+                colRipple: Qt.rgba(DoorwayPalette.redBright.r, DoorwayPalette.redBright.g, DoorwayPalette.redBright.b, 0.34)
 
                 contentItem: StyledText {
                     anchors.centerIn: parent
                     horizontalAlignment: Text.AlignHCenter
                     text: Translation.tr("Reset")
-                    color: Appearance.colors.colOnErrorContainer
+                    color: DoorwayPalette.redBright
                 }
             }
         }

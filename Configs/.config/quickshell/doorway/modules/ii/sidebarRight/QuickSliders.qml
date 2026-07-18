@@ -111,7 +111,9 @@ HudPanel {
                 rightMargin: nearFull ? 14 : 8
             }
             iconSize: 20
-            color: nearFull ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+            // Fixed hud tokens — over the gold fill the icon is ink; over the dark
+            // groove it's a dim readout (the mode scheme goes ink-on-ink in gold mode).
+            color: nearFull ? DoorwayPalette.inkBlack : DoorwayPalette.hudTextDim
             text: quickSlider.materialSymbol
 
             Behavior on color {
@@ -133,7 +135,7 @@ HudPanel {
                 rightMargin: nearIcon ? 14 : (1 - iconLocation) * quickSlider.effectiveDraggingWidth + quickSlider.rightPadding + 8
             }
             iconSize: 20
-            color: quickSlider.value >= iconLocation - 0.1 ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+            color: quickSlider.value >= iconLocation - 0.1 ? DoorwayPalette.inkBlack : DoorwayPalette.hudTextDim
             text: secondaryMaterialSymbol
 
             Behavior on color {

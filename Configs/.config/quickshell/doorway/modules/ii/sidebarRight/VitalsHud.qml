@@ -1,3 +1,4 @@
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -5,23 +6,57 @@ import QtQuick
 import QtQuick.Layouts
 
 /**
- * Boardroom vitals strip — the live "readout" header of the ENCOM sidebar.
- * A HudPanel carrying the network identity + uptime on top and a row of neon
- * meters (CPU, MEM, NET ▼down / ▲up) beneath. Reuses ResourceUsage's sampling
- * (same data the bar gauges read) so the numbers stay consistent shell-wide.
+ * Boardroom vitals band — the ONE zone where the ENCOM data-flow shader lives.
+ * The rest of the sidebar is flat ink; motion is an instrument here, not
+ * wallpaper. Network identity + uptime on top, neon meters (CPU, MEM, NET)
+ * beneath, all over the shader with a scrim so the readout stays legible.
+ * The shader's traces surge with real net/CPU load and its clock only runs
+ * while the sidebar is open (VCS APU budget).
  */
-HudPanel {
+Item {
     id: root
-    implicitHeight: layout.implicitHeight + 20
+    implicitHeight: layout.implicitHeight + 26
 
     readonly property string netName: Network.ethernet ? Translation.tr("Ethernet")
         : (Network.networkName && Network.networkName.length > 0 ? Network.networkName
         : Translation.tr("Offline"))
 
+    // Recessed well the shader sits in.
+    Rectangle {
+        anchors.fill: parent
+        color: DoorwayPalette.hudWell
+    }
+
+    EncomBackground {
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: 0
+        borderWidth: 0
+        active: GlobalStates.sidebarRightOpen
+        activity: Math.max(ResourceUsage.netDownPercentage, ResourceUsage.cpuUsage)
+    }
+
+    // Scrim — heavier at the bottom where the meter values sit.
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(DoorwayPalette.hudWell.r, DoorwayPalette.hudWell.g, DoorwayPalette.hudWell.b, 0.35) }
+            GradientStop { position: 1.0; color: Qt.rgba(DoorwayPalette.hudWell.r, DoorwayPalette.hudWell.g, DoorwayPalette.hudWell.b, 0.72) }
+        }
+    }
+
+    // Hairline frame + bright corner brackets over everything.
+    HudPanel {
+        anchors.fill: parent
+        color: "transparent"
+        radius: 0
+        showTicks: true
+    }
+
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 13
         spacing: 10
 
         // --- identity line: network name (left) · uptime (right) ---
@@ -31,21 +66,23 @@ HudPanel {
 
             MaterialSymbol {
                 text: Network.ethernet ? "lan" : "wifi"
-                iconSize: 18
+                iconSize: 16
                 color: DoorwayPalette.skyHint
             }
             StyledText {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                text: root.netName
-                font.pixelSize: Appearance.font.pixelSize.small
+                text: root.netName.toUpperCase()
+                font.pixelSize: Appearance.font.pixelSize.smaller
                 font.family: Appearance.font.family.monospace
-                color: DoorwayPalette.skyHint
+                font.letterSpacing: 1.5
+                color: DoorwayPalette.hudText
             }
             StyledText {
                 text: "UP " + DateTime.uptime
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.font.pixelSize.smallest
                 font.family: Appearance.font.family.monospace
+                font.letterSpacing: 1
                 color: DoorwayPalette.powerGold
             }
         }
@@ -53,7 +90,7 @@ HudPanel {
         // --- meter row ---
         RowLayout {
             Layout.fillWidth: true
-            spacing: 10
+            spacing: 12
 
             StatMeter {
                 Layout.fillWidth: true
@@ -74,7 +111,7 @@ HudPanel {
                 label: "NET ▼"
                 value: ResourceUsage.bytesPerSecString(ResourceUsage.netDownBytesPerSec)
                 fraction: ResourceUsage.netDownPercentage
-                accent: DoorwayPalette.heroBlue
+                accent: DoorwayPalette.skyHint
             }
             StatMeter {
                 Layout.fillWidth: true
@@ -98,7 +135,8 @@ HudPanel {
             text: label
             font.pixelSize: Appearance.font.pixelSize.smallest
             font.family: Appearance.font.family.monospace
-            color: Qt.rgba(DoorwayPalette.skyHint.r, DoorwayPalette.skyHint.g, DoorwayPalette.skyHint.b, 0.6)
+            font.letterSpacing: 1
+            color: DoorwayPalette.hudLabel
         }
         StyledText {
             text: value
@@ -106,16 +144,14 @@ HudPanel {
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.smaller
             font.family: Appearance.font.family.numbers
-            color: accent
+            color: DoorwayPalette.hudText
         }
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight: 3
-            radius: 1.5
-            color: Qt.rgba(1, 1, 1, 0.08)   // track
+            implicitHeight: 2
+            color: Qt.rgba(1, 1, 1, 0.10)   // track
             Rectangle {
                 height: parent.height
-                radius: parent.radius
                 width: parent.width * Math.max(0, Math.min(1, fraction))
                 color: accent
                 Behavior on width {

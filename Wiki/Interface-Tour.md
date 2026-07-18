@@ -49,7 +49,7 @@ Left to right:
 
 ## The right sidebar — system controls
 
-`SUPER + SPACE` (or click the bar's right-edge button). An overlay panel in an ENCOM-boardroom style: data-flow shader backdrop, HUD panels, a system-vitals readout, and a lit clock.
+`SUPER + SPACE` (or click the bar's right-edge button). An overlay panel in an ENCOM-boardroom style: a flat ink instrument screen with hairline line-work, tracked micro-labels (`SYSTEMS`, `LOG`), and outline "hud key" controls. The data-flow shader is contained to the vitals band at the top — a live readout whose traces surge with net/CPU load — so all text sits on solid ground. Gold is reserved for "now": today's date, uptime, lit state pips. The look is fixed (mode-independent) in both light and dark cartridge modes.
 
 What's in it:
 

@@ -49,6 +49,20 @@ Singleton {
     readonly property color bevelHighlight:     goldCart ? Qt.rgba(1, 1, 1, 0.35) : Qt.rgba(1, 1, 1, 0.06)
     readonly property color bevelShadow:        goldCart ? Qt.rgba(0, 0, 0, 0.25) : Qt.rgba(0, 0, 0, 0.45)
 
+    // --- ENCOM boardroom (right sidebar) — fixed dark instrument, mode-independent ---
+    // Like the walnut veneer and lock shaders, the boardroom does not flip on the
+    // light/dark cartridge; everything drawn on it must use these tokens, never the
+    // mode-following Appearance scheme (which resolves to ink-on-ink in gold mode).
+    readonly property color hudInk:        "#0A0E14" // opaque ground (cool ink, not the warm inkBlack)
+    readonly property color hudPanel:      "#0D141D" // framed panel fill
+    readonly property color hudCard:       "#121B27" // raised card (notification group)
+    readonly property color hudWell:       "#070A0F" // recessed well / shader scrim base
+    readonly property color hudText:       "#D8E4F2" // primary readout text (~14.7:1 on hudInk)
+    readonly property color hudTextDim:    "#8FA9C4" // secondary readout text (~7.7:1 on hudInk)
+    readonly property color hudLabel:      Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.62) // tracked micro-labels
+    readonly property color hudLine:       Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.28) // hairline frames
+    readonly property color hudLineBright: Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.75) // active/focused frames
+
     // --- Hardware-control semantics (LED pips, lit faces) ---
     // A raised key sits on shell tones and depresses into panel tones — the existing
     // tokens already encode raised-vs-recessed, so no extra plastic colors are needed.

@@ -121,8 +121,12 @@ MouseArea { // Notification group area
         id: background
         anchors.left: parent.left
         width: parent.width
-        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : Appearance.colors.colLayer2
-        radius: Appearance.rounding.normal
+        // Sidebar list (non-popup) lives on the ENCOM boardroom — fixed hud card,
+        // never the mode-following scheme. Popups keep the cartridge look.
+        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : DoorwayPalette.hudCard
+        border.width: popup ? 0 : 1
+        border.color: DoorwayPalette.hudLine
+        radius: popup ? Appearance.rounding.normal : 3
         anchors.leftMargin: root.xOffset
 
         Behavior on anchors.leftMargin {
@@ -196,9 +200,9 @@ MouseArea { // Notification group area
                             font.pixelSize: topRow.showAppName ?
                                 topRow.fontSize :
                                 Appearance.font.pixelSize.small
-                            color: topRow.showAppName ?
-                                Appearance.colors.colSubtext :
-                                Appearance.colors.colOnLayer2
+                            color: root.popup ?
+                                (topRow.showAppName ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer2) :
+                                (topRow.showAppName ? DoorwayPalette.hudTextDim : DoorwayPalette.hudText)
                         }
                         StyledText {
                             id: timeText
@@ -207,7 +211,7 @@ MouseArea { // Notification group area
                             horizontalAlignment: Text.AlignLeft
                             text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
                             font.pixelSize: topRow.fontSize
-                            color: Appearance.colors.colSubtext
+                            color: root.popup ? Appearance.colors.colSubtext : DoorwayPalette.hudTextDim
                         }
                     }
                     NotificationGroupExpandButton {
@@ -216,6 +220,7 @@ MouseArea { // Notification group area
                         anchors.verticalCenter: parent.verticalCenter
                         count: root.notificationCount
                         expanded: root.expanded
+                        hud: !root.popup
                         fontSize: topRow.fontSize
                         onClicked: { root.toggleExpanded() }
                         altAction: () => { root.toggleExpanded() }
@@ -244,6 +249,7 @@ MouseArea { // Notification group area
                         required property int index
                         required property var modelData
                         notificationObject: modelData
+                        hud: !root.popup
                         expanded: root.expanded
                         onlyNotification: (root.notificationCount === 1)
                         opacity: (!root.expanded && index == 1 && root.notificationCount > 2) ? 0.5 : 1

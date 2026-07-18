@@ -18,7 +18,7 @@ AbstractQuickPanel {
         id: buttonGroup
         spacing: 5
         padding: 5
-        color: Appearance.colors.colLayer1
+        color: "transparent"
 
         NetworkToggle {
             altAction: () => {

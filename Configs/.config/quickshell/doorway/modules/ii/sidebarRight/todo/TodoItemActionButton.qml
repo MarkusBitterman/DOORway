@@ -22,7 +22,7 @@ RippleButton {
         text: buttonText
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnLayer1
+        color: DoorwayPalette.hudText
     }
 
     StyledToolTip {

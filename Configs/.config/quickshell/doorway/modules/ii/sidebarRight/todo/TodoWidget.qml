@@ -122,7 +122,7 @@ Item {
         Rectangle { // Scrim
             anchors.fill: parent
             radius: Appearance.rounding.small
-            color: Appearance.colors.colScrim
+            color: Qt.rgba(0, 0, 0, 0.55)
             MouseArea {
                 hoverEnabled: true
                 anchors.fill: parent
@@ -139,7 +139,7 @@ Item {
             anchors.margins: root.dialogMargins
             implicitHeight: dialogColumnLayout.implicitHeight
 
-            color: Appearance.m3colors.m3surfaceContainerHigh
+            color: DoorwayPalette.hudCard
             radius: Appearance.rounding.normal
 
             function addTask() {
@@ -161,7 +161,7 @@ Item {
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
                     Layout.alignment: Qt.AlignLeft
-                    color: Appearance.m3colors.m3onSurface
+                    color: DoorwayPalette.hudText
                     font.pixelSize: Appearance.font.pixelSize.larger
                     text: Translation.tr("Add task")
                 }
@@ -172,12 +172,12 @@ Item {
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
                     padding: 10
-                    color: activeFocus ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3onSurfaceVariant
+                    color: activeFocus ? DoorwayPalette.hudText : DoorwayPalette.hudTextDim
                     renderType: Text.NativeRendering
-                    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-                    selectionColor: Appearance.colors.colSecondaryContainer
+                    selectedTextColor: DoorwayPalette.hudText
+                    selectionColor: Qt.rgba(DoorwayPalette.skyHint.r, DoorwayPalette.skyHint.g, DoorwayPalette.skyHint.b, 0.14)
                     placeholderText: Translation.tr("Task description")
-                    placeholderTextColor: Appearance.m3colors.m3outline
+                    placeholderTextColor: DoorwayPalette.hudLabel
                     focus: root.showAddDialog
                     onAccepted: dialog.addTask()
 
@@ -185,13 +185,13 @@ Item {
                         anchors.fill: parent
                         radius: Appearance.rounding.verysmall
                         border.width: 2
-                        border.color: todoInput.activeFocus ? Appearance.colors.colPrimary : Appearance.m3colors.m3outline
+                        border.color: todoInput.activeFocus ? DoorwayPalette.powerGold : DoorwayPalette.hudLabel
                         color: "transparent"
                     }
 
                     cursorDelegate: Rectangle {
                         width: 1
-                        color: todoInput.activeFocus ? Appearance.colors.colPrimary : "transparent"
+                        color: todoInput.activeFocus ? DoorwayPalette.powerGold : "transparent"
                         radius: 1
                     }
                 }

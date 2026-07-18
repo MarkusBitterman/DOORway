@@ -3,7 +3,9 @@ import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 
-GroupButton {
+// Boardroom footer control for the notification log — hairline hud language,
+// with the silence toggle lit in gold when engaged.
+HudKey {
     id: button
     property string buttonIcon: ""
     property string buttonText: ""
@@ -12,12 +14,8 @@ GroupButton {
     baseWidth: content.implicitWidth + 46
     clickedWidth: baseWidth + 6
 
-    buttonRadius: baseHeight / 2
-    buttonRadiusPressed: Appearance.rounding.small
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
-    colBackgroundActive: Appearance.colors.colLayer2Active
-    property color colText: toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer1
+    showLed: buttonIcon !== "" && enabled
+    property color colText: toggled ? DoorwayPalette.hudText : DoorwayPalette.hudTextDim
 
     contentItem: Item {
         id: content
@@ -37,7 +35,8 @@ GroupButton {
             StyledText {
                 visible: buttonText !== ""
                 text: buttonText
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                font.family: Appearance.font.family.monospace
                 color: button.colText
             }
         }

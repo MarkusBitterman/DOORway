@@ -46,6 +46,7 @@ Item {
         description: Translation.tr("Nothing")
         shape: MaterialShape.Shape.Ghostish
         descriptionHorizontalAlignment: Text.AlignHCenter
+        contentColor: DoorwayPalette.hudTextDim
     }
 
     ButtonGroup {
@@ -71,6 +72,7 @@ Item {
         }
         NotificationStatusButton {
             Layout.fillWidth: false
+            showLed: false
             buttonIcon: "delete_sweep"
             onClicked: () => {
                 Notifications.discardAllNotifications()

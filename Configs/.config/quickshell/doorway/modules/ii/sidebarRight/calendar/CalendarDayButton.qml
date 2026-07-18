@@ -16,9 +16,10 @@ RippleButton {
 
     toggled: (isToday == 1)
     rippleEnabled: false  // mechanical, not Material
-    buttonRadius: Appearance.rounding.verysmall
-    buttonRadiusPressed: Math.max(2, Appearance.rounding.verysmall - 2)
-    // Today is a single lit gold key; other days are flat cells with a faint hover.
+    buttonRadius: 3
+    buttonRadiusPressed: 2
+    // Today is the boardroom's single warm accent — a lit gold cell with ink
+    // numerals; other days are flat readout cells with a faint hover.
     colBackground: "transparent"
     colBackgroundHover: Qt.rgba(1, 1, 1, 0.07)
     colBackgroundToggled: DoorwayPalette.powerGold
@@ -26,12 +27,17 @@ RippleButton {
 
     contentItem: StyledText {
         anchors.fill: parent
-        text: day
+        text: bold ? day.toUpperCase() : day
         horizontalAlignment: Text.AlignHCenter
         font.weight: bold ? Font.DemiBold : Font.Normal
+        font.family: bold ? Appearance.font.family.monospace : Appearance.font.family.numbers
+        font.pixelSize: bold ? Appearance.font.pixelSize.smallest : Appearance.font.pixelSize.small
+        // Weekday header row (bold) reads as tracked micro-labels; day numbers are
+        // the readout. Out-of-month days recede to a faint hairline tone.
         color: (isToday == 1) ? DoorwayPalette.inkBlack :
-            (isToday == 0) ? Appearance.colors.colOnLayer1 :
-            Appearance.colors.colOutlineVariant
+            bold ? DoorwayPalette.hudLabel :
+            (isToday == 0) ? DoorwayPalette.hudText :
+            Qt.rgba(DoorwayPalette.skyHint.r, DoorwayPalette.skyHint.g, DoorwayPalette.skyHint.b, 0.30)
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

@@ -2,7 +2,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
 
-PlasticKey {
+HudKey {
     id: button
     property string buttonIcon
     baseWidth: 40
@@ -14,7 +14,7 @@ PlasticKey {
         anchors.centerIn: parent
         iconSize: 22
         fill: toggled ? 1 : 0
-        color: toggled ? DoorwayPalette.agedPaper : Appearance.colors.colOnLayer1
+        color: toggled ? DoorwayPalette.hudText : DoorwayPalette.hudTextDim
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: buttonIcon

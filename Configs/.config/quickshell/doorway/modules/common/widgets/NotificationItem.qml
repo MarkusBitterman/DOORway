@@ -14,6 +14,9 @@ Item { // Notification item area
     property var notificationObject
     property bool expanded: false
     property bool onlyNotification: false
+    // On the boardroom (sidebar list): fixed hud tokens instead of the
+    // mode-following scheme / plastic faceplates. Popups leave this false.
+    property bool hud: false
     property real fontSize: Appearance.font.pixelSize.small
     property real padding: onlyNotification ? 0 : 8
     property real summaryElideRatio: 0.85
@@ -125,36 +128,43 @@ Item { // Notification item area
             }
         }
 
-        // Expanded cards carry a plastic faceplate (below); collapsed items stay faint so the
+        // Expanded cards carry a faceplate (below); collapsed items stay faint so the
         // stack reads cleanly.
         readonly property bool plasticCard: expanded && !onlyNotification
-        color: plasticCard ? "transparent" : ColorUtils.transparentize(DoorwayPalette.plasticPanelTop, 0.45)
+        color: plasticCard ? "transparent" :
+            root.hud ? Qt.rgba(1, 1, 1, 0.04) :
+            ColorUtils.transparentize(DoorwayPalette.plasticPanelTop, 0.45)
 
         implicitHeight: expanded ? (contentColumn.implicitHeight + padding * 2) : summaryRow.implicitHeight
         Behavior on implicitHeight {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
         }
 
-        // Recessed plastic-panel faceplate — the cartridge card. Critical urgency gets a red molded edge.
+        // Faceplate for expanded cards. Hud: a flat recessed well with a hairline
+        // frame. Cartridge (popups): the molded plastic gradient with bevels.
+        // Critical urgency gets a red edge in both languages.
         Rectangle {
             id: cardFaceplate
             anchors.fill: parent
             visible: background.plasticCard
             radius: background.radius
             gradient: Gradient {
-                GradientStop { position: 0.0; color: DoorwayPalette.plasticPanelTop }
-                GradientStop { position: 1.0; color: DoorwayPalette.plasticPanelBottom }
+                GradientStop { position: 0.0; color: root.hud ? DoorwayPalette.hudWell : DoorwayPalette.plasticPanelTop }
+                GradientStop { position: 1.0; color: root.hud ? DoorwayPalette.hudWell : DoorwayPalette.plasticPanelBottom }
             }
             border.width: 1
             border.color: (notificationObject.urgency == NotificationUrgency.Critical)
-                ? DoorwayPalette.redBright : DoorwayPalette.plasticEdge
+                ? DoorwayPalette.redBright
+                : root.hud ? DoorwayPalette.hudLine : DoorwayPalette.plasticEdge
 
             Rectangle {
+                visible: !root.hud
                 anchors { left: parent.left; right: parent.right; top: parent.top; margins: 2 }
                 height: 1
                 color: DoorwayPalette.bevelHighlight
             }
             Rectangle {
+                visible: !root.hud
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 2 }
                 height: 1
                 color: DoorwayPalette.bevelShadow
@@ -181,7 +191,7 @@ Item { // Notification item area
                     Layout.fillWidth: summaryTextMetrics.width >= root.width * root.summaryElideRatio
                     visible: !root.onlyNotification
                     font.pixelSize: root.fontSize
-                    color: Appearance.colors.colOnLayer3
+                    color: root.hud ? DoorwayPalette.hudText : Appearance.colors.colOnLayer3
                     elide: Text.ElideRight
                     text: root.notificationObject.summary || ""
                 }
@@ -193,7 +203,7 @@ Item { // Notification item area
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                     }
                     font.pixelSize: root.fontSize
-                    color: Appearance.colors.colSubtext
+                    color: root.hud ? DoorwayPalette.hudTextDim : Appearance.colors.colSubtext
                     elide: Text.ElideRight
                     wrapMode: Text.Wrap // Needed for proper eliding????
                     maximumLineCount: 1
@@ -217,7 +227,7 @@ Item { // Notification item area
                     }
                     Layout.fillWidth: true
                     font.pixelSize: root.fontSize
-                    color: Appearance.colors.colSubtext
+                    color: root.hud ? DoorwayPalette.hudTextDim : Appearance.colors.colSubtext
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
                     textFormat: Text.RichText
@@ -278,7 +288,8 @@ Item { // Notification item area
                                 Layout.fillWidth: true
                                 buttonText: Translation.tr("Close")
                                 urgency: notificationObject.urgency
-                                implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
+                                hud: root.hud
+                                implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) :
                                     (contentItem.implicitWidth + leftPadding + rightPadding)
 
                                 onClicked: {
@@ -288,7 +299,8 @@ Item { // Notification item area
                                 contentItem: MaterialSymbol {
                                     iconSize: Appearance.font.pixelSize.larger
                                     horizontalAlignment: Text.AlignHCenter
-                                    color: (notificationObject.urgency == NotificationUrgency.Critical) ? 
+                                    color: root.hud ? DoorwayPalette.hudText :
+                                        (notificationObject.urgency == NotificationUrgency.Critical) ?
                                         Appearance.m3colors.m3onSurfaceVariant : Appearance.m3colors.m3onSurface
                                     text: "close"
                                 }
@@ -303,6 +315,7 @@ Item { // Notification item area
                                     Layout.fillWidth: true
                                     buttonText: modelData.text
                                     urgency: notificationObject.urgency
+                                    hud: root.hud
                                     onClicked: {
                                         Notifications.attemptInvokeAction(notificationObject.notificationId, modelData.identifier);
                                     }
@@ -312,7 +325,8 @@ Item { // Notification item area
                             NotificationActionButton {
                                 Layout.fillWidth: true
                                 urgency: notificationObject.urgency
-                                implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
+                                hud: root.hud
+                                implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) :
                                     (contentItem.implicitWidth + leftPadding + rightPadding)
 
                                 onClicked: {
@@ -334,7 +348,8 @@ Item { // Notification item area
                                     id: copyIcon
                                     iconSize: Appearance.font.pixelSize.larger
                                     horizontalAlignment: Text.AlignHCenter
-                                    color: (notificationObject.urgency == NotificationUrgency.Critical) ? 
+                                    color: root.hud ? DoorwayPalette.hudText :
+                                        (notificationObject.urgency == NotificationUrgency.Critical) ?
                                         Appearance.m3colors.m3onSurfaceVariant : Appearance.m3colors.m3onSurface
                                     text: "content_copy"
                                 }

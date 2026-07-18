@@ -53,18 +53,12 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        color: "transparent"
+        // Flat opaque ink ground — the boardroom's data-flow shader is contained
+        // inside the VitalsHud band; text everywhere else sits on solid ground.
+        color: DoorwayPalette.hudInk
+        border.width: 1
+        border.color: DoorwayPalette.hudLine
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
-
-        // ENCOM boardroom screen — a live neon data-flow shader that the inner
-        // HudPanel wells float over. Its traces surge with real net/CPU load,
-        // and the clock only runs while the sidebar is open (VCS APU budget).
-        EncomBackground {
-            anchors.fill: parent
-            radius: sidebarRightBackground.radius
-            active: GlobalStates.sidebarRightOpen
-            activity: Math.max(ResourceUsage.netDownPercentage, ResourceUsage.cpuUsage)
-        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -76,11 +70,15 @@ Item {
                 Layout.topMargin: 5
             }
 
+            HudSectionLabel {
+                label: Translation.tr("SYSTEMS")
+                Layout.topMargin: 4
+            }
+
             SystemButtonRow {
                 Layout.fillHeight: false
                 Layout.fillWidth: true
-                // Layout.margins: 10
-                Layout.topMargin: 5
+                Layout.topMargin: 0
                 Layout.bottomMargin: 0
             }
 
@@ -107,6 +105,11 @@ Item {
                 sourceComponent: AndroidQuickPanel {
                     editMode: root.editMode
                 }
+            }
+
+            HudSectionLabel {
+                label: Translation.tr("LOG")
+                Layout.topMargin: 4
             }
 
             CenterWidgetGroup {
@@ -224,6 +227,26 @@ Item {
         }
     }
 
+    // Tracked micro-label with a hairline rule filling the remaining width —
+    // the GriD way of sectioning a screen, replacing stacked card boundaries.
+    component HudSectionLabel: RowLayout {
+        property string label: ""
+        spacing: 8
+
+        StyledText {
+            text: label
+            font.pixelSize: Appearance.font.pixelSize.smallest
+            font.family: Appearance.font.family.monospace
+            font.letterSpacing: 2
+            color: DoorwayPalette.hudLabel
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 1
+            color: DoorwayPalette.hudLine
+        }
+    }
+
     component SystemButtonRow: Item {
         implicitHeight: systemButtonsRow.implicitHeight
 
@@ -234,7 +257,7 @@ Item {
                 bottom: parent.bottom
                 right: parent.right
             }
-            color: Qt.rgba(DoorwayPalette.inkBlack.r, DoorwayPalette.inkBlack.g, DoorwayPalette.inkBlack.b, 0.55)
+            color: "transparent"
             padding: 4
 
             QuickToggleButton {
@@ -248,6 +271,7 @@ Item {
             }
             QuickToggleButton {
                 toggled: false
+                showLed: false
                 buttonIcon: "restart_alt"
                 // Full service restart (not Quickshell.reload) — after a nixos-rebuild the
                 // config symlink points at a new /nix/store path, and only re-exec'ing the
@@ -259,6 +283,7 @@ Item {
             }
             QuickToggleButton {
                 toggled: false
+                showLed: false
                 buttonIcon: "settings"
                 onClicked: {
                     GlobalStates.sidebarRightOpen = false;
@@ -270,6 +295,7 @@ Item {
             }
             QuickToggleButton {
                 toggled: false
+                showLed: false
                 buttonIcon: "power_settings_new"
                 onClicked: {
                     GlobalStates.sessionOpen = true;

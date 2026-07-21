@@ -56,8 +56,14 @@ What's in it:
 - **Quick toggles** — night light, game mode, idle inhibit ("coffee"), mic mute, and friends
 - **Sliders** — volume, brightness (works on desktop monitors via DDC/CI), microphone
 - **Network + Bluetooth** — toggle and pick from Wi-Fi / device list dialogs
-- **Calendar**
-- **Notification history** — every popup that's come and gone this session
+- **Calendar** — a compact month grid (collapsible to a one-line date strip)
+- **Notification history** — every popup that's come and gone this session, grouped by app
+
+The pop-out dialogs (Wi-Fi, Bluetooth, audio devices, night light) open *over* the
+boardroom in the same hairline hud language — a framed ink card with corner-squared
+edges, tracked labels, and flat text commands — rather than the old Material sheets.
+Gold still means "now" (your connected network, an enabled toggle); red means
+destructive ("Forget device").
 - **Light/dark quick toggle** — same cartridge-mode switch as the bar button
 
 Brightness on external monitors uses `ddcutil` over i2c — if the slider does nothing on a desktop display, check that you rebuilt with the `nixosModules.default` module (it grants the seat user `/dev/i2c-*` access).

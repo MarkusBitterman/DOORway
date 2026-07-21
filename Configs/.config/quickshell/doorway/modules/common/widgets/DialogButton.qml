@@ -13,13 +13,15 @@ RippleButton {
     padding: 14
     implicitHeight: 36
     implicitWidth: buttonTextWidget.implicitWidth + padding * 2
-    buttonRadius: Appearance?.rounding.full ?? 9999
+    // Squared corners — a flat text command in the boardroom hairline language,
+    // not a Material pill. Fixed hud tokens (mode-independent over the dialog card).
+    buttonRadius: 3
 
-    property color colEnabled: Appearance?.colors.colPrimary ?? "#65558F"
-    property color colDisabled: Appearance?.m3colors.m3outline ?? "#8D8C96"
-    colBackground: ColorUtils.transparentize(Appearance.colors.colLayer3)
-    colBackgroundHover: Appearance.colors.colLayer3Hover
-    colRipple: Appearance.colors.colLayer3Active
+    property color colEnabled: DoorwayPalette.hudText
+    property color colDisabled: DoorwayPalette.hudTextDim
+    colBackground: "transparent"
+    colBackgroundHover: DoorwayPalette.hudHover
+    colRipple: DoorwayPalette.hudHoverStrong
     property alias colText: buttonTextWidget.color
 
     contentItem: StyledText {

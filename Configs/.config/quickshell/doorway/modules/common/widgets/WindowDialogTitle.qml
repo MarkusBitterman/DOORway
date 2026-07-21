@@ -6,11 +6,13 @@ import qs.modules.common.widgets
 
 StyledText {
     text: "Dialog Title"
-    color: Appearance.colors.colOnSurface
+    // Tracked uppercase monospace — the boardroom's header voice (cf. SYSTEMS/LOG),
+    // not the Material serif title. Fixed hud token, mode-independent.
+    color: DoorwayPalette.hudText
     wrapMode: Text.Wrap
     font {
-        family: Appearance.font.family.title
-        pixelSize: Appearance.font.pixelSize.title
-        variableAxes: Appearance.font.variableAxes.title
+        family: Appearance.font.family.monospace
+        pixelSize: Appearance.font.pixelSize.large
+        letterSpacing: 2
     }
 }

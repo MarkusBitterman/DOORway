@@ -18,7 +18,9 @@ MouseArea { // Notification group area
     property bool multipleNotifications: notificationCount > 1
     property bool expanded: false
     property bool popup: false
-    property real padding: 10
+    // Denser in the sidebar log (hud) so more of a large backlog is visible at once;
+    // desktop popups keep the roomier padding.
+    property real padding: popup ? 10 : 8
     implicitHeight: background.implicitHeight
 
     property real dragConfirmThreshold: 70 // Drag further to discard notification
@@ -139,9 +141,9 @@ MouseArea { // Notification group area
         }
         
         clip: true
-        implicitHeight: root.expanded ? 
+        implicitHeight: root.expanded ?
             row.implicitHeight + padding * 2 :
-            Math.min(80, row.implicitHeight + padding * 2)
+            Math.min(root.popup ? 80 : 64, row.implicitHeight + padding * 2)
 
         Behavior on implicitHeight {
             id: implicitHeightAnim

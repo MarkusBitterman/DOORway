@@ -62,6 +62,12 @@ Singleton {
     readonly property color hudLabel:      Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.62) // tracked micro-labels
     readonly property color hudLine:       Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.28) // hairline frames
     readonly property color hudLineBright: Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.75) // active/focused frames
+    // Interactive-fill washes for hud controls floating over the boardroom (dialog
+    // rows/buttons/combos) + the modal scrim. Fixed like the rest — a mode-following
+    // scrim would go milky-light over the dark instrument in gold mode.
+    readonly property color hudHover:      Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.10) // hover / resting fill
+    readonly property color hudHoverStrong:Qt.rgba(skyHint.r, skyHint.g, skyHint.b, 0.18) // pressed / selected fill
+    readonly property color hudScrim:      Qt.rgba(0, 0, 0, 0.55)                          // modal dim behind dialogs
 
     // --- Hardware-control semantics (LED pips, lit faces) ---
     // A raised key sits on shell tones and depresses into panel tones — the existing

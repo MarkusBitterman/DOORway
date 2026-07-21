@@ -22,7 +22,9 @@ Rectangle {
         }
     }
 
-    color: root.show ? Appearance.colors.colScrim : ColorUtils.transparentize(Appearance.colors.colScrim)
+    // Fixed dark scrim — the boardroom is mode-independent, so the dim behind a
+    // dialog must not follow the cartridge scheme (colScrim goes milky in gold mode).
+    color: root.show ? DoorwayPalette.hudScrim : ColorUtils.transparentize(DoorwayPalette.hudScrim)
     Behavior on color {
         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
     }
@@ -45,9 +47,13 @@ Rectangle {
     Rectangle {
         id: dialogBackground
         anchors.horizontalCenter: parent.horizontalCenter
-        radius: Appearance.rounding.large
-        color: Appearance.m3colors.m3surfaceContainerHigh // Use opaque version of layer3
-        
+        // Boardroom instrument card: near-rectilinear corners + hairline frame,
+        // matching HudPanel. Fixed hud tokens, never the mode-following scheme.
+        radius: 3
+        color: DoorwayPalette.hudCard
+        border.width: 1
+        border.color: DoorwayPalette.hudLine
+
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
         implicitWidth: root.backgroundWidth

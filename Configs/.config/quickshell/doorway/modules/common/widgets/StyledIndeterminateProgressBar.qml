@@ -5,5 +5,6 @@ import QtQuick.Controls
 
 ProgressBar {
     indeterminate: true
-    Material.accent: Appearance.colors.colPrimary
+    // Cool scan accent — activity, not "now" (gold stays reserved for the current entry).
+    Material.accent: DoorwayPalette.skyHint
 }

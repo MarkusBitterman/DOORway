@@ -24,6 +24,7 @@ Column {
         id: sliderName
         visible: text?.length > 0
         text: ""
+        color: DoorwayPalette.hudTextDim
         anchors {
             left: parent.left
             right: parent.right

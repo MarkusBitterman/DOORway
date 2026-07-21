@@ -14,12 +14,9 @@ DialogListItem {
     onClicked: expanded = !expanded
     altAction: () => expanded = !expanded
     
-    component ActionButton: DialogButton {
-        colBackground: Appearance.colors.colPrimary
-        colBackgroundHover: Appearance.colors.colPrimaryHover
-        colRipple: Appearance.colors.colPrimaryActive
-        colText: Appearance.colors.colOnPrimary
-    }
+    // Flat hairline text commands (DialogButton hud defaults); destructive/paired
+    // variants recolor per instance below.
+    component ActionButton: DialogButton {}
 
     contentItem: ColumnLayout {
         anchors {
@@ -37,7 +34,7 @@ DialogListItem {
             MaterialSymbol {
                 iconSize: Appearance.font.pixelSize.larger
                 text: Icons.getBluetoothDeviceMaterialSymbol(root.device?.icon || "")
-                color: Appearance.colors.colOnSurfaceVariant
+                color: DoorwayPalette.hudTextDim
             }
 
             ColumnLayout {
@@ -45,7 +42,7 @@ DialogListItem {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: DoorwayPalette.hudText
                     elide: Text.ElideRight
                     text: root.device?.name || Translation.tr("Unknown device")
                     textFormat: Text.PlainText
@@ -54,7 +51,7 @@ DialogListItem {
                     visible: (root.device?.connected || root.device?.paired) ?? false
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: DoorwayPalette.hudTextDim
                     elide: Text.ElideRight
                     text: {
                         if (!root.device?.paired) return "";
@@ -69,7 +66,7 @@ DialogListItem {
             MaterialSymbol {
                 text: "keyboard_arrow_down"
                 iconSize: Appearance.font.pixelSize.larger
-                color: Appearance.colors.colOnLayer3
+                color: DoorwayPalette.hudTextDim
                 rotation: root.expanded ? 180 : 0
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -85,10 +82,10 @@ DialogListItem {
             }
             ActionButton {
                 readonly property bool p: root.device?.paired ?? false
-                colBackground: p ? Appearance.colors.colError : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colBackgroundHover: p ? Appearance.colors.colErrorHover : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colRipple: p ? Appearance.colors.colErrorActive : Appearance.colors.colLayer3Hover
-                colText: p ? Appearance.colors.colOnError : Appearance.colors.colPrimary
+                // "Forget" is destructive → red text; "Always connect" is a normal command.
+                colText: p ? DoorwayPalette.redBright : DoorwayPalette.hudText
+                colBackgroundHover: p ? Qt.rgba(DoorwayPalette.redBright.r, DoorwayPalette.redBright.g, DoorwayPalette.redBright.b, 0.14) : DoorwayPalette.hudHover
+                colRipple: p ? Qt.rgba(DoorwayPalette.redBright.r, DoorwayPalette.redBright.g, DoorwayPalette.redBright.b, 0.22) : DoorwayPalette.hudHoverStrong
 
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {

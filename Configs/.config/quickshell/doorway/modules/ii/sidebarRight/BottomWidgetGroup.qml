@@ -11,7 +11,9 @@ import QtQuick.Layouts
 HudPanel {
     id: root
     clip: true
-    implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
+    // Sized to the compacted calendar grid (32px cells); the reclaimed height goes
+    // to the notification log above, which is the column's only fill-height zone.
+    implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 300
     property int selectedTab: Persistent.states.sidebar.bottomGroup.tab
     property int previousIndex: -1
     property bool collapsed: Persistent.states.sidebar.bottomGroup.collapsed

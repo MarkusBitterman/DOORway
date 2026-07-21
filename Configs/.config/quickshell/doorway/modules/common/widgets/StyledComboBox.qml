@@ -11,10 +11,12 @@ ComboBox {
     id: root
 
     property string buttonIcon: ""
-    property real buttonRadius: height / 2
-    property color colBackground: Appearance.colors.colSecondaryContainer
-    property color colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-    property color colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+    // Squared hairline field, fixed hud tokens — this combo lives only on the
+    // boardroom volume dialog (mode-following colors would go ink-on-ink in gold).
+    property real buttonRadius: 3
+    property color colBackground: DoorwayPalette.hudHover
+    property color colBackgroundHover: DoorwayPalette.hudHoverStrong
+    property color colBackgroundActive: DoorwayPalette.hudHoverStrong
 
     implicitHeight: 40
     Layout.fillWidth: true
@@ -22,6 +24,8 @@ ComboBox {
     background: Rectangle {
         radius: root.buttonRadius
         color: (root.down && !root.popup.visible) ? root.colBackgroundActive : root.hovered ? root.colBackgroundHover : root.colBackground
+        border.width: 1
+        border.color: DoorwayPalette.hudLine
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -39,7 +43,7 @@ ComboBox {
         y: root.height / 2 - height / 2
         text: "keyboard_arrow_down"
         iconSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnSecondaryContainer
+        color: DoorwayPalette.hudTextDim
 
         rotation: root.popup.visible ? 180 : 0
         Behavior on rotation {
@@ -70,14 +74,14 @@ ComboBox {
                         return root.buttonIcon;
                     }
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: DoorwayPalette.hudText
                 }
             }
 
             StyledText {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                color: Appearance.colors.colOnSecondaryContainer
+                color: DoorwayPalette.hudText
                 text: root.displayText
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
@@ -94,20 +98,18 @@ ComboBox {
         required property int index
         property color color: {
             if (root.currentIndex === itemDelegate.index) {
-                if (itemDelegate.down) return Appearance.colors.colSecondaryContainerActive;
-                if (itemDelegate.hovered) return Appearance.colors.colSecondaryContainerHover;
-                return Appearance.colors.colSecondaryContainer;
+                if (itemDelegate.down || itemDelegate.hovered) return DoorwayPalette.hudHoverStrong;
+                return DoorwayPalette.hudHover;
             } else {
-                if (itemDelegate.down) return Appearance.colors.colLayer3Active;
-                if (itemDelegate.hovered) return Appearance.colors.colLayer3Hover;
-                return ColorUtils.transparentize(Appearance.colors.colLayer3);
+                if (itemDelegate.down || itemDelegate.hovered) return DoorwayPalette.hudHover;
+                return "transparent";
             }
         }
-        property color colText: (root.currentIndex === itemDelegate.index) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer3
+        property color colText: (root.currentIndex === itemDelegate.index) ? DoorwayPalette.hudText : DoorwayPalette.hudTextDim
 
         background: Rectangle {
             anchors.fill: parent
-            radius: Appearance.rounding.small
+            radius: 3
             color: itemDelegate.color
 
             Behavior on color {
@@ -191,8 +193,10 @@ ComboBox {
             Rectangle {
                 id: popupBackground
                 anchors.fill: parent
-                radius: Appearance.rounding.normal
-                color: Appearance.m3colors.m3surfaceContainerHigh
+                radius: 3
+                color: DoorwayPalette.hudCard
+                border.width: 1
+                border.color: DoorwayPalette.hudLine
             }
         }
 

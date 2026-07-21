@@ -11,8 +11,10 @@ RippleButton {
 
     Layout.fillWidth: false
     Layout.fillHeight: false
-    implicitWidth: 38; 
-    implicitHeight: 38;
+    // Compact cells — a tighter month grid so the notification log (the sidebar's
+    // only fill-height zone) inherits the reclaimed vertical space.
+    implicitWidth: 32;
+    implicitHeight: 32;
 
     toggled: (isToday == 1)
     rippleEnabled: false  // mechanical, not Material

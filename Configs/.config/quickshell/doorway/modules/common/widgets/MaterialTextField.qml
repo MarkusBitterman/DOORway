@@ -10,17 +10,20 @@ import QtQuick.Controls
  */
 TextField {
     id: root
-    Material.theme: Material.System
-    Material.accent: Appearance.m3colors.m3primary
-    Material.primary: Appearance.m3colors.m3primary
-    Material.background: Appearance.m3colors.m3surface
-    Material.foreground: Appearance.m3colors.m3onSurface
+    // Only consumer is the boardroom Wi-Fi password field — fixed hud tokens keep
+    // typed text legible over the dark dialog card in both cartridge modes.
+    Material.theme: Material.Dark
+    Material.accent: DoorwayPalette.skyHint
+    Material.primary: DoorwayPalette.skyHint
+    Material.background: DoorwayPalette.hudCard
+    Material.foreground: DoorwayPalette.hudText
     Material.containerStyle: Material.Outlined
     renderType: Text.QtRendering
 
-    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
-    placeholderTextColor: Appearance.m3colors.m3outline
+    color: DoorwayPalette.hudText
+    selectedTextColor: DoorwayPalette.inkBlack
+    selectionColor: DoorwayPalette.skyHint
+    placeholderTextColor: DoorwayPalette.hudTextDim
     clip: true
 
     font {

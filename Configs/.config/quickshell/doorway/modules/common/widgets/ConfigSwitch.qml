@@ -15,11 +15,17 @@ RippleButton {
     
     onClicked: checked = !checked
 
+    // Only consumer is the boardroom NightLightDialog — fixed hud tokens keep the
+    // row legible over the dark card in both cartridge modes.
+    buttonRadius: 3
+    colBackgroundHover: DoorwayPalette.hudHover
+
     contentItem: RowLayout {
         spacing: 10
         OptionalMaterialSymbol {
             id: iconWidget
             icon: root.buttonIcon
+            color: DoorwayPalette.hudTextDim
             opacity: root.enabled ? 1 : 0.4
             iconSize: Appearance.font.pixelSize.larger
         }
@@ -28,7 +34,7 @@ RippleButton {
             Layout.fillWidth: true
             text: root.text
             font: root.font
-            color: Appearance.colors.colOnSecondaryContainer
+            color: DoorwayPalette.hudText
             opacity: root.enabled ? 1 : 0.4
         }
         StyledSwitch {
@@ -36,6 +42,9 @@ RippleButton {
             down: root.down
             Layout.fillWidth: false
             checked: root.checked
+            // Gold when enabled ("now"); recessed hud well when off.
+            activeColor: DoorwayPalette.powerGold
+            inactiveColor: DoorwayPalette.hudWell
             onClicked: root.clicked()
         }
     }

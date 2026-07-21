@@ -82,6 +82,23 @@ Singleton {
         objects: [sink, source]
     }
 
+    // Bluetooth sinks disconnect/reconnect under normal use (dead battery, out
+    // of range). When they come back, `value`'s binding on sink?.audio.volume
+    // has been observed to survive the reconnect without ever re-firing
+    // valueChanged again — volume keys and the OSD go silent even though
+    // `wpctl` proves the daemon-side volume is genuinely live. Whether that's
+    // Pipewire handing back a reused node object or a fresh one, the node's own
+    // readyChanged reliably marks the reconnect either way, so re-arm the
+    // value binding there rather than trusting defaultAudioSinkChanged alone.
+    Connections {
+        target: root.sink
+        function onReadyChanged() {
+            if (root.sink?.ready) {
+                root.value = Qt.binding(() => root.sink?.audio.volume ?? 0);
+            }
+        }
+    }
+
     Connections { // Protection against sudden volume changes
         target: sink?.audio ?? null
         property bool lastReady: false

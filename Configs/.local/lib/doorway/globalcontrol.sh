@@ -102,16 +102,28 @@ get_hashmap() {
     unset wallList
     unset skipStrays
     unset filetypes
+    # Filetype lists reach us in two shapes: a bash array (a config sourced into
+    # this same process) or a colon-separated scalar. The scalar form is not a
+    # convenience — it is the ONLY form that survives `export` into a subprocess,
+    # because bash cannot export arrays. Accept both and emit one type per line.
+    normalize_filetypes() {
+        local raw part
+        local -a parts
+        for raw in "$@"; do
+            [ -n "$raw" ] || continue
+            IFS=':' read -r -a parts <<<"$raw"
+            for part in "${parts[@]}"; do
+                [ -n "$part" ] && printf '%s\n' "$part"
+            done
+        done
+    }
     list_extensions() {
-        supported_files=(
-            "gif"
-            "jpg"
-            "jpeg"
-            "png"
-            "webp"
-            "${WALLPAPER_FILETYPES[@]}")
-        if [ -n "$WALLPAPER_OVERRIDE_FILETYPES" ]; then
-            supported_files=("${WALLPAPER_OVERRIDE_FILETYPES[@]}")
+        local -a supported_files=()
+        mapfile -t supported_files < <(normalize_filetypes "${WALLPAPER_OVERRIDE_FILETYPES[@]}")
+        if [ ${#supported_files[@]} -eq 0 ]; then
+            mapfile -t supported_files < <(
+                normalize_filetypes gif jpg jpeg png webp "${WALLPAPER_FILETYPES[@]}"
+            )
         fi
         printf -- '-iname "*.%s" -o ' "${supported_files[@]}" | sed 's/ -o $//'
     }

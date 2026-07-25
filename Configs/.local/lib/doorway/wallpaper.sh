@@ -135,6 +135,14 @@ handle_output_mode() {
 main() {
     resolve_cache_args "$@"
 
+    # Pure query — runs before any target/backend setup, and only once the whole
+    # argument list has been parsed so -t/--filetypes is honoured regardless of
+    # where it appears.
+    if [ "$json_flag" == "true" ]; then
+        Wall_Json
+        exit 0
+    fi
+
     if run_cache_command; then
         exit $?
     elif [ "$cache_flag" == "true" ]; then
@@ -244,13 +252,14 @@ if [ -z "$*" ]; then
 fi
 LONGOPTS="link,global,select,multi-select,json,next,previous,random,set:,start,backend:,get,output:,help,filetypes:,cache:"
 PARSED=$(getopt --options GSjnprb:s:t:go:h --longoptions "$LONGOPTS" --name "$0" -- "$@") || exit 2
-WALLPAPER_OVERRIDE_FILETYPES=()
+WALLPAPER_OVERRIDE_FILETYPES=""
 wallpaper_backend="${WALLPAPER_BACKEND:-awww}"
 wallpaper_setter_flag=""
 output_flag=false
 wallpaper_outputs=()
 multi_select=false
 cache_flag=false
+json_flag=false
 cache_mode=""
 cache_arg=""
 eval set -- "$PARSED"
@@ -265,8 +274,12 @@ while true; do
         shift
         ;;
     -j | --json)
-        Wall_Json
-        exit 0
+        # Deferred to main() rather than run inline: acting on a flag mid-parse
+        # means every flag written after it is silently discarded, so `-j -t webp`
+        # ignored the -t override while `-t webp -j` honoured it. Order-dependent
+        # flags are indistinguishable from a broken flag at the call site.
+        json_flag=true
+        shift
         ;;
     -S | --select)
         wallpaper_setter_flag=select
@@ -312,11 +325,19 @@ while true; do
         shift 2
         ;;
     -t | --filetypes)
-        IFS=':' read -r -a WALLPAPER_OVERRIDE_FILETYPES <<<"$2"
+        # Kept as the raw colon-separated scalar, NOT split into an array: this
+        # value has to reach cache.sh and color.set.sh, which run as separate
+        # processes, and bash cannot export arrays. Splitting here produced an
+        # array that `export` silently dropped, so every subprocess saw an empty
+        # override and -t did nothing at all. globalcontrol.sh's
+        # normalize_filetypes() does the splitting at the point of use.
+        WALLPAPER_OVERRIDE_FILETYPES="$2"
         if [ "$LOG_LEVEL" == "debug" ]; then
-            for i in "${WALLPAPER_OVERRIDE_FILETYPES[@]}"; do
+            IFS=':' read -r -a _filetype_dbg <<<"$2"
+            for i in "${_filetype_dbg[@]}"; do
                 print_log -g "DEBUG:" -b "filetype overrides : " "'$i'"
             done
+            unset _filetype_dbg
         fi
         export WALLPAPER_OVERRIDE_FILETYPES
         shift 2

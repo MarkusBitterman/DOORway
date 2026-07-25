@@ -46,6 +46,9 @@
           awww
           fd # file-finder.sh (Super+Shift+E) listing pipe
           imagemagick # doorway-icon-color: dominant-color extraction from app icons (ActiveWindow well)
+          parallel # wallpaper/cache.sh thumbnail fan-out + color.set.sh wallbash template deploy;
+          # inherited from HyDE, which relied on it being incidentally installed. Nix's closure is
+          # exact, so its absence killed thumbnail generation silently inside a backgrounded script.
 
           # System integration
           brightnessctl
@@ -246,6 +249,7 @@
               execStart,
               after ? [ ],
               documentation ? null,
+              killMode ? null,
             }:
             {
               Unit = {
@@ -260,6 +264,9 @@
                 Type = "oneshot";
                 RemainAfterExit = true;
                 ExecStart = execStart;
+              }
+              // lib.optionalAttrs (killMode != null) {
+                KillMode = killMode;
               };
               Install = {
                 WantedBy = [ "graphical-session.target" ];
@@ -1077,6 +1084,12 @@
               doorway-wallpaper = mkDoorwayOneshot {
                 description = "DOORway wallpaper daemon";
                 execStart = "%h/.local/lib/doorway/wallpaper.sh --start --global";
+                # The backend scripts self-manage their daemon ("awww query || awww-daemon &"),
+                # which assumes the backgrounded child outlives the script. Under the default
+                # KillMode=control-group, systemd SIGKILLs that daemon the moment the oneshot's
+                # main process exits — so the wallpaper was applied and then immediately torn
+                # down, leaving no wallpaper and a dead socket. Fixed 2026-07-25.
+                killMode = "process";
               };
 
               doorway-idle = lib.mkIf cfg.idle.enable (mkDoorwayService {

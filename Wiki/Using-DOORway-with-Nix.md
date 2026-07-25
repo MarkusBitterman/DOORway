@@ -205,7 +205,7 @@ Individual symlinks into the Nix store, so the generated files can live alongsid
 | `hypr/shaders.lua` | `Configs/.config/hypr/shaders.lua` (read-only) |
 | `hypr/nvidia.conf` | source `.conf` file |
 | `hypr/{hypridle,hyprlock,hyprsunset}.conf` | **generated** from `doorway.idle`, `doorway.lock`, `doorway.blueLight` options |
-| `hypr/{animations,shaders,themes,workflows,hyprlock}/` | corresponding source directories |
+| `hypr/{animations,themes,workflows,hyprlock}/` | corresponding source directories |
 | `hypr/monitors.lua` | **generated** from your `doorway.monitor` + `extraMonitors` options |
 | `hypr/userprefs.lua` | **generated** from your `doorway.keyboard` option (and a few sensible defaults) |
 | `hypr/doorway-{cursor,fonts,theme,animation-preset}.lua` | **generated** sidecars carrying module-option values into the lua config |

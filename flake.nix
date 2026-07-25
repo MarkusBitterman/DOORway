@@ -827,7 +827,12 @@
               '';
               "hypr/nvidia.conf".source = "${configDir}/.config/hypr/nvidia.conf";
               "hypr/animations".source = "${configDir}/.config/hypr/animations";
-              "hypr/shaders".source = "${configDir}/.config/hypr/shaders";
+              # No "hypr/shaders" entry: the source directory does not exist in this
+              # repo, so the link resolved to a missing subpath of the flake's store
+              # path — a dangling symlink. Nix cannot catch that (the whole source is
+              # one store path, so the subpath is never checked), and it surfaced only
+              # as a runtime error notification once the wallpaper pipeline began
+              # calling shaders.sh. Screen shaders live in DoorwayCrtShader.qml.
               "hypr/themes".source = "${configDir}/.config/hypr/themes";
               "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
               "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";

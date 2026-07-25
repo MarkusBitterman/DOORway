@@ -5,12 +5,19 @@
     trap "hyprctl reload config-only -q" EXIT
 }
 load_dconf_kdeglobals() {
-    source "$LIB_DIR/doorway/color/hypr.sh"
     # color/dconf.sh removed in Pass 11: GTK/cursor/font/color-scheme settings
     # are now declared in flake.nix (home.gtk, home.pointerCursor, dconf.settings).
+    # color/hypr.sh went with the border-colour redesign — Hyprland borders come
+    # from the committed cartridge palette (services/ThemeMode.qml), not wallbash —
+    # but the `source` line outlived the file and errored on every wallpaper change.
+    # dcol_* still resolve: dcol_file is sourced well before this function runs.
     toml_write "$XDG_CONFIG_HOME/kdeglobals" "Colors:View" "BackgroundNormal" "#${dcol_pry1:-000000}FF"
     toml_write "$XDG_CONFIG_HOME/Kvantum/wallbash/wallbash.kvconfig" '%General' 'reduce_menu_opacity' 0
-    [[ -n $HYPRLAND_INSTANCE_SIGNATURE ]] && shaders.sh reload
+    # `shaders.sh reload` removed: hypr/shaders/ has no source dir in this repo, so
+    # the flake link dangled and the script error-notified on every wallpaper change.
+    # The script is also unusable under Nix regardless — it writes .compiled.cache.glsl
+    # back into ~/.config/hypr/shaders/, a read-only store symlink. Screen shaders are
+    # served by services/DoorwayCrtShader.qml via HyprlandConfig, the NixOS-safe path.
 }
 create_wallbash_substitutions() {
     local use_inverted=$1

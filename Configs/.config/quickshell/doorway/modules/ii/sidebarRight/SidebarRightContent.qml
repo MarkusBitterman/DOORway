@@ -44,30 +44,28 @@ Item {
     implicitHeight: sidebarRightBackground.implicitHeight
     implicitWidth: sidebarRightBackground.implicitWidth
 
-    StyledRectangularShadow {
-        target: sidebarRightBackground
-    }
     Rectangle {
         id: sidebarRightBackground
 
         anchors.fill: parent
-        implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
-        implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
+        implicitHeight: parent.height
+        implicitWidth: sidebarWidth
         // Flat opaque ink ground — the boardroom's data-flow shader is contained
         // inside the VitalsHud band; text everywhere else sits on solid ground.
         color: DoorwayPalette.hudInk
-        border.width: 1
-        border.color: DoorwayPalette.hudLine
-        radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
+        radius: 0
 
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: sidebarPadding
             spacing: sidebarPadding
 
+            HudSectionLabel {
+                label: Translation.tr("VITALS")
+            }
+
             VitalsHud {
                 Layout.fillWidth: true
-                Layout.topMargin: 5
             }
 
             HudSectionLabel {

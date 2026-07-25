@@ -61,10 +61,6 @@ Scope {
         readonly property real volumeValue: Audio.value ?? 0
         readonly property bool isBrightness: osdScope.activeType === "brightness"
 
-        StyledRectangularShadow {
-            target: osdPill
-        }
-
         // Cartridge readout: a raised plastic panel housing a VU-style segmented meter.
         Rectangle {
             id: osdPill

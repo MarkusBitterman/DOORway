@@ -8,7 +8,7 @@ import QtQuick.Layouts
 /**
  * Boardroom vitals band — the ONE zone where the ENCOM data-flow shader lives.
  * The rest of the sidebar is flat ink; motion is an instrument here, not
- * wallpaper. Network identity + uptime on top, neon meters (CPU, MEM, NET)
+ * wallpaper. Connection icon + uptime on top, neon meters (CPU, MEM, NET)
  * beneath, all over the shader with a scrim so the readout stays legible.
  * The shader's traces surge with real net/CPU load and its clock only runs
  * while the sidebar is open (VCS APU budget).
@@ -16,10 +16,6 @@ import QtQuick.Layouts
 Item {
     id: root
     implicitHeight: layout.implicitHeight + 26
-
-    readonly property string netName: Network.ethernet ? Translation.tr("Ethernet")
-        : (Network.networkName && Network.networkName.length > 0 ? Network.networkName
-        : Translation.tr("Offline"))
 
     // Recessed well the shader sits in.
     Rectangle {
@@ -69,14 +65,8 @@ Item {
                 iconSize: 16
                 color: DoorwayPalette.skyHint
             }
-            StyledText {
+            Item {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                text: root.netName.toUpperCase()
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                font.family: Appearance.font.family.monospace
-                font.letterSpacing: 1.5
-                color: DoorwayPalette.hudText
             }
             StyledText {
                 text: "UP " + DateTime.uptime

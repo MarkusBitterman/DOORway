@@ -48,13 +48,7 @@ Scope {
         Loader {
             id: sidebarContentLoader
             active: GlobalStates.sidebarRightOpen || Config?.options.sidebar.keepRightSidebarLoaded
-            anchors {
-                fill: parent
-                margins: Appearance.sizes.hyprlandGapsOut
-                leftMargin: Appearance.sizes.elevationMargin
-            }
-            width: sidebarWidth - Appearance.sizes.hyprlandGapsOut - Appearance.sizes.elevationMargin
-            height: parent.height - Appearance.sizes.hyprlandGapsOut * 2
+            anchors.fill: parent
 
             focus: GlobalStates.sidebarRightOpen
             Keys.onPressed: event => {

@@ -181,8 +181,13 @@ relative path:
 ### Rebuilding after source changes
 
 ```bash
-sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD
+nix run ~/Developments/HALLway
 ```
+
+`nix run` (no args, from anywhere) auto-detects the current host (`uname -n`)
+and execs the matching `nixos-rebuild switch`/`home-manager switch` — see
+`HALLway/flake.nix`'s `hallwaySwitch` app. `nix run ~/Developments/HALLway --
+<host>` targets one explicitly (e.g. `HALLpass.space` for the VPS).
 
 The git tree may be dirty — that is expected and harmless during development.
 
@@ -301,7 +306,7 @@ git commit && git push
 
 # In HALLway:
 nix flake update doorway   # updates flake.lock to latest pushed commit
-sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD
+nix run ~/Developments/HALLway
 ```
 
 **Always commit and push before rebuilding in HALLway.** `nix flake update`
@@ -328,8 +333,9 @@ A fix that "doesn't work" is usually a fix that isn't deployed yet — not a wro
 fix. Do not debug the old code's behavior against the new code's expectations.
 
 Two practical consequences:
-- `sudo nixos-rebuild switch` needs the user's password — hand it off
-  (suggest they run `! sudo nixos-rebuild switch --flake ~/Developments/HALLway/#2600AD`).
+- The switch needs the user's password (`nix run` still shells out to `sudo
+  nixos-rebuild switch` under the hood) — hand it off (suggest they run
+  `! nix run ~/Developments/HALLway`).
 - After a switch, `systemctl --user restart doorway-quickshell.service` (and
   similar user services) so they pick up the new store paths — HM does not
   reliably restart them.
@@ -374,7 +380,7 @@ QML_IMPORT_PATH=<from-service> qs -p ~/Developments/DOORway/Configs/.config/quic
 Configs in `Configs/.config/hypr/` use Hyprland 0.55+ lua format (`hl.config`, `hl.bind`, `hl.window_rule`). `hyprctl reload` works the same on lua configs as it did on hyprlang.
 
 ```bash
-# After nixos-rebuild switch — smoke-test the deployed config for type errors:
+# After `nix run ~/Developments/HALLway` — smoke-test the deployed config for type errors:
 Hyprland --verify-config
 
 # To verify SOURCE files before rebuilding (temporarily redirects system module symlinks):

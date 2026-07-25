@@ -112,7 +112,7 @@ git commit && git push
 
 # In HALLway (~/Developments/HALLway):
 nix flake update doorway
-sudo nixos-rebuild switch --flake .#2600AD
+nix run .   # auto-detects the host and runs the matching switch command
 ```
 
 ---

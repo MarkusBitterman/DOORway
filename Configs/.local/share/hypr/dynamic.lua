@@ -18,11 +18,27 @@ local home = os.getenv("HOME")
 -- Screen shader compiled cache is handled by ~/.config/hypr/shaders.lua;
 -- the conditional `decoration:screen_shader` lives there now.
 
+-- Cartridge-driven window border colors (dark/gold NES-cart cartridge mode),
+-- written by services/ThemeMode.qml on every mode change and at shell
+-- startup. This is the default border source — committed DoorwayPalette
+-- tokens, not wallpaper-derived — matching the bar corners and sidebars.
+-- pcall swallows "file missing" (before QuickShell has started once).
+do
+    local xdg_cache = os.getenv("XDG_CACHE_HOME") or (home .. "/.cache")
+    local cartridge_file = xdg_cache .. "/doorway/hyprland-cartridge-colors.lua"
+    local f = io.open(cartridge_file, "r")
+    if f then
+        f:close()
+        pcall(dofile, cartridge_file)
+    end
+end
+
 -- Matugen-generated colors (Material You palette from current wallpaper).
--- Written to XDG_DATA_HOME/matugen/ by doorway-matugen-watcher.service
--- on every wallpaper change; hyprctl reload picks them up from here.
--- pcall swallows both "file missing" (first boot before matugen ran) and
--- any future hl.config() key changes in the generated output.
+-- Opt-in only (doorway.theme.matugenBorders.enable): off by default, so
+-- doorway-matugen-watcher.service never runs and this file never exists.
+-- When enabled it overrides the cartridge colors above — loaded second,
+-- last write wins. pcall swallows both "file missing" and any future
+-- hl.config() key changes in the generated output.
 do
     local xdg_data = os.getenv("XDG_DATA_HOME") or (home .. "/.local/share")
     local colors_file = xdg_data .. "/matugen/hyprland-colors.lua"

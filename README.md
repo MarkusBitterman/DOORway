@@ -31,7 +31,7 @@ DOORway is the desktop environment layer of HALLway OS. It provides:
 | **Hyprland** | Wayland compositor with animations and tiling |
 | **QuickShell** | QML/Qt6 shell: top bar, sidebars, OSD, notifications, session screen, lock screen |
 | **DOORway Lock** | Shader-screensaver lock screen (QuickShell `WlSessionLock`); hyprlock remains as automatic fallback |
-| **matugen** | Hyprland border accent colors derived from the active wallpaper |
+| **matugen** | Optional wallpaper-derived Hyprland border colors, off by default (see `theme.matugenBorders.enable`) |
 | **anyrun** | Application launcher and dmenu-style picker menus |
 | **awww** | Animated wallpaper backend |
 
@@ -67,7 +67,7 @@ For manual setups, core dependencies include:
 ```nix
 hyprland          # compositor
 quickshell        # shell (bar, sidebars, OSD, notifications, lock)
-matugen           # wallpaper → Hyprland border colors
+matugen           # optional wallpaper → Hyprland border colors (theme.matugenBorders.enable)
 anyrun            # launcher + picker menus
 hyprlock          # lock screen fallback
 hypridle          # idle daemon
@@ -201,8 +201,9 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `theme.gapsIn` | int (≥ 0) | `3` | Inner gap between tiled windows in pixels |
-| `theme.gapsOut` | int (≥ 0) | `8` | Outer gap between windows and screen edge in pixels |
+| `theme.gapsOut` | int (≥ 0) | `5` | Outer gap between windows and screen edge in pixels. Matches the QuickShell shell's own edge margin (`Appearance.sizes.hyprlandGapsOut`), so sidebars/notifications/bar corners line up flush with tiled windows |
 | `theme.borderSize` | int (≥ 0) | `2` | Window border width in pixels. `0` disables borders |
+| `theme.matugenBorders.enable` | bool | `false` | Drive window border colors from matugen's wallpaper-derived palette instead of the committed DoorwayPalette cartridge colors. Starts `doorway-matugen-watcher.service` when true |
 | `theme.rounding` | int (≥ 0) | `10` | Corner rounding radius in pixels. `0` disables rounding |
 | `theme.layout` | `"dwindle"` \| `"master"` | `"dwindle"` | Default tiling layout algorithm |
 | `theme.blur.enabled` | bool | `true` | Enable background blur behind transparent surfaces |
@@ -211,7 +212,7 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | `theme.iconTheme.name` | str | `"Tela-dracula"` | Icon theme name (Tela variants: `Tela`, `Tela-blue`, `Tela-dracula`, `Tela-nord`, … each also with `-dark`/`-light` suffixes) |
 | `theme.iconTheme.package` | package | `pkgs.tela-icon-theme` | Nix package providing the icon theme |
 
-Borders are painted by **matugen** with Material You accent colors extracted from your active wallpaper. `theme.borderSize = 4` with a bold wallpaper and `animations.preset = "LimeFrenzy"` gives a continuously animated neon glow effect.
+By default, borders are painted from the committed **DoorwayPalette** cartridge colors (`services/ThemeMode.qml`): a gold LED-lit highlight on the focused window, a molded plastic-edge tone on unfocused ones, both swapping with the dark/gold day-night cartridge mode — the same identity that colors the bar corners and sidebars. Set `theme.matugenBorders.enable = true` to switch to wallpaper-derived Material You accent colors from **matugen** instead; with a bold wallpaper and `animations.preset = "LimeFrenzy"` that gives a continuously animated neon glow effect.
 
 #### `doorway.animations` — Window animations
 
@@ -344,14 +345,26 @@ qs -c doorway ipc --any-display call theme toggleLightDark
 
 The mode persists at `appearance.palette.mode` in `~/.config/doorway/config.json`.
 
-### Hyprland borders: matugen from the wallpaper
+### Hyprland borders: the cartridge palette, or matugen from the wallpaper
 
-matugen runs for exactly one output — Hyprland's border accent colors:
+By default, Hyprland window border colors come from the same committed
+DoorwayPalette identity as the bar corners and sidebars, not the wallpaper:
+
+1. `services/ThemeMode.qml` picks the focused/unfocused border colors from
+   `DoorwayPalette.powerGold` (LED-lit highlight) and `DoorwayPalette.plasticEdge`
+   (molded cartridge edge, dark/gold mode-aware)
+2. On every cartridge mode change it applies them live via `hyprctl keyword`
+   and writes `~/.cache/doorway/hyprland-cartridge-colors.lua`
+3. `dynamic.lua` sources that file on every Hyprland reload
+
+Set `doorway.theme.matugenBorders.enable = true` to switch to wallpaper-derived
+borders instead — this starts matugen as a second, overriding color source:
 
 1. `wallpaper.sh` sets the wallpaper and writes a trigger file to `~/.cache/doorway/wall.set`
 2. `doorway-matugen-watcher` (systemd user service) detects the change via `inotifywait`
 3. `matugen image <wallpaper>` renders `~/.local/share/matugen/hyprland-colors.lua`
-4. Hyprland reloads; `dynamic.lua` sources the new border colors
+4. Hyprland reloads; `dynamic.lua` sources the matugen colors *after* the
+   cartridge colors, so they take precedence while the option is enabled
 
 ### Wallpaper commands
 
@@ -466,7 +479,8 @@ cat /run/user/$(id -u)/hypr/*/hyprland.log | grep -v "DEBUG from aquamarine"
 
 # Daemon crashes — DOORway services are declarative systemd user units:
 journalctl --user -b -n 200 | grep -iE "(quickshell|doorway|hypr)"
-systemctl --user status doorway-quickshell.service doorway-matugen-watcher.service
+systemctl --user status doorway-quickshell.service
+# doorway-matugen-watcher.service only exists if theme.matugenBorders.enable = true
 
 # Shell-surface defects announce themselves as journal warnings:
 journalctl --user -u doorway-quickshell.service -b --no-pager | grep -vE "DEBUG|INFO"

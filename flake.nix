@@ -510,13 +510,29 @@
               };
               gapsOut = lib.mkOption {
                 type = lib.types.ints.unsigned;
-                default = 8;
+                default = 5;
                 description = "Outer gap between windows and the screen edge in pixels.";
               };
               borderSize = lib.mkOption {
                 type = lib.types.ints.unsigned;
                 default = 2;
                 description = "Window border width in pixels. 0 disables borders entirely.";
+              };
+              matugenBorders = {
+                enable = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = ''
+                    Drive Hyprland window border colors from matugen's wallpaper-derived
+                    Material You palette instead of the committed DoorwayPalette cartridge
+                    colors (a gold LED-lit highlight on the focused window, a molded
+                    cartridge-edge tone on unfocused ones). Off by default, so window
+                    borders match the fixed Nintendo-Power identity used by the bar and
+                    sidebars regardless of wallpaper. When true, starts
+                    doorway-matugen-watcher.service, whose output overrides the cartridge
+                    colors on every wallpaper change.
+                  '';
+                };
               };
               rounding = lib.mkOption {
                 type = lib.types.ints.unsigned;
@@ -1099,7 +1115,10 @@
               # to regenerate Material You color files for Hyprland + QuickShell.
               # Starts alongside all other graphical-session services; the initial
               # run on service start handles the wallpaper set before first change.
-              doorway-matugen-watcher = {
+              # Gated by doorway.theme.matugenBorders.enable — off by default, since
+              # window border colors come from the committed cartridge palette
+              # (services/ThemeMode.qml) unless this is opted into.
+              doorway-matugen-watcher = lib.mkIf cfg.theme.matugenBorders.enable {
                 Unit = {
                   Description = "DOORway matugen wallpaper color watcher";
                   After = [ "graphical-session.target" ];

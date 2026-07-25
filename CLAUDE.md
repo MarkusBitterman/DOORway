@@ -64,10 +64,17 @@ persisted at `appearance.palette.mode` in `~/.config/doorway/config.json` and sw
 sidebar quick toggle, or launcher `dark`/`light` actions). `Appearance.qml` maps each mode to
 a full Material scheme (`darkScheme`/`goldScheme`).
 
-matugen still runs for one output only: `doorway-matugen-watcher.service` calls
-`matugen image <wallpaper>` on wallpaper change (inotifywait) and renders
-`~/.local/share/matugen/hyprland-colors.lua` — Hyprland border accent colors
-(pcall(dofile)'d by dynamic.lua). The shell does not consume matugen output.
+Hyprland window border colors follow the same committed-palette rule (fixed
+2026-07-25): `services/ThemeMode.qml` derives them from DoorwayPalette
+(`powerGold` active / `plasticEdge` inactive, cartridge-aware) on every mode
+change, applies them live via `hyprctl keyword`, and persists them to
+`~/.cache/doorway/hyprland-cartridge-colors.lua` (pcall(dofile)'d by
+`dynamic.lua`). matugen is an opt-in override, off by default
+(`doorway.theme.matugenBorders.enable`): when true, `doorway-matugen-watcher.service`
+calls `matugen image <wallpaper>` on wallpaper change (inotifywait) and renders
+`~/.local/share/matugen/hyprland-colors.lua`, dofile'd *after* the cartridge
+file so it wins while the option stays on. The shell does not consume matugen
+output either way — matugen only ever feeds Hyprland's border keywords.
 
 ### DOORway Lock (shader-screensaver lock screen)
 

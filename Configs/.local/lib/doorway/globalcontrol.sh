@@ -304,6 +304,13 @@ get_hyprConf() {
     local hyVar="$hyArg"
     local hyType=""
 
+    #? DOORway ships no hypr.theme — themes come from the committed cartridge
+    #? palette, not from HyDE theme files. Every lookup below already falls
+    #? through to gsettings/defaults when the value is missing, so an absent
+    #? file is normal; point at /dev/null so grep/awk read empty input instead
+    #? of spraying "No such file or directory" on every wallpaper change.
+    [ -f "$file" ] || file=/dev/null
+
     #? Allow optional type hint: e.g., FONT_SIZE[int]
     if [[ "$hyArg" =~ ^([^[]+)\[([a-zA-Z0-9_]+)\]$ ]]; then
         hyVar="${BASH_REMATCH[1]}"
@@ -397,6 +404,12 @@ toml_write() {
     local group=$2
     local key=$3
     local value=$4
+    #? kwriteconfig6 creates missing parents and the target file; the grep/sed
+    #? fallback below does neither — so when it is absent (as under Nix) a first
+    #? write to a fresh path like Kvantum/wallbash/ spammed "No such file or
+    #? directory" on every wallpaper change. Ensure both exist up front; the
+    #? fallback then appends to an empty file exactly as it would to a real one.
+    mkdir -p "$(dirname "$config_file")" 2>/dev/null && touch "$config_file" 2>/dev/null
     if ! kwriteconfig6 --file "$config_file" --group "$group" --key "$key" "$value" 2>/dev/null; then
         if ! grep -q "^\[$group\]" "$config_file"; then
             echo -e "\n[$group]\n$key=$value" >>"$config_file"

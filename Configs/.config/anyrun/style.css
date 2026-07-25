@@ -2,60 +2,89 @@
  * Tokens mirror modules/common/DoorwayPalette.qml (gray NES cart set):
  *   plasticShellTop #2C2822 · plasticPanelTop #241F18 · plasticEdge #0C0906
  *   agedPaper #EFE3C5 · powerGold #FFC20E · powerRed #E60012 · skyHint #6FA3D9
+ *
+ * Selectors follow anyrun's own reference sheet, shipped at
+ * share/doc/anyrun/examples/style.css in the package. This build styles by
+ * NODE + CLASS (window, box.main, text, label.match) — NOT by #id. The previous
+ * sheet used #window / box#main / entry#entry / #match, which match nothing
+ * here, so the theme silently never applied.
+ *
+ * Do NOT reintroduce `* { all: unset; }`. In GTK4 that strips the layout
+ * properties every widget depends on, so the window never lays out and never
+ * commits a buffer: the layer surface then sits invisible at its 200x200
+ * default (hyprctl layers shows `a: 0`) and Super+A appears to do nothing.
  */
 
-* {
-    all: unset;
-    font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 14px;
+@define-color accent      #FFC20E;
+@define-color shell       #2C2822;
+@define-color panel       #241F18;
+@define-color edge        #0C0906;
+@define-color paper       #EFE3C5;
+@define-color desc        #C9A46A;
+@define-color plugin-info #6FA3D9;
+
+window {
+  background: transparent;
 }
 
-#window {
-    background: transparent;
+box.main {
+  padding: 8px;
+  margin: 10px;
+  border-radius: 8px;
+  border: 2px solid @edge;
+  background-color: @shell;
+  box-shadow: 0 0 8px @edge;
+  font-family: "JetBrainsMono Nerd Font", monospace;
 }
 
-box#main {
-    background-color: #2C2822;
-    border: 2px solid #0C0906;
-    border-radius: 8px;
-    padding: 8px;
+text {
+  min-height: 30px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid @edge;
+  background-color: @panel;
+  color: @paper;
+  caret-color: @accent;
 }
 
-entry#entry {
-    background-color: #241F18;
-    color: #EFE3C5;
-    border: 1px solid #0C0906;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    caret-color: #FFC20E;
+.matches {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 6px;
 }
 
-list#main {
-    background: transparent;
+box.plugin:first-child {
+  margin-top: 6px;
 }
 
-#match {
-    color: #EFE3C5;
-    border-radius: 6px;
-    padding: 6px 10px;
+box.plugin.info {
+  min-width: 200px;
 }
 
-#match:selected {
-    background-color: #16120E;
-    border-left: 3px solid #FFC20E;
+list.plugin {
+  background-color: rgba(0, 0, 0, 0);
 }
 
-#match-title {
-    color: #EFE3C5;
-    font-weight: bold;
+label.match {
+  color: @paper;
 }
 
-#match-desc {
-    color: #C9A46A;
-    font-size: 12px;
+label.match.description {
+  font-size: 12px;
+  color: @desc;
 }
 
-#plugin {
-    color: #6FA3D9;
+label.plugin.info {
+  font-size: 14px;
+  color: @plugin-info;
+}
+
+.match {
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.match:selected {
+  border-left: 3px solid @accent;
+  background-color: #16120E;
 }

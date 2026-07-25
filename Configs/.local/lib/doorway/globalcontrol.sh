@@ -108,6 +108,7 @@ get_hashmap() {
             "jpg"
             "jpeg"
             "png"
+            "webp"
             "${WALLPAPER_FILETYPES[@]}")
         if [ -n "$WALLPAPER_OVERRIDE_FILETYPES" ]; then
             supported_files=("${WALLPAPER_OVERRIDE_FILETYPES[@]}")

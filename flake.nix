@@ -1118,10 +1118,25 @@
 
               doorway-config-bootstrap = mkDoorwayOneshot {
                 description = "DOORway config initialization (oneshot at session start)";
-                # The doorway-config Go binary still defaults its input to the
-                # upstream $XDG_CONFIG_HOME/hyde/config.toml path; point it at the
-                # DOORway TOML explicitly until the binary is rebuilt.
-                execStart = "%h/.local/lib/doorway/doorway-config --no-startup -input %h/.config/doorway/config.toml";
+                # Runs parse.config.py, the Python implementation the retired
+                # doorway-config Go binary was a port of. That binary was a
+                # committed 2.4 MB stripped blob built from a dirty working tree
+                # (mod v0.1.4+dirty, vcs.modified=true) — unreproducible from any
+                # public commit, yet executed at every login. The script it was
+                # ported from was already in-tree, so the blob bought nothing.
+                #
+                # It also never worked. Three flag defaults were wrong for a
+                # oneshot: daemon mode is the binary's DEFAULT (so systemd waited
+                # forever on a unit that watched a read-only Nix store symlink for
+                # changes it can never receive), -no-startup explicitly suppressed
+                # the config write, and -env/-hypr still defaulted to
+                # $XDG_STATE_HOME/hyde/... rather than doorway/. The Python
+                # script's defaults are already the DOORway paths and one-shot is
+                # ITS default, so no path flags are needed. --export prefixes each
+                # line with `export` so values reach subprocesses, matching the
+                # binary's export-on-by-default behaviour. stdlib-only (loguru is
+                # an optional import with a logging fallback), hence plain python3.
+                execStart = "${pkgs.python3}/bin/python3 %h/.local/lib/doorway/parse.config.py --export";
               };
 
               # Watches ~/.cache/doorway/wall.set for changes and runs matugen

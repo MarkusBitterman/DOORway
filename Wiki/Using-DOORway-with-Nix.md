@@ -203,7 +203,8 @@ Individual symlinks into the Nix store, so the generated files can live alongsid
 | `hypr/animations.lua` | `Configs/.config/hypr/animations.lua` (read-only) |
 | `hypr/workflows.lua` | `Configs/.config/hypr/workflows.lua` (read-only) |
 | `hypr/{hypridle,hyprlock,hyprsunset}.conf` | **generated** from `doorway.idle`, `doorway.lock`, `doorway.blueLight` options |
-| `hypr/{animations,themes,workflows,hyprlock}/` | corresponding source directories |
+| `hypr/workflows/` | corresponding source directory (whole-dir symlink) |
+| `hypr/{animations,themes,hyprlock}/`, `kitty/` | **real directories** of per-file symlinks. A wallbash template renders a generated file into each (`themes/colors.conf`, `hyprlock/theme.conf`, `kitty/theme.conf`), which a whole-dir store symlink would make impossible; those three are excluded from the links and seeded writable on first activation instead. |
 | `hypr/monitors.lua` | **generated** from your `doorway.monitor` + `extraMonitors` options |
 | `hypr/userprefs.lua` | **generated** from your `doorway.keyboard` option (and a few sensible defaults) |
 | `hypr/doorway-{cursor,fonts,theme,animation-preset}.lua` | **generated** sidecars carrying module-option values into the lua config |
@@ -214,7 +215,7 @@ The generated files are real files Home Manager writes (not symlinks), which is 
 
 - `~/.config/quickshell/doorway/` → the whole shell (whole-dir symlink)
 - `~/.config/anyrun/` → launcher + picker config (whole-dir symlink)
-- `~/.config/kitty/` → terminal config (whole-dir symlink)
+- `~/.config/kitty/` → individual links; the directory stays real and writable so wallbash can render `theme.conf`, which `doorway.conf` includes
 - `~/.config/matugen/` → config.toml + templates (individual links)
 - `~/.config/doorway/` → individual links for `config.toml` and `wallbash/` only — the directory itself is real and writable, because the shell persists its runtime config to `~/.config/doorway/config.json` there
 

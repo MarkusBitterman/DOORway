@@ -228,6 +228,10 @@
           # Returns a home.activation entry that copies (not symlinks) a file,
           # making it writable at runtime. Merge the result into home.activation.
           # Example: home.activation = mkMutableHomeFile { path = ".config/foo/bar"; source = ./bar; };
+          #
+          # Ordered after linkGeneration as well as writeBoundary: these seeds land
+          # inside HM-managed directories, and with writeBoundary alone the DAG
+          # tie-break can run them before the directory exists.
           mkMutableHomeFile =
             {
               path,
@@ -238,10 +242,32 @@
               name = "mkMutable-" + builtins.replaceStrings [ "/" "." ] [ "-" "_" ] path;
             in
             {
-              "${name}" = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+              "${name}" = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] ''
                 install -Dm${mode} "${source}" "$HOME/${path}"
               '';
             };
+
+          # Individual file links for one Configs/.config/<subdir>, minus files
+          # listed in `exclude`. A whole-dir `.source` deploys the directory as a
+          # single read-only store symlink, so nothing can write a generated file
+          # alongside the source ones — every wallbash template targeting such a
+          # directory failed EROFS on each wallpaper change. Linking per file
+          # leaves a real, writable directory. Excluded entries are the generated
+          # targets themselves; seed them with mkMutableHomeFile so the consumer
+          # always finds a file even before the first wallbash run.
+          mkConfigFileLinks =
+            {
+              subdir,
+              exclude ? [ ],
+            }:
+            let
+              dir = "${configDir}/.config/${subdir}";
+              wanted = n: t: t == "regular" && !(builtins.elem n exclude);
+              files = lib.filterAttrs wanted (builtins.readDir dir);
+            in
+            lib.mapAttrs' (
+              n: _: lib.nameValuePair "${subdir}/${n}" { source = "${dir}/${n}"; }
+            ) files;
 
           mkDoorwayOneshot =
             {
@@ -751,7 +777,32 @@
 
             home.packages = lib.mkIf cfg.installPackages (doorwayDeps pkgs);
 
-            xdg.configFile = {
+            # Directories that must stay REAL and writable, because a wallbash
+            # template renders a generated file into them. Linked per file rather
+            # than whole-dir; see mkConfigFileLinks. The excluded names are those
+            # generated files, seeded mutable in home.activation below.
+            xdg.configFile =
+              mkConfigFileLinks {
+                subdir = "kitty";
+                exclude = [ "theme.conf" ]; # wallbash theme/kitty.dcol; kitty/doorway.conf does `include theme.conf`
+              }
+              // mkConfigFileLinks {
+                subdir = "hypr/themes";
+                exclude = [ "colors.conf" ]; # wallbash always/hyprcolors.dcol; sourced by share/hypr/hyprlock.conf
+              }
+              // mkConfigFileLinks {
+                subdir = "hypr/hyprlock";
+                exclude = [ "theme.conf" ]; # wallbash theme/hyprlock.dcol; $LAYOUT_PATH in hyprlock.conf
+              }
+              // mkConfigFileLinks {
+                subdir = "hypr/animations";
+                # No exclusion: wallbash theme/animations.dcol renders theme.conf
+                # here, but nothing reads it — animations.lua requires .lua presets
+                # and the committed animations/theme.lua is what actually loads.
+                # The directory still has to be writable for that render to stop
+                # failing EROFS on every wallpaper change.
+              }
+              // {
               # Individual file links instead of a directory symlink, so the
               # generated monitors.lua and userprefs.lua (below) can be placed
               # alongside them — a directory symlink to the Nix store is immutable.
@@ -824,7 +875,6 @@
                 # profile (active until the fixed nightTime) forces identity back. With no
                 # profiles the daemon idles at identity until QuickShell drives it via hyprctl.
               '';
-              "hypr/animations".source = "${configDir}/.config/hypr/animations";
               # No "hypr/shaders" entry. The source directory never existed here, so
               # the link resolved to a missing subpath of the flake's store path — a
               # dangling symlink Nix cannot catch (the whole source is one store path,
@@ -834,16 +884,13 @@
               # removed; screen shaders live in services/DoorwayCrtShader.qml, which
               # applies its .glsl through HyprlandConfig at runtime — the only path
               # that works when ~/.config/hypr is a read-only store symlink.
-              "hypr/themes".source = "${configDir}/.config/hypr/themes";
               "hypr/workflows".source = "${configDir}/.config/hypr/workflows";
-              "hypr/hyprlock".source = "${configDir}/.config/hypr/hyprlock";
               "anyrun".source = "${configDir}/.config/anyrun";
               # Individual links (not a whole-dir symlink) so the QuickShell
               # runtime config.json can live alongside them — ~/.config/doorway
               # must be a real, writable directory.
               "doorway/config.toml".source = "${configDir}/.config/doorway/config.toml";
               "doorway/wallbash".source = "${configDir}/.config/doorway/wallbash";
-              "kitty".source = "${configDir}/.config/kitty";
 
               # Initiative II: QuickShell shell and matugen color theming.
               # quickshell/doorway is whole-dir (QML is source-controlled config).
@@ -1304,10 +1351,40 @@
             # materialize the real dir. No-op once migrated; remove after soak.
             home.activation.doorwayDirDelink = lib.mkIf cfg.enable (
               lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
-                if [ -L "$HOME/.config/doorway" ]; then
-                  run rm "$HOME/.config/doorway"
-                fi
+                for d in \
+                  "$HOME/.config/doorway" \
+                  "$HOME/.config/kitty" \
+                  "$HOME/.config/hypr/themes" \
+                  "$HOME/.config/hypr/hyprlock" \
+                  "$HOME/.config/hypr/animations"; do
+                  if [ -L "$d" ]; then
+                    run rm "$d"
+                  fi
+                done
               ''
+            );
+
+            # Seeds for the three wallbash-generated files excluded from
+            # xdg.configFile above. Their consumers reference them unconditionally
+            # (kitty/doorway.conf `include theme.conf`; hyprlock's $LAYOUT_PATH and
+            # `source = .../themes/colors.conf`), so a missing file is a hard error
+            # on a fresh install — but they must stay writable for wallbash to
+            # re-render them. seedOnly: install once, then leave wallbash in charge
+            # instead of reverting the palette on every rebuild.
+            home.activation.doorwayThemeSeeds = lib.mkIf cfg.enable (
+              lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] (
+                lib.concatMapStringsSep "\n"
+                  (f: ''
+                    if [ ! -e "$HOME/${f}" ]; then
+                      run install -Dm0644 "${configDir}/${f}" "$HOME/${f}"
+                    fi
+                  '')
+                  [
+                    ".config/kitty/theme.conf"
+                    ".config/hypr/themes/colors.conf"
+                    ".config/hypr/hyprlock/theme.conf"
+                  ]
+              )
             );
 
             # Seed the QuickShell night-light schedule into config.json so Nix options

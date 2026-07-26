@@ -824,7 +824,6 @@
                 # profile (active until the fixed nightTime) forces identity back. With no
                 # profiles the daemon idles at identity until QuickShell drives it via hyprctl.
               '';
-              "hypr/nvidia.conf".source = "${configDir}/.config/hypr/nvidia.conf";
               "hypr/animations".source = "${configDir}/.config/hypr/animations";
               # No "hypr/shaders" entry. The source directory never existed here, so
               # the link resolved to a missing subpath of the flake's store path — a

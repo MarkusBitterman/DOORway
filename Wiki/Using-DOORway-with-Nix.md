@@ -202,7 +202,6 @@ Individual symlinks into the Nix store, so the generated files can live alongsid
 | `hypr/windowrules.lua` | `Configs/.config/hypr/windowrules.lua` (read-only) |
 | `hypr/animations.lua` | `Configs/.config/hypr/animations.lua` (read-only) |
 | `hypr/workflows.lua` | `Configs/.config/hypr/workflows.lua` (read-only) |
-| `hypr/nvidia.conf` | source `.conf` file |
 | `hypr/{hypridle,hyprlock,hyprsunset}.conf` | **generated** from `doorway.idle`, `doorway.lock`, `doorway.blueLight` options |
 | `hypr/{animations,themes,workflows,hyprlock}/` | corresponding source directories |
 | `hypr/monitors.lua` | **generated** from your `doorway.monitor` + `extraMonitors` options |

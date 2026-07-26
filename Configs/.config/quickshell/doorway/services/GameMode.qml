@@ -7,6 +7,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 
 import qs.modules.common.models.hyprland
+import qs.services
 
 /**
  * DOORway game mode — strips compositor eye-candy (animations, blur, shadows,
@@ -16,44 +17,36 @@ import qs.modules.common.models.hyprland
  * (quickToggles/GameModeToggle.qml) and the Super+ALT+G keybind both drive this,
  * so they cannot disagree about the current state.
  *
- * ── Why hyprctl eval, and not the two obvious alternatives ──
+ * Applies through HyprlandConfig, which runs `hyprctl eval` against the live lua
+ * config. The retired gamemode.sh instead used `hyprctl keyword source ...`;
+ * `hyprctl keyword` is refused outright on a lua config, for every option and
+ * not only `source`, so it never applied anything.
  *
- * `hyprctl keyword <option> <value>` does NOT work on a lua config — Hyprland
- * answers "keyword can't work with non-legacy parsers. Use eval." for every
- * option, not just `source`. The retired gamemode.sh was built on it and so
- * never applied anything.
+ * Turning OFF goes through resetMany, i.e. a config reload: the declared config
+ * is the source of truth, so that reverts exactly with no bookkeeping. Cartridge
+ * border colours survive it (ThemeMode persists them to a file dynamic.lua
+ * dofiles).
  *
- * HyprlandConfig.setMany() (inherited from end-4's dots, still used by
- * DoorwayCrtShader and HyprlandAntiFlashbangShader) is also a no-op here: it
- * execDetaches scripts/hyprland/hyprconfigurator.py, which was never ported into
- * this tree, writing to ~/.config/hypr/hyprland/shellOverrides/main.lua, a path
- * DOORway does not have and never sources. Failures are silent because
- * execDetached does not report a missing binary.
- *
- * `hyprctl eval` evaluates lua against the live config, which is the supported
- * runtime path for a lua-configured Hyprland and the one the error message
- * points at.
- *
- * Turning OFF reloads the config rather than restoring remembered values: the
- * declared config is the source of truth, so a reload is exact and needs no
- * bookkeeping. Cartridge border colours survive it — ThemeMode persists them to
- * a cache file that dynamic.lua dofiles on reload.
- *
- * State is DERIVED from Hyprland (`animations:enabled` at false is the marker)
- * via HyprlandConfigOption, which reads with `hyprctl getoption -j` and does
- * work. Nothing is stored, so the toggle stays honest if the value changes
- * behind our back.
+ * State is DERIVED from Hyprland — `animations:enabled` at false is the marker —
+ * via HyprlandConfigOption, which reads with `hyprctl getoption -j` and refetches
+ * on HyprlandConfig's `reloaded` signal. Nothing is stored, so the toggle stays
+ * honest if the value changes behind our back.
  *
  * Toggle with:  qs -c doorway ipc --any-display call gameMode toggle
  */
 Singleton {
     id: root
 
-    readonly property string applyLua: "hl.config({ " //
-    + "animations = { enabled = false }, " //
-    + "decoration = { rounding = 0, shadow = { enabled = false }, blur = { enabled = false } }, " //
-    + "general = { gaps_in = 0, gaps_out = 0, border_size = 1, allow_tearing = true } " //
-    + "})"
+    readonly property var overrides: ({
+            "animations:enabled": false,
+            "decoration:shadow:enabled": false,
+            "decoration:blur:enabled": false,
+            "decoration:rounding": 0,
+            "general:gaps_in": 0,
+            "general:gaps_out": 0,
+            "general:border_size": 1,
+            "general:allow_tearing": true
+        })
 
     readonly property bool enabled: confOpt.value === false
 
@@ -64,15 +57,11 @@ Singleton {
     function load() {}
 
     function enable(): void {
-        Quickshell.execDetached(["hyprctl", "eval", root.applyLua]);
-        // eval does not raise Hyprland's `configreloaded`, so the option cache
-        // would keep reporting the stale value; refetch shortly after.
-        refetch.restart();
+        HyprlandConfig.setMany(root.overrides);
     }
 
     function disable(): void {
-        // Emits configreloaded, which HyprlandConfigOption already listens for.
-        Quickshell.execDetached(["hyprctl", "reload", "config-only"]);
+        HyprlandConfig.resetMany(Object.keys(root.overrides));
     }
 
     function toggle(): void {
@@ -85,12 +74,6 @@ Singleton {
     HyprlandConfigOption {
         id: confOpt
         key: "animations:enabled"
-    }
-
-    Timer {
-        id: refetch
-        interval: 250
-        onTriggered: confOpt.fetch()
     }
 
     GlobalShortcut {

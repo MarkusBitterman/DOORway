@@ -1376,6 +1376,17 @@
           # and peripheral batteries (mouse/keyboard) become visible as a bonus.
           services.upower.enable = true;
 
+          # UDisks2 backs doorway-removable-media-applet. udiskie is only a D-Bus
+          # CLIENT of org.freedesktop.UDisks2 — packaging it in doorwayDeps is not
+          # enough. Without the system daemon it dies immediately with
+          # "ServiceUnknown: The name is not activatable", and since the unit has
+          # Restart=on-failure it burned through its restart budget and settled in
+          # `failed` on every DOORway install (removableMedia.enable defaults to
+          # true), so the advertised USB/SD auto-mount prompts never worked.
+          # Unconditional for the same reason as upower above: this NixOS module
+          # cannot read the Home-Manager-side doorway.removableMedia option.
+          services.udisks2.enable = true;
+
           # ── Display manager: greetd + regreet ───────────────────────────────
           # cage: minimal Wayland compositor that hosts only the greeter.
           # regreet: GTK4 greeter — user list, password entry, session picker.

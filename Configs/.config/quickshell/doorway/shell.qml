@@ -22,6 +22,8 @@ ShellRoot {
         ThemeMode.load() // eager-load so the theme IPC target + shortcut register
         Hyprsunset.load() // eager-load so the night-light window applies without waiting for UI to touch it
         DoorwayLock.load() // eager-load so the lock IPC target registers before any surface exists
+        GameMode.load() // eager-load so `qs ipc call gameMode toggle` resolves before the sidebar is ever opened
+        DoorwayCrtShader.load() // same: the documented `qs ipc call crtShader toggle` never registered without this
     }
 
     // Phase 12: bar only. IllogicalImpulseFamily is bar-only until Phase 13.

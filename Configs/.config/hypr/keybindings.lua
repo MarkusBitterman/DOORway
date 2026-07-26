@@ -129,7 +129,7 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("doorway-shell brightnesscontro
 
 -- [Utilities]
 hl.bind(mainMod .. " + K",       hl.dsp.exec_cmd("doorway-shell keyboardswitch"), { description = "[Utilities] toggle keyboard layout", locked = true })
-hl.bind(mainMod .. " + ALT + G",   hl.dsp.exec_cmd("doorway-shell gamemode"),       { description = "[Utilities] game mode" })
+hl.bind(mainMod .. " + ALT + G",   hl.dsp.exec_cmd("qs -c doorway ipc --any-display call gameMode toggle"), { description = "[Utilities] game mode" })
 hl.bind(mainMod .. " + SHIFT + G", hl.dsp.exec_cmd("anyrun close || doorway-shell gamelauncher"),   { description = "[Utilities] open game launcher" })
 
 -- [Utilities|Screen Capture]

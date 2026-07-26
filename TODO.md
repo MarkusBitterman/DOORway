@@ -19,15 +19,17 @@
 
 - [x] **flake.nix**: Rename `swww` → `awww` (package renamed in nixpkgs)
 - [x] **flake.nix**: Verify `configType = "lua"` is correct after migration — set and load-bearing since the migration landed; verified running for weeks
-- [ ] **Game mode: retire `gamemode.sh`, point `Super+ALT+G` at the QuickShell toggle.** The keybind is dead — `gamemode.sh` runs `hyprctl keyword source .../workflows/gaming.conf`, and Hyprland answers `keyword can't work with non-legacy parsers. Use eval.` on a lua config, so nothing is ever applied. It also toggles off with a blanket `hyprctl reload config-only`, which would clobber any other runtime keyword.
+- [x] **Game mode: retire `gamemode.sh`, point `Super+ALT+G` at the QuickShell toggle.** Done 2026-07-25. `Super+ALT+G` now calls `qs -c doorway ipc --any-display call gameMode toggle`; behaviour lives in `services/GameMode.qml`, and `GameModeToggle.qml` is presentation-only bound to it, so the sidebar button and the keybind cannot drift. `gamemode.sh` deleted.
 
-  **The right implementation already exists and works**: `modules/common/models/quickToggles/GameModeToggle.qml` applies its settings through `HyprlandConfig.setMany()` (runtime IPC — the NixOS-safe path, same pattern as `DoorwayCrtShader.qml`) and reverses them with `resetMany()`, so it touches only the keys it owns. It is already wired into **both** right-sidebar panel styles — `classicStyle/GameMode.qml` (sits beside `NightLight.qml` in `ClassicQuickPanel`) and `androidStyle/AndroidGameModeToggle.qml` (`"gameMode"` in `AndroidQuickPanel.availableToggleTypes`).
+  Two corrections to the original note. `hyprctl keyword` fails on a lua config for **every** option, not just `source` — the supported runtime path is `hyprctl eval 'hl.config({...})'`, which is what the service uses. And the sidebar button did **not** already work: it called `HyprlandConfig.setMany()`, which is a no-op in this tree (see the item below), so game mode had no working implementation at all.
 
-  So this is not "add a button" — it is deleting the broken second implementation:
-  - Rebind `Super+ALT+G` to `qs ipc -c doorway --any-display call` the toggle (needs an `IpcHandler` on the game-mode service; see the `theme toggleLightDark` precedent, and remember lazy singletons need an eager touch from `shell.qml` — `[[quickshell-lazy-singleton-ipc]]`).
-  - Delete `gamemode.sh` once nothing calls it.
-  - **Do NOT delete `workflows/*.conf`** — despite looking like pre-lua leftovers, `workflows.sh:get_info` still reads `WORKFLOW_ICON`/`WORKFLOW_DESCRIPTION` out of them via `get_hyprConf`. Tracked at Phase 7 Deferred.
-  - While here: `workflows.sh:write_config` writes `$confDir/hypr/workflows.lua`, which is a read-only Nix store symlink — that path needs the same treatment as the other EROFS writers.
+- [ ] **`HyprlandConfig` is a silent no-op — `DoorwayCrtShader` and `HyprlandAntiFlashbangShader` do nothing.** `services/HyprlandConfig.qml` `set`/`setMany`/`reset`/`resetMany` all `Quickshell.execDetached` `scripts/hyprland/hyprconfigurator.py`, which was never ported from end-4's dots, writing to `~/.config/hypr/hyprland/shellOverrides/main.lua` — a path DOORway does not create and never sources. `execDetached` reports nothing when the binary is missing, so every caller fails silently.
+
+  Consumers: `DoorwayCrtShader.qml` (CLAUDE.md documents its `crtShader toggle` IPC as working — it is not), `HyprlandAntiFlashbangShader.qml`, and `HyprlandConfigOption.setValue`/`reset`. The read side is fine: `HyprlandConfigOption` fetches with `hyprctl getoption -j`.
+
+  Fix by reimplementing `HyprlandConfig` on `hyprctl eval` (see `GameMode.qml` for the shape, including that eval does not raise `configreloaded` so cached options need an explicit refetch), or by porting `hyprconfigurator.py` and sourcing the overrides file. The former matches how the rest of DOORway talks to a lua-configured Hyprland.
+
+- [ ] **`ThemeMode.qml` border repaint uses `hyprctl keyword`** (lines ~93-94), which the same discovery shows cannot work on a lua config. It appears to work only because ThemeMode *also* writes `hyprland-cartridge-colors.lua`, which `dynamic.lua` dofiles — so colours land on the next reload rather than live. Switch those two calls to `hyprctl eval` for the live path.
 
 ---
 

@@ -26,6 +26,12 @@ Singleton {
     readonly property string shaderPath: Quickshell.shellPath("services/doorwayCrt/doorway-crt.glsl")
     property bool enabled: confOpt.value == shaderPath
 
+    // Eager-touched from shell.qml. Singletons are lazily instantiated, so the
+    // IpcHandler and GlobalShortcut below did not register until something in
+    // the UI happened to reference this — meaning the `crtShader toggle` call
+    // documented above silently had no target on a fresh shell.
+    function load() {}
+
     function enable() {
         HyprlandConfig.setMany({
             "decoration:screen_shader": root.shaderPath,

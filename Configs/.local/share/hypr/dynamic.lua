@@ -15,8 +15,10 @@ local vars = require("variables")
 
 local home = os.getenv("HOME")
 
--- Screen shader compiled cache is handled by ~/.config/hypr/shaders.lua;
--- the conditional `decoration:screen_shader` lives there now.
+-- Screen shaders are owned by services/DoorwayCrtShader.qml, which sets
+-- `decoration:screen_shader` through HyprlandConfig at runtime. The old
+-- hypr/shaders.lua selector and its shaders.sh compiler were removed: both
+-- wrote into ~/.config/hypr/shaders/, a read-only Nix store symlink.
 
 -- Cartridge-driven window border colors (dark/gold NES-cart cartridge mode),
 -- written by services/ThemeMode.qml on every mode change and at shell

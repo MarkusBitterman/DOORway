@@ -12,8 +12,9 @@ import qs.modules.common.models.hyprland
  * DOORway subtle CRT screen shader — toggleable, default OFF.
  *
  * Mirrors HyprlandAntiFlashbangShader: applies its .glsl via Hyprland's decoration:screen_shader
- * at runtime (HyprlandConfig), which is the NixOS-safe path (the hypr/shaders.lua file selector
- * can't be rewritten — it's a read-only Nix store symlink).
+ * at runtime (HyprlandConfig), which is the NixOS-safe path. This is now the only screen-shader
+ * path — the old hypr/shaders.lua selector and shaders.sh compiler were removed because both
+ * rewrote files under ~/.config/hypr/, a read-only Nix store symlink.
  *
  * NOTE: the screen_shader slot is shared with the anti-flashbang shader — only one can be active
  * at a time. Toggle on with:  qs ipc -c doorway --any-display call crtShader toggle

@@ -1011,6 +1011,14 @@
               ".local/lib/doorway".source = "${configDir}/.local/lib/doorway";
               ".local/share/doorway".source = "${configDir}/.local/share/doorway";
               ".local/share/hypr".source = "${configDir}/.local/share/hypr";
+              # The wallbash template tree (48 files: kitty, hyprcolors, hyprlock,
+              # gtk, kvantum, the always/ set). $XDG_DATA_HOME/wallbash is the third
+              # entry in globalcontrol.sh's WALLBASH_DIRS, but this link was never
+              # written — so colour.set.sh only ever found $XDG_CONFIG_HOME/doorway/
+              # wallbash (the third-party app themes) and no core template rendered.
+              # Whole-dir is correct here: templates are read-only inputs; their
+              # outputs land elsewhere.
+              ".local/share/wallbash".source = "${configDir}/.local/share/wallbash";
               ".local/bin/doorway-shell" = {
                 source = "${configDir}/.local/bin/doorway-shell";
                 executable = true;

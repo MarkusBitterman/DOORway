@@ -19,6 +19,15 @@
 
 - [x] **flake.nix**: Rename `swww` → `awww` (package renamed in nixpkgs)
 - [x] **flake.nix**: Verify `configType = "lua"` is correct after migration — set and load-bearing since the migration landed; verified running for weeks
+- [ ] **Game mode: retire `gamemode.sh`, point `Super+ALT+G` at the QuickShell toggle.** The keybind is dead — `gamemode.sh` runs `hyprctl keyword source .../workflows/gaming.conf`, and Hyprland answers `keyword can't work with non-legacy parsers. Use eval.` on a lua config, so nothing is ever applied. It also toggles off with a blanket `hyprctl reload config-only`, which would clobber any other runtime keyword.
+
+  **The right implementation already exists and works**: `modules/common/models/quickToggles/GameModeToggle.qml` applies its settings through `HyprlandConfig.setMany()` (runtime IPC — the NixOS-safe path, same pattern as `DoorwayCrtShader.qml`) and reverses them with `resetMany()`, so it touches only the keys it owns. It is already wired into **both** right-sidebar panel styles — `classicStyle/GameMode.qml` (sits beside `NightLight.qml` in `ClassicQuickPanel`) and `androidStyle/AndroidGameModeToggle.qml` (`"gameMode"` in `AndroidQuickPanel.availableToggleTypes`).
+
+  So this is not "add a button" — it is deleting the broken second implementation:
+  - Rebind `Super+ALT+G` to `qs ipc -c doorway --any-display call` the toggle (needs an `IpcHandler` on the game-mode service; see the `theme toggleLightDark` precedent, and remember lazy singletons need an eager touch from `shell.qml` — `[[quickshell-lazy-singleton-ipc]]`).
+  - Delete `gamemode.sh` once nothing calls it.
+  - **Do NOT delete `workflows/*.conf`** — despite looking like pre-lua leftovers, `workflows.sh:get_info` still reads `WORKFLOW_ICON`/`WORKFLOW_DESCRIPTION` out of them via `get_hyprConf`. Tracked at Phase 7 Deferred.
+  - While here: `workflows.sh:write_config` writes `$confDir/hypr/workflows.lua`, which is a read-only Nix store symlink — that path needs the same treatment as the other EROFS writers.
 
 ---
 

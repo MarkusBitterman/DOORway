@@ -40,7 +40,7 @@ Left to right:
 - **Identity button** (far left) — the HALLway mark. Opens the left sidebar.
 - **Active-window label** — the focused app's name and title on a plate tinted with the app icon's dominant color.
 - **Resource gauges** — HUD-style dials for CPU, memory, and network activity.
-- **Center wells** — clock/date and media (MPRIS) readouts.
+- **Center wells** — clock/date and media (MPRIS) readouts. The clock reads 12- or 24-hour according to your locale (`en_US` → `5:41 pm`, `en_GB`/`de_DE` → `17:41`); set `time.format` in `~/.config/doorway/config.json` to an explicit [Qt time format](https://doc.qt.io/qt-6/qtime.html#toString) to override, or leave it `"auto"` to follow the locale. The date deliberately reads in spoken form — `Fri, Jul 31st` — rather than any numeric order, because `31/07` and `07/31` mean different things to different readers and spoken form means one thing to everyone.
 - **Indicators** (right cluster) — volume, microphone, network, Bluetooth as glyphs engraved into the wood; they light up red (LED-style) when the right sidebar is open.
 - **System tray** — nm-applet, blueman, udiskie and friends, rendered monochrome to match the engraving.
 - **Utility buttons** — including the light/dark mode toggle and the right-sidebar button (far right).

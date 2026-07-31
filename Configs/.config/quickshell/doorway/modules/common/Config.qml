@@ -272,7 +272,9 @@ Singleton {
                     property bool enable: false
                     property bool enableGPS: true // gps based location
                     property string city: "" // When 'enableGPS' is false
-                    property bool useUSCS: false // Instead of metric (SI) units
+                    // useUSCS lived here but nothing read it — units come from
+                    // PIRATE_WEATHER_UNITS (us|si|ca|uk2), set in flake.nix and consumed by
+                    // doorway-pirateweather.py, which is what actually formats °F/°C, mph, mi.
                     property int fetchInterval: 10 // minutes
                 }
                 property JsonObject indicators: JsonObject {
@@ -579,9 +581,17 @@ Singleton {
 
             property JsonObject time: JsonObject {
                 // https://doc.qt.io/qt-6/qtime.html#toString
-                property string format: "h:mm ap"
-                property string shortDateFormat: "dd/MM"
-                property string dateWithYearFormat: "dd/MM/yyyy"
+                // "auto" takes 12h/24h from the locale (see DateTime.localeTimeFormat).
+                // Any other value is an explicit override.
+                property string format: "auto"
+                // shortDateFormat ("dd/MM") and dateWithYearFormat ("dd/MM/yyyy") were removed:
+                // nothing read them, and both hardcoded day-before-month.
+                //
+                // The spoken form below is deliberate, not an oversight. Rendered with the
+                // ordinal it reads "Fri, Jul 31st" — which every reader parses identically,
+                // whereas 31/07 and 07/31 are a coin flip decided by where you grew up. This
+                // sidesteps the whole numeric-date argument instead of picking a side, so
+                // don't "fix" it to an all-numeric or ISO format.
                 property string dateFormat: "ddd, MMM d"
                 property JsonObject pomodoro: JsonObject {
                     property int breakTime: 300

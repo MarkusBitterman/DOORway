@@ -173,6 +173,14 @@ Singleton {
         id: updateConnectionType
         property string buffer
         command: ["sh", "-c", "nmcli -t -f TYPE,STATE d status && nmcli -t -f CONNECTIVITY g"]
+        // nmcli translates both STATE and CONNECTIVITY — NetworkManager's de catalog maps
+        // "connected" to "verbunden", "disconnected" to "nicht verbunden". Every other nmcli
+        // reader in this file already pins the locale; this one, which parses the most, did
+        // not, so a non-English session read as permanently offline.
+        environment: ({
+            LANG: "C",
+            LC_ALL: "C"
+        })
         running: true
         function startCheck() {
             buffer = "";
@@ -190,26 +198,29 @@ Singleton {
             let hasWifi = false;
             let wifiStatus = "disconnected";
             lines.forEach(line => {
-                if (line.includes("ethernet") && line.includes("connected"))
-                    hasEthernet = true;
-                else if (line.includes("wifi:")) {
-                    if (line.includes("disconnected")) {
-                        wifiStatus = "disconnected"
-                    }
-                    else if (line.includes("connected")) {
-                        hasWifi = true;
-                        wifiStatus = "connected"
+                // `-t` emits TYPE:STATE. Split on the first colon and compare the two fields
+                // exactly. Substring matching was wrong in both directions: "disconnected"
+                // *contains* "connected", so an unplugged "ethernet:disconnected" set
+                // hasEthernet, and "wifi" also matched the "wifi-p2p" pseudo-device.
+                const sep = line.indexOf(":");
+                if (sep < 0) return;
+                const type = line.slice(0, sep);
+                // States can carry a qualifier — "connected (externally)", "connecting (prepare)".
+                const state = line.slice(sep + 1).split(" ")[0];
 
-                        if (connectivity === "limited") {
-                            hasWifi = false;
-                            wifiStatus = "limited"
-                        }
-                    }
-                    else if (line.includes("connecting")) {
-                        wifiStatus = "connecting"
-                    }
-                    else if (line.includes("unavailable")) {
-                        wifiStatus = "disabled"
+                if (type === "ethernet" && state === "connected") {
+                    hasEthernet = true;
+                } else if (type === "wifi") {
+                    if (state === "connected") {
+                        // Associated but with no route out is worth showing as its own state.
+                        hasWifi = (connectivity !== "limited");
+                        wifiStatus = (connectivity === "limited") ? "limited" : "connected";
+                    } else if (state === "connecting") {
+                        wifiStatus = "connecting";
+                    } else if (state === "unavailable") {
+                        wifiStatus = "disabled";
+                    } else {
+                        wifiStatus = "disconnected";
                     }
                 }
             });

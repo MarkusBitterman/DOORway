@@ -10,6 +10,7 @@ import Quickshell.Io
  * A nice wrapper for date and time strings.
  */
 Singleton {
+    id: root
     property var clock: SystemClock {
         id: clock
         precision: {
@@ -18,11 +19,30 @@ Singleton {
             return SystemClock.Minutes;
         }
     }
-    property string time: Qt.locale().toString(clock.date, Config.options?.time.format ?? "hh:mm")
-    property string shortDate: Qt.locale().toString(clock.date, Config.options?.time.shortDateFormat ?? "dd/MM")
-    property string date: Qt.locale().toString(clock.date, Config.options?.time.dateWithYearFormat ?? "dd/MM/yyyy")
-    property string longDate: Qt.locale().toString(clock.date, Config.options?.time.dateFormat ?? "dddd, dd/MM")
+    // Whether a clock reads 5:41 pm or 17:41 is a property of the locale, not a preference:
+    // Qt's short time format answers it directly — "h:mm Ap" for en_US, "HH:mm" for
+    // en_GB/de_DE/fr_FR, "H:mm" for ja_JP. The meridiem is lowercased because the bar has
+    // always read "5:41 pm"; the locale decides 12-vs-24, the design decides capitalization.
+    readonly property string localeTimeFormat: Qt.locale().timeFormat(Locale.ShortFormat).replace(/AP/gi, "ap")
+
+    // "auto" follows the locale; anything else is an explicit override, matching the sentinel
+    // that Config.options.language.ui already uses.
+    readonly property string timeFormat: {
+        const configured = Config.options?.time.format ?? "auto";
+        return (configured === "auto" || configured === "") ? root.localeTimeFormat : configured;
+    }
+
+    property string time: Qt.locale().toString(clock.date, root.timeFormat)
+
+    // shortDate ("dd/MM") and date ("dd/MM/yyyy") lived here with nothing reading them —
+    // day-before-month strings that would have been wrong in the US the moment anything did.
+    // longDate was dead too. Removed rather than left as a trap; longDateOrdinal below is
+    // the one the bar actually renders.
+
     property string dayOrdinal: {
+        // English-only suffix. Gluing "st"/"nd"/"th" onto a German or Japanese date is worse
+        // than omitting it, so non-English locales get the bare date.
+        if (!Qt.locale().name.startsWith("en")) return ""
         const day = clock.date.getDate()
         if (day >= 11 && day <= 13) return "th"
         switch (day % 10) {

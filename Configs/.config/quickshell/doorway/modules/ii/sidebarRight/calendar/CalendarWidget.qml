@@ -6,11 +6,29 @@ import QtQuick
 import QtQuick.Layouts
 
 Item {
+    id: root
     // Layout.topMargin: 10
     anchors.topMargin: 10
     property int monthShift: 0
     property var viewingDate: CalendarLayout.getDateInXMonthsTime(monthShift)
-    property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
+
+    // The month/year header already renders through Qt.locale(), so the grid under it should
+    // agree: take the week's starting day from the same place rather than assuming Monday.
+    // 0 = Sunday … 6 = Saturday, the scale shared by Locale.firstDayOfWeek and Date.getDay().
+    readonly property int firstDayOfWeek: Qt.locale().firstDayOfWeek
+
+    // Column headers, rotated to match. Short day names come back as "Sun"/"Mon"; the two-char
+    // truncation is what keeps the columns narrow enough for the grid.
+    readonly property var weekDayLabels: {
+        const labels = [];
+        for (let i = 0; i < 7; i++) {
+            const dayIndex = (root.firstDayOfWeek + i) % 7;
+            labels.push(Qt.locale().dayName(dayIndex, Locale.ShortFormat).substring(0, 2));
+        }
+        return labels;
+    }
+
+    property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0, firstDayOfWeek)
     width: calendarColumn.width
     implicitHeight: calendarColumn.height + 10 * 2
 
@@ -90,10 +108,11 @@ Item {
             Layout.fillHeight: false
             spacing: 5
             Repeater {
-                model: CalendarLayout.weekDays
+                model: root.weekDayLabels
+                // Not run through Translation.tr — Qt.locale() has already localized these.
                 delegate: CalendarDayButton {
-                    day: Translation.tr(modelData.day)
-                    isToday: modelData.today
+                    day: modelData
+                    isToday: 0
                     bold: true
                     enabled: false
                 }

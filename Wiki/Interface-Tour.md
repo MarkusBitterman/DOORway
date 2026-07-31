@@ -56,7 +56,7 @@ What's in it:
 - **Quick toggles** — night light, game mode, idle inhibit ("coffee"), mic mute, and friends
 - **Sliders** — volume, brightness (works on desktop monitors via DDC/CI), microphone
 - **Network + Bluetooth** — toggle and pick from Wi-Fi / device list dialogs
-- **Calendar** — a compact month grid (collapsible to a one-line date strip)
+- **Calendar** — a compact month grid (collapsible to a one-line date strip). The week starts on whichever day your locale says it does, read from `Qt.locale()` — i.e. from `LC_TIME`, falling back to `LANG`. Sunday for `en_US`, Monday for `en_GB`, and the column headers are localized to match. There is no config option for this; set the locale.
 - **Notification history** — every popup that's come and gone this session, grouped by app
 
 The pop-out dialogs (Wi-Fi, Bluetooth, audio devices, night light) open *over* the

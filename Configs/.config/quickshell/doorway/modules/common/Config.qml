@@ -305,9 +305,10 @@ Singleton {
                 property int suspend: 3
             }
 
-            property JsonObject calendar: JsonObject {
-                property string locale: "en-GB"
-            }
+            // `calendar.locale` used to live here: an upstream option nothing ever read, whose
+            // "en-GB" default would have forced a Monday-first week the moment anyone wired it
+            // up. The calendar takes its week start from Qt.locale() (i.e. LC_TIME/LANG) now,
+            // so the knob is gone rather than left lying around to be believed.
 
             property JsonObject cheatsheet: JsonObject {
                 // Use a nerdfont to see the icons

@@ -1,12 +1,10 @@
-const weekDays = [ // MONDAY IS THE FIRST DAY OF THE WEEK :HESRIGHTYOUKNOW:
-    { day: 'Mo', today: 0 },
-    { day: 'Tu', today: 0 },
-    { day: 'We', today: 0 },
-    { day: 'Th', today: 0 },
-    { day: 'Fr', today: 0 },
-    { day: 'Sa', today: 0 },
-    { day: 'Su', today: 0 },
-]
+// Which day starts the week is locale-dependent — Sunday across the Americas and much of
+// Asia, Monday across most of Europe, Saturday across much of the Middle East. Upstream
+// hardcoded Monday; the caller now passes the locale's answer instead.
+//
+// `firstDay` is a weekday index on the 0 = Sunday … 6 = Saturday scale, which is what both
+// JS `Date.getDay()` and QML `Locale.firstDayOfWeek` use — so the value can be handed
+// straight from one to the other with no remapping.
 
 function checkLeapYear(year) {
     return (
@@ -22,22 +20,18 @@ function getMonthDays(month, year) {
     return 30;
 }
 
-function getNextMonthDays(month, year) {
-    const leapYear = checkLeapYear(year);
-    if (month == 1 && leapYear) return 29;
-    if (month == 1 && !leapYear) return 28;
-    if (month == 12) return 31;
-    if ((month <= 7 && month % 2 == 1) || (month >= 8 && month % 2 == 0)) return 30;
-    return 31;
+// These used to re-derive the month-length parity rule shifted by one, and both got it
+// wrong at the July/August seam — where the 31-day run breaks the alternation. getPrevMonthDays
+// claimed July had 30 days, so every August drew its greyed-out leading days off by one
+// (Jul 25-30 instead of 26-31). Delegating to getMonthDays with the month stepped is the
+// same answer without a second copy of the rule to get wrong.
+
+function getNextMonthDays(month, year) { // month is 1-based
+    return month === 12 ? getMonthDays(1, year + 1) : getMonthDays(month + 1, year);
 }
 
-function getPrevMonthDays(month, year) {
-    const leapYear = checkLeapYear(year);
-    if (month == 3 && leapYear) return 29;
-    if (month == 3 && !leapYear) return 28;
-    if (month == 1) return 31;
-    if ((month <= 7 && month % 2 == 1) || (month >= 8 && month % 2 == 0)) return 30;
-    return 31;
+function getPrevMonthDays(month, year) { // month is 1-based
+    return month === 1 ? getMonthDays(12, year - 1) : getMonthDays(month - 1, year);
 }
 
 function getDateInXMonthsTime(x) {
@@ -60,9 +54,11 @@ function getDateInXMonthsTime(x) {
     return targetDate;
 }
 
-function getCalendarLayout(dateObject, highlight) {
+function getCalendarLayout(dateObject, highlight, firstDay) {
     if (!dateObject) dateObject = new Date();
-    const weekday = (dateObject.getDay() + 6) % 7; // MONDAY IS THE FIRST DAY OF THE WEEK
+    if (firstDay === undefined) firstDay = 1; // Monday, the historical default
+    // Column index of this date, counted from whichever day the locale starts the week on.
+    const weekday = (dateObject.getDay() - firstDay + 7) % 7;
     const day = dateObject.getDate();
     const month = dateObject.getMonth() + 1;
     const year = dateObject.getFullYear();

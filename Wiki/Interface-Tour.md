@@ -86,7 +86,9 @@ Brightness on external monitors uses `ddcutil` over i2c — if the slider does n
 
 Notifications are rendered by QuickShell (it registers as the `org.freedesktop.Notifications` daemon — there is no dunst). Popups appear as they arrive; dismissed ones accumulate in the right sidebar's history pane.
 
-Volume and brightness changes (keys or sliders) show a transient OSD overlay.
+Volume and brightness changes (keys or sliders) show a transient OSD overlay — a cartridge faceplate with a segmented VU meter.
+
+Muting or unmuting the output **also** raises the OSD, and the muted state is loud about itself: red bezel, red warning wash across the faceplate, red speaker glyph, a red strike bar across the meter, and an inverse-video `MUTE` tag where the percentage normally sits. The meter's lit blocks drop to a faint ghost rather than going blank, so nudging the volume while muted still moves the bar — you can see the level you'll come back to without it ever reading as live.
 
 ---
 

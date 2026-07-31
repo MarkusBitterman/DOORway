@@ -1476,7 +1476,7 @@
           # ── Display manager: greetd + regreet ───────────────────────────────
           # cage: minimal Wayland compositor that hosts only the greeter.
           # regreet: GTK4 greeter — user list, password entry, session picker.
-          # Hosts may override programs.regreet.settings (e.g. background.path).
+          # Hosts may override services.displayManager.regreet.settings (e.g. background.path).
           services.gnome.gnome-keyring.enable = true;
 
           services.greetd = {
@@ -1487,7 +1487,7 @@
             };
           };
 
-          programs.regreet = {
+          services.displayManager.regreet = {
             enable = true;
             settings = {
               background.fit = "Cover";

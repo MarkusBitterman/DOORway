@@ -584,6 +584,54 @@
                   "master" keeps one dominant window on the left with a stack on the right.
                 '';
               };
+              shadow = {
+                enabled = lib.mkOption {
+                  type = lib.types.bool;
+                  default = true;
+                  description = ''
+                    Draw a drop shadow behind windows, lifting them off the wallpaper.
+                    Shadow *colors* are not set here — they follow the committed
+                    DoorwayPalette cartridge mode (a warm brown on gold, near-black on
+                    dark), applied by services/ThemeMode.qml alongside the border colors.
+                  '';
+                };
+                range = lib.mkOption {
+                  type = lib.types.ints.unsigned;
+                  default = 18;
+                  description = "How far the shadow extends past the window edge, in pixels.";
+                };
+                renderPower = lib.mkOption {
+                  type = lib.types.ints.between 1 4;
+                  default = 3;
+                  description = ''
+                    Steepness of the shadow's falloff, 1-4. Higher values keep the shadow
+                    tight against the window instead of spreading it into a wide halo.
+                  '';
+                };
+                sharp = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = ''
+                    Render the shadow as a hard-edged solid offset instead of a gradient —
+                    the flat drop shadow of a print magazine layout rather than a soft one.
+                    Pairs well with a larger `offset` and a small `range`.
+                  '';
+                };
+                offset = lib.mkOption {
+                  type = lib.types.listOf lib.types.int;
+                  default = [ 0 4 ];
+                  description = ''
+                    Shadow displacement as [ x y ] in pixels. The default drops it
+                    straight down, as if lit from directly above.
+                  '';
+                  apply =
+                    v:
+                    if builtins.length v == 2 then
+                      v
+                    else
+                      throw "doorway.theme.shadow.offset must be exactly two integers, [ x y ].";
+                };
+              };
               blur = {
                 enabled = lib.mkOption {
                   type = lib.types.bool;
@@ -945,6 +993,12 @@
                   blur_enabled = ${if cfg.theme.blur.enabled then "true" else "false"},
                   blur_size    = ${toString cfg.theme.blur.size},
                   blur_passes  = ${toString cfg.theme.blur.passes},
+                  shadow_enabled      = ${if cfg.theme.shadow.enabled then "true" else "false"},
+                  shadow_range        = ${toString cfg.theme.shadow.range},
+                  shadow_render_power = ${toString cfg.theme.shadow.renderPower},
+                  shadow_sharp        = ${if cfg.theme.shadow.sharp then "true" else "false"},
+                  shadow_offset_x     = ${toString (lib.elemAt cfg.theme.shadow.offset 0)},
+                  shadow_offset_y     = ${toString (lib.elemAt cfg.theme.shadow.offset 1)},
                 }
               '';
 

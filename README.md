@@ -209,10 +209,19 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | `theme.blur.enabled` | bool | `true` | Enable background blur behind transparent surfaces |
 | `theme.blur.size` | int (≥ 1) | `6` | Blur kernel radius — larger is blurrier but heavier |
 | `theme.blur.passes` | int (≥ 1) | `3` | Number of blur passes — more passes = smoother result |
+| `theme.shadow.enabled` | bool | `true` | Draw a drop shadow behind windows, lifting them off the wallpaper |
+| `theme.shadow.range` | int (≥ 0) | `18` | How far the shadow extends past the window edge, in pixels |
+| `theme.shadow.renderPower` | int (1–4) | `3` | Falloff steepness — higher keeps the shadow tight instead of spreading it into a halo |
+| `theme.shadow.sharp` | bool | `false` | Hard-edged solid shadow instead of a gradient — a flat print drop shadow. Pair with a larger `offset` and a small `range` |
+| `theme.shadow.offset` | [ int int ] | `[ 0 4 ]` | Shadow displacement as `[ x y ]` in pixels. The default drops it straight down, as if lit from above |
 | `theme.iconTheme.name` | str | `"Tela-dracula"` | Icon theme name (Tela variants: `Tela`, `Tela-blue`, `Tela-dracula`, `Tela-nord`, … each also with `-dark`/`-light` suffixes) |
 | `theme.iconTheme.package` | package | `pkgs.tela-icon-theme` | Nix package providing the icon theme |
 
 By default, borders are painted from the committed **DoorwayPalette** cartridge colors (`services/ThemeMode.qml`): a gold LED-lit highlight on the focused window, a molded plastic-edge tone on unfocused ones, both swapping with the dark/gold day-night cartridge mode — the same identity that colors the bar corners and sidebars. Set `theme.matugenBorders.enable = true` to switch to wallpaper-derived Material You accent colors from **matugen** instead; with a bold wallpaper and `animations.preset = "LimeFrenzy"` that gives a continuously animated neon glow effect.
+
+Drop shadow **colors** follow the same rule and are deliberately not exposed as options — `ThemeMode.qml` picks them from the cartridge (a warm ink-brown on gold, so windows read like cutouts on a magazine page; the near-black molded edge tone on dark, the only value dark enough to separate a window from the wallpaper), and matugen never touches them. `theme.shadow.*` controls the geometry only.
+
+For a flat print-layout drop shadow instead of a soft one, try `theme.shadow = { sharp = true; range = 12; offset = [ 8 8 ]; }`. Two things to know: `range` still sizes the shadow in sharp mode — `range = 0` draws nothing at all, sharp or not — and because sharp mode spreads a single flat tone rather than concentrating a gradient near the edge, it reads much more strongly in the dark cartridge (where the shadow is near-black and near-opaque) than on gold, where the lighter ink-brown can wash out against a busy wallpaper.
 
 #### `doorway.animations` — Window animations
 

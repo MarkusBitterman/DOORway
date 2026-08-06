@@ -25,8 +25,24 @@ hl.config({
         -- active_opacity and inactive_opacity live in userprefs.lua (loads first)
         -- so they can be driven by doorway.input without being overridden here.
         fullscreen_opacity = 1,
+        -- Drop shadow: windows sit on the wallpaper like a cartridge label on a
+        -- magazine page, so the light is soft and comes from straight above.
+        -- No `ignore_window` key — it existed in older Hyprland and is gone in
+        -- 0.55, which always clips the shadow to outside the window. That's the
+        -- behaviour we want anyway: active_opacity is 0.9, and a shadow drawn
+        -- under the window would show through every translucent surface.
+        -- Colors are overwritten at runtime by services/ThemeMode.qml
+        -- (cartridge-aware: warm brown on gold, near-black on dark); these are
+        -- the bare-install and pre-shell-startup fallback.
         shadow = {
-            enabled = false,
+            enabled        = true,
+            range          = 18,
+            render_power   = 3,
+            sharp          = false,
+            offset         = { 0, 4 },
+            scale          = 1.0,
+            color          = "rgba(1c1c1ccc)",
+            color_inactive = "rgba(1c1c1c80)",
         },
         blur = {
             enabled           = true,
@@ -131,6 +147,18 @@ if _t_ok then
                 enabled = _t.blur_enabled,
                 size    = _t.blur_size,
                 passes  = _t.blur_passes,
+            },
+            -- Keys whose value is nil simply don't exist in a Lua table, so an
+            -- older generated doorway-theme.lua (written before these options
+            -- existed) leaves the static block above untouched. `offset` is the
+            -- exception — it must be a full vec2 or nothing at all.
+            shadow = {
+                enabled      = _t.shadow_enabled,
+                range        = _t.shadow_range,
+                render_power = _t.shadow_render_power,
+                sharp        = _t.shadow_sharp,
+                offset       = _t.shadow_offset_x and _t.shadow_offset_y
+                    and { _t.shadow_offset_x, _t.shadow_offset_y } or nil,
             },
         },
     })

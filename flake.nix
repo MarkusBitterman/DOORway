@@ -584,6 +584,33 @@
                   "master" keeps one dominant window on the left with a stack on the right.
                 '';
               };
+              terminalContrast = lib.mkOption {
+                type = lib.types.numbers.between 0.0 21.0;
+                default = 4.5;
+                example = 7.0;
+                description = ''
+                  Minimum WCAG contrast ratio enforced on the wallbash-generated kitty
+                  palette. Wallbash maps ANSI slots onto accent ramps that have no
+                  contrast relationship to the background it derives from the same
+                  wallpaper, so without a floor the terminal's legibility varies with
+                  whatever image is set — a maroon/olive wallpaper measured in testing
+                  put 14 of 16 slots under 3:1, including the "white" most TUI text uses.
+
+                  After each wallpaper change the generated palette is corrected in
+                  place: hue and saturation are held fixed and only lightness moves,
+                  only far enough to clear the floor, so the terminal still reads as
+                  derived from the wallpaper. (A colour driven all the way to near-white
+                  or near-black loses its hue, since hue is undefined there — that only
+                  happens when the floor is unreachable any other way.) The floor is applied against the
+                  background as actually rendered — composited through kitty's
+                  background_opacity and Hyprland's active_opacity — not the nominal
+                  value, since transparency is what ate the contrast in the first place.
+
+                  4.5 is the WCAG AA body-text threshold. Raise it (7.0 = AAA) for a
+                  flatter, higher-legibility palette; set 0 to disable correction and
+                  keep raw wallbash output.
+                '';
+              };
               shadow = {
                 enabled = lib.mkOption {
                   type = lib.types.bool;
@@ -1096,6 +1123,10 @@
               MOZ_ENABLE_WAYLAND = "1";
               GDK_SCALE = "1";
               ELECTRON_OZONE_PLATFORM_HINT = "auto";
+              # Read by wallbash/scripts/kitty.sh when correcting the generated
+              # terminal palette. Session-wide rather than a config file so the
+              # hook picks it up wherever wallbash is invoked from.
+              DOORWAY_TERMINAL_CONTRAST = toString cfg.theme.terminalContrast;
             };
 
             # DOORway ships one theme: Wallbash (dynamic colors from wallpaper).

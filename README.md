@@ -209,6 +209,7 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 | `theme.blur.enabled` | bool | `true` | Enable background blur behind transparent surfaces |
 | `theme.blur.size` | int (≥ 1) | `6` | Blur kernel radius — larger is blurrier but heavier |
 | `theme.blur.passes` | int (≥ 1) | `3` | Number of blur passes — more passes = smoother result |
+| `theme.terminalContrast` | float (0–21) | `4.5` | Minimum WCAG contrast ratio enforced on the wallbash-generated kitty palette. `0` disables correction |
 | `theme.shadow.enabled` | bool | `true` | Draw a drop shadow behind windows, lifting them off the wallpaper |
 | `theme.shadow.range` | int (≥ 0) | `18` | How far the shadow extends past the window edge, in pixels |
 | `theme.shadow.renderPower` | int (1–4) | `3` | Falloff steepness — higher keeps the shadow tight instead of spreading it into a halo |
@@ -220,6 +221,12 @@ All 38 `oreo-cursors-plus` variants follow the pattern `oreo_{colour}_cursors` (
 By default, borders are painted from the committed **DoorwayPalette** cartridge colors (`services/ThemeMode.qml`): a gold LED-lit highlight on the focused window, a molded plastic-edge tone on unfocused ones, both swapping with the dark/gold day-night cartridge mode — the same identity that colors the bar corners and sidebars. Set `theme.matugenBorders.enable = true` to switch to wallpaper-derived Material You accent colors from **matugen** instead; with a bold wallpaper and `animations.preset = "LimeFrenzy"` that gives a continuously animated neon glow effect.
 
 Drop shadow **colors** follow the same rule and are deliberately not exposed as options — `ThemeMode.qml` picks them from the cartridge (a warm ink-brown on gold, so windows read like cutouts on a magazine page; the near-black molded edge tone on dark, the only value dark enough to separate a window from the wallpaper), and matugen never touches them. `theme.shadow.*` controls the geometry only.
+
+**Terminal legibility.** kitty's ANSI palette *is* wallpaper-derived — wallbash re-renders it on every wallpaper change. The template maps ANSI slots onto wallbash's accent ramps, which have no contrast relationship to the background derived from the same image, so legibility used to vary with whatever wallpaper was set: a maroon/olive one measured in testing put **14 of 16 slots under the WCAG 3:1 floor**, including `color7` — the "white" most TUI text uses — at 1.62:1.
+
+`theme.terminalContrast` fixes that without giving up the wallpaper-reactive look. After each render, the palette is corrected in place: hue and saturation are held fixed and only lightness moves, only far enough to clear the floor (measured worst-case hue drift across a 4000-case fuzz: 0.028, i.e. 8-bit rounding). The floor is applied against the background *as actually rendered* — composited through kitty's `background_opacity` and Hyprland's `active_opacity` — because transparency is what ate the contrast to begin with; on this desktop a nominal 5.2:1 lands as 2.8:1 on screen if you ignore it. `color0` is deliberately left alone (it is a background/decoration tone, not a text color), and normal/bright pairs are kept visibly distinct after correction.
+
+Raise it to `7.0` for a flatter, higher-legibility palette, or set `0` to keep raw wallbash output.
 
 For a flat print-layout drop shadow instead of a soft one, try `theme.shadow = { sharp = true; range = 12; offset = [ 8 8 ]; }`. Two things to know: `range` still sizes the shadow in sharp mode — `range = 0` draws nothing at all, sharp or not — and because sharp mode spreads a single flat tone rather than concentrating a gradient near the edge, it reads much more strongly in the dark cartridge (where the shadow is near-black and near-opaque) than on gold, where the lighter ink-brown can wash out against a busy wallpaper.
 
